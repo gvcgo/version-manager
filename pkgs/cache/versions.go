@@ -18,7 +18,7 @@ type InstallConf struct {
 }
 
 var AppList = map[string]InstallConf{
-	"golang": {
+	"go": {
 		DirKeyWord: "go",
 		BinaryDir:  "bin",
 		Binaries:   []string{"go", "fmt"},
