@@ -39,18 +39,30 @@ type VersionItem struct {
 type VersionList []VersionItem
 
 type VersionInfo struct {
-	List    map[string]VersionList
-	AppName string
-	fetcher *request.Fetcher
+	List        map[string]VersionList // full version list
+	CurrentList map[string]VersionList // version list for current Arch and Os.
+	AppName     string                 // name in AppList
+	fetcher     *request.Fetcher
+	ArchHandler func(archType, osType string) string
+	OsHandler   func(archType, osType string) string
 }
 
 func NewVInfo(appName string) (vi *VersionInfo) {
 	vi = &VersionInfo{
-		List:    map[string]VersionList{},
-		AppName: appName,
-		fetcher: request.NewFetcher(),
+		List:        map[string]VersionList{},
+		CurrentList: map[string]VersionList{},
+		AppName:     appName,
+		fetcher:     request.NewFetcher(),
 	}
 	return
+}
+
+func (v *VersionInfo) RegisterArchHandler(f func(archType, osType string) string) {
+	v.ArchHandler = f
+}
+
+func (v *VersionInfo) RegisterOsHandler(f func(archType, osType string) string) {
+	v.OsHandler = f
 }
 
 func (v *VersionInfo) Parse() {
@@ -73,20 +85,36 @@ func (v *VersionInfo) GetVersions() map[string]VersionList {
 	if len(v.List) == 0 {
 		v.Parse()
 	}
-	r := make(map[string]VersionList)
-
+	v.CurrentList = map[string]VersionList{}
 	if len(v.List) == 0 {
-		return r
+		return v.CurrentList
 	}
 	for vName, vList := range v.List {
-		if _, ok := r[vName]; !ok {
-			r[vName] = VersionList{}
-		}
 		for _, ver := range vList {
+			if v.ArchHandler != nil {
+				ver.Arch = v.ArchHandler(ver.Arch, ver.Os)
+			}
+			if v.OsHandler != nil {
+				ver.Os = v.OsHandler(ver.Arch, ver.Os)
+			}
 			if ver.Arch == runtime.GOARCH && ver.Os == runtime.GOOS {
-				r[vName] = append(r[vName], ver)
+				if _, ok := v.CurrentList[vName]; !ok {
+					v.CurrentList[vName] = VersionList{}
+				}
+				v.CurrentList[vName] = append(v.CurrentList[vName], ver)
 			}
 		}
 	}
-	return r
+	return v.CurrentList
+}
+
+func (v *VersionInfo) GetSortedVersionList() (r []string) {
+	v.GetVersions()
+	for vName := range v.CurrentList {
+		r = append(r, vName)
+	}
+	if len(r) > 1 {
+		r = SortVersion(r)
+	}
+	return
 }
