@@ -22,23 +22,10 @@
 package main
 
 import (
-	"fmt"
-	"runtime"
-
-	"github.com/gvcgo/version-manager/pkgs/versions"
+	"github.com/gvcgo/version-manager/pkgs/search"
 )
 
 func main() {
-	vf := versions.NewVInfo("kotlin")
-	vf.RegisterArchHandler(func(archType, osType string) string {
-		if osType == "darwin" {
-			return runtime.GOARCH
-		}
-		return archType
-	})
-	vf.RegisterOsHandler(func(archType, osType string) string {
-		return osType
-	})
-	vl := vf.GetSortedVersionList()
-	fmt.Println(vl)
+	s := search.NewSearcher()
+	s.Search("jdk")
 }
