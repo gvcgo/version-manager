@@ -26,6 +26,7 @@ import (
 )
 
 func main() {
-	s := search.NewSearcher()
-	s.Search("go")
+	// s := search.NewSearcher()
+	// s.Search("go")
+	search.ShowAppList()
 }
