@@ -1,9 +1,9 @@
 package search
 
 import (
-	"fmt"
 	"strings"
 
+	"github.com/gvcgo/version-manager/pkgs/tui"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
 
@@ -24,5 +24,5 @@ func (s *Searcher) Search(appName string) {
 	s.VersionInfo.RegisterArchHandler(versions.ArchHandlerList[appName])
 	s.VersionInfo.RegisterOsHandler(versions.OsHandlerList[appName])
 	vl := s.VersionInfo.GetSortedVersionList()
-	fmt.Println(strings.Join(vl, "\n"))
+	tui.ShowAsPortView(appName, strings.Join(vl, "\n"))
 }

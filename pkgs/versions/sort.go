@@ -21,7 +21,8 @@ func QSort(iList []Item) (r []Item) {
 	left := make([]Item, 0)
 	right := make([]Item, 0)
 	for i := 1; i < len(iList); i++ {
-		if mid.Greater(iList[i]) {
+		// from the latest to the oldest.
+		if !mid.Greater(iList[i]) {
 			left = append(left, iList[i])
 		} else {
 			right = append(right, iList[i])

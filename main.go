@@ -27,5 +27,5 @@ import (
 
 func main() {
 	s := search.NewSearcher()
-	s.Search("jdk")
+	s.Search("go")
 }
