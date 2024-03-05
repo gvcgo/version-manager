@@ -41,10 +41,13 @@ func (i *Installer) searchVersion() {
 	}
 
 	if len(vs) == 0 {
+		i.v = nil
 		gprint.PrintError("Cannot find version: %s", i.Version)
 	} else if len(vs) == 1 {
-		i.v = &vf[vs[0]][0]
+		i.Version = vs[0]
+		i.v = &vf[i.Version][0]
 	} else {
+		i.v = nil
 		gprint.PrintError("Found multiple versions: \n%v", strings.Join(vs, "\n"))
 	}
 }
@@ -63,7 +66,17 @@ func (i *Installer) Download() (zipFilePath string) {
 		}
 	}
 	f := conf.GetFetcher()
+	// set url for downloader
+	f.SetUrl(conf.DecorateUrl(i.v.Url))
 	zipFilePath = filepath.Join(zipDir, filepath.Base(i.v.Url))
 	f.GetAndSaveFile(zipFilePath)
+
+	// checksum
+	if i.v.Sum != "" && i.v.SumType != "" {
+		if ok := gutils.CheckSum(zipFilePath, i.v.SumType, i.v.Sum); !ok {
+			zipFilePath = ""
+			os.RemoveAll(zipFilePath) // checksum failed.
+		}
+	}
 	return
 }
