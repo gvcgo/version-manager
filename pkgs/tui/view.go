@@ -16,7 +16,7 @@ var (
 	titleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = "├"
-		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
+		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1).Foreground(lipgloss.Color("#FFFF33"))
 	}()
 
 	infoStyle = func() lipgloss.Style {
