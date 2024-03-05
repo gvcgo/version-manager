@@ -35,7 +35,8 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "search",
 		Aliases: []string{"s"},
-		Short:   "Shows the available version list of an app.",
+		GroupID: GroupID,
+		Short:   "Shows the available versions of an application.",
 		Long:    "Example: vm search go.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
@@ -50,7 +51,8 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "show",
 		Aliases: []string{"sh", "S"},
-		Short:   "Shows the supported app list.",
+		GroupID: GroupID,
+		Short:   "Shows the supported applications.",
 		Run: func(cmd *cobra.Command, args []string) {
 			search.ShowAppList()
 		},

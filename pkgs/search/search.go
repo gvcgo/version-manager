@@ -19,10 +19,21 @@ func NewSearcher() (s *Searcher) {
 	return
 }
 
-func (s *Searcher) Search(appName string) {
+func (s *Searcher) init(appName string) {
 	s.VersionInfo = versions.NewVInfo(appName)
 	s.VersionInfo.RegisterArchHandler(versions.ArchHandlerList[appName])
 	s.VersionInfo.RegisterOsHandler(versions.OsHandlerList[appName])
+}
+
+// Gets version list.
+func (s *Searcher) GetVersions(appName string) map[string]versions.VersionList {
+	s.init(appName)
+	return s.VersionInfo.GetVersions()
+}
+
+// Shows version list.
+func (s *Searcher) Search(appName string) {
+	s.init(appName)
 	vl := s.VersionInfo.GetSortedVersionList()
 	tui.ShowAsPortView(appName, strings.Join(vl, "\n"))
 }
