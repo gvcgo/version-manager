@@ -1,6 +1,8 @@
 package versions
 
-import "runtime"
+import (
+	"runtime"
+)
 
 /*
 Arch handler
@@ -54,7 +56,7 @@ func ToWindowsOnly(archType, osType string) string {
 }
 
 func ToUnixOs(archType, osType string) string {
-	if archType == "all" && osType == "linux" && runtime.GOOS != "windows" {
+	if osType == "linux" && runtime.GOOS != "windows" {
 		return runtime.GOOS
 	}
 	return osType
