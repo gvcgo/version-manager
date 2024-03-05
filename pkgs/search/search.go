@@ -3,6 +3,7 @@ package search
 import (
 	"strings"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/pkgs/tui"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
@@ -35,5 +36,9 @@ func (s *Searcher) GetVersions(appName string) map[string]versions.VersionList {
 func (s *Searcher) Search(appName string) {
 	s.init(appName)
 	vl := s.VersionInfo.GetSortedVersionList()
+	if len(vl) == 0 {
+		gprint.PrintWarning("No versions found!")
+		return
+	}
 	tui.ShowAsPortView(appName, strings.Join(vl, "\n"))
 }
