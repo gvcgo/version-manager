@@ -8,11 +8,11 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/request"
+	"github.com/gvcgo/version-manager/pkgs/conf"
 )
 
 const (
 	RemoteVersionFilePattern string = "https://raw.githubusercontent.com/gvcgo/resources/main/%s.version.json"
-	ReverseProxy             string = "https://gvc.1710717.xyz/proxy/"
 )
 
 /*
@@ -52,7 +52,7 @@ func NewVInfo(appName string) (vi *VersionInfo) {
 		List:        map[string]VersionList{},
 		CurrentList: map[string]VersionList{},
 		AppName:     appName,
-		fetcher:     request.NewFetcher(),
+		fetcher:     conf.GetFetcher(),
 	}
 	return
 }
@@ -70,7 +70,7 @@ func (v *VersionInfo) Parse() {
 		return
 	}
 	v.fetcher.Timeout = 120 * time.Second
-	u := ReverseProxy + fmt.Sprintf(RemoteVersionFilePattern, v.AppName)
+	u := conf.DecorateUrl(fmt.Sprintf(RemoteVersionFilePattern, v.AppName))
 	v.fetcher.SetUrl(u)
 	if s, rCode := v.fetcher.GetString(); rCode == 200 {
 		if err := json.Unmarshal([]byte(s), &v.List); err != nil {

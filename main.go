@@ -22,11 +22,17 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/search"
 )
 
 func main() {
-	// s := search.NewSearcher()
-	// s.Search("go")
-	search.ShowAppList()
+	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
+	s := search.NewSearcher()
+	vl := s.GetVersions("php")
+	fmt.Printf("%+v\n", vl)
+	// search.ShowAppList()
 }
