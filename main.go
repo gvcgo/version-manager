@@ -30,6 +30,5 @@ import (
 
 func main() {
 	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
-	ins := use.NewInstaller("go", "1.22.0")
-	ins.Download()
+	use.TestGo()
 }

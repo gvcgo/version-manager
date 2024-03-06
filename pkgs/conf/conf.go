@@ -52,26 +52,36 @@ func GetVersionManagerWorkDir() string {
 		homeDir, _ := os.UserHomeDir()
 		d = filepath.Join(homeDir, ".vm")
 	}
+	os.MkdirAll(d, os.ModePerm)
 	return d
 }
 
 // Binaries dir.
 func GetAppBinDir() string {
-	return filepath.Join(GetVersionManagerWorkDir(), "bin")
+	d := filepath.Join(GetVersionManagerWorkDir(), "bin")
+	os.MkdirAll(d, os.ModePerm)
+	return d
 }
 
 // ZipFile dir.
-func GetZipFileDir() string {
-	return filepath.Join(GetVersionManagerWorkDir(), "cache")
+func GetZipFileDir(appName string) string {
+	d := filepath.Join(GetVersionManagerWorkDir(), "cache", appName)
+	os.MkdirAll(d, os.ModePerm)
+	return d
+
 }
 
 // Temp dir.
 func GetVMTempDir() string {
-	return filepath.Join(GetVersionManagerWorkDir(), "tmp")
+	d := filepath.Join(GetVersionManagerWorkDir(), "tmp")
+	os.MkdirAll(d, os.ModePerm)
+	return d
 }
 
 // versions dir.
 func GetVMVersionsDir(appName string) string {
 	dirName := fmt.Sprintf("%s_versions", appName)
-	return filepath.Join(GetVersionManagerWorkDir(), dirName)
+	d := filepath.Join(GetVersionManagerWorkDir(), dirName)
+	os.MkdirAll(d, os.ModePerm)
+	return d
 }
