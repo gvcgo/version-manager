@@ -176,23 +176,46 @@ func (i *Installer) saveSymbolicInfo(symbolic string) {
 	os.WriteFile(infoFile, []byte(data), os.ModePerm)
 }
 
+func (i *Installer) createSymbolicOrNot(fileName string) bool {
+	if i.BinListGetter == nil || len(i.BinListGetter()) == 0 {
+		return true
+	}
+	for _, binName := range i.BinListGetter() {
+		if binName == fileName {
+			return true
+		}
+	}
+	return false
+}
+
 func (i *Installer) CreateBinarySymbol() {
+	currentPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
+	if ok, _ := gutils.PathIsExist(currentPath); !ok {
+		return
+	}
+	i.removeOldSymbolic()
 	if i.BinDirGetter != nil {
-		currentPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
-		if ok, _ := gutils.PathIsExist(currentPath); ok {
-			i.removeOldSymbolic()
-			for _, bDir := range i.BinDirGetter(i.Version) {
-				d := filepath.Join(currentPath, filepath.Join(bDir...))
-				if dList, err := os.ReadDir(d); err == nil {
-					for _, dd := range dList {
-						if !dd.IsDir() {
-							fPath := filepath.Join(d, dd.Name())
-							symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
-							utils.SymbolicLink(fPath, symPath)
-							i.saveSymbolicInfo(dd.Name())
-						}
+		for _, bDir := range i.BinDirGetter(i.Version) {
+			d := filepath.Join(currentPath, filepath.Join(bDir...))
+			if dList, err := os.ReadDir(d); err == nil {
+				for _, dd := range dList {
+					if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
+						fPath := filepath.Join(d, dd.Name())
+						symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
+						utils.SymbolicLink(fPath, symPath)
+						i.saveSymbolicInfo(dd.Name())
 					}
 				}
+			}
+		}
+	} else {
+		dList, _ := os.ReadDir(currentPath)
+		for _, dd := range dList {
+			if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
+				fPath := filepath.Join(currentPath, dd.Name())
+				symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
+				utils.SymbolicLink(fPath, symPath)
+				i.saveSymbolicInfo(dd.Name())
 			}
 		}
 	}
@@ -200,8 +223,10 @@ func (i *Installer) CreateBinarySymbol() {
 
 func (i *Installer) SetEnv() {
 	em := envs.NewEnvManager()
-	for _, env := range i.EnvGetter(i.AppName, i.Version) {
-		em.Set(env.Name, env.Value)
+	if i.EnvGetter != nil {
+		for _, env := range i.EnvGetter(i.AppName, i.Version) {
+			em.Set(env.Name, env.Value)
+		}
 	}
 	em.SetPath()
 }
