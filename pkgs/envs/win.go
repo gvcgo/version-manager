@@ -48,6 +48,7 @@ func (em *EnvManager) getKeyInfo() {
 
 func (em *EnvManager) CloseKey() {
 	if em.KeyInfo != nil {
+		em.KeyInfo = nil
 		em.Key.Close()
 	}
 }
@@ -68,7 +69,12 @@ func (em *EnvManager) broadcast() {
 	}
 }
 
+// Set binary path.
 func (em *EnvManager) SetPath() {
+	if em.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
 	binDir := conf.GetAppBinDir()
 	value, _, err := em.Key.GetStringValue(PathEnvName)
 	if err != nil {
@@ -84,9 +90,14 @@ func (em *EnvManager) SetPath() {
 		}
 	}
 	em.broadcast()
+	em.CloseKey()
 }
 
 func (em *EnvManager) UnsetPath() {
+	if em.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
 	binDir := conf.GetAppBinDir()
 	value, _, err := em.Key.GetStringValue(PathEnvName)
 	if err != nil {
@@ -103,9 +114,16 @@ func (em *EnvManager) UnsetPath() {
 		}
 	}
 	em.broadcast()
+	em.CloseKey()
 }
 
+// Set envs.
 func (em *EnvManager) Set(key, value string) {
+	if em.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
+
 	if key == PathEnvName {
 		return
 	}
@@ -115,9 +133,15 @@ func (em *EnvManager) Set(key, value string) {
 		return
 	}
 	em.broadcast()
+	em.CloseKey()
 }
 
 func (em *EnvManager) Unset(key string) {
+	if em.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
+
 	if key == PathEnvName {
 		return
 	}
@@ -127,4 +151,5 @@ func (em *EnvManager) Unset(key string) {
 		return
 	}
 	em.broadcast()
+	em.CloseKey()
 }
