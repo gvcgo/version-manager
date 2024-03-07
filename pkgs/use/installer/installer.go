@@ -11,6 +11,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/search"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
 
@@ -141,7 +142,7 @@ func (i *Installer) CreateVersionSymbol() {
 			os.RemoveAll(symbolPath)
 		}
 		// create symbolic
-		os.Symlink(versionPath, symbolPath)
+		utils.SymbolicLink(versionPath, symbolPath)
 	}
 }
 
@@ -159,7 +160,7 @@ func (i *Installer) CreateBinarySymbol() {
 							// if ok, _ := gutils.PathIsExist(symPath); ok {
 							// 	os.RemoveAll(symPath)
 							// }
-							os.Symlink(fPath, symPath)
+							utils.SymbolicLink(fPath, symPath)
 						}
 					}
 				}
