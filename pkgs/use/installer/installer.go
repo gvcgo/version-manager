@@ -10,6 +10,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/envs"
 	"github.com/gvcgo/version-manager/pkgs/search"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
@@ -177,11 +178,11 @@ func (i *Installer) saveSymbolicInfo(symbolic string) {
 
 func (i *Installer) CreateBinarySymbol() {
 	if i.BinDirGetter != nil {
-		symbolPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
-		if ok, _ := gutils.PathIsExist(symbolPath); ok {
+		currentPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
+		if ok, _ := gutils.PathIsExist(currentPath); ok {
 			i.removeOldSymbolic()
 			for _, bDir := range i.BinDirGetter(i.Version) {
-				d := filepath.Join(symbolPath, filepath.Join(bDir...))
+				d := filepath.Join(currentPath, filepath.Join(bDir...))
 				if dList, err := os.ReadDir(d); err == nil {
 					for _, dd := range dList {
 						if !dd.IsDir() {
@@ -197,6 +198,10 @@ func (i *Installer) CreateBinarySymbol() {
 	}
 }
 
-func (i *Installer) SaveLinksInfo() {
-
+func (i *Installer) SetEnv() {
+	em := envs.NewEnvManager()
+	for _, env := range i.EnvGetter(i.AppName, i.Version) {
+		em.Set(env.Name, env.Value)
+	}
+	em.SetPath()
 }

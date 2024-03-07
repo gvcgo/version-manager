@@ -34,4 +34,5 @@ func TestGo() {
 	GoInstaller.Copy()
 	GoInstaller.CreateVersionSymbol()
 	GoInstaller.CreateBinarySymbol()
+	GoInstaller.SetEnv()
 }
