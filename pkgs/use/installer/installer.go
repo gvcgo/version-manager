@@ -25,6 +25,17 @@ type Env struct {
 	Value string
 }
 
+func DefaultDecorator(dUrl string, ft *request.Fetcher) string {
+	// proxy
+	pxy := os.Getenv(conf.VMProxyEnvName)
+	if gutils.VerifyUrls(pxy) || strings.Contains(dUrl, "://") {
+		ft.Proxy = pxy
+		return dUrl
+	}
+	// reverse proxy
+	return conf.DecorateUrl(dUrl)
+}
+
 type Installer struct {
 	AppName            string
 	Version            string
@@ -33,10 +44,11 @@ type Installer struct {
 	V                  *versions.VersionItem
 	IsZipFile          bool
 	BinaryRenameTo     string
-	BinDirGetter       func(version string) [][]string
-	BinListGetter      func() []string
-	FlagFileGetter     func() []string
-	EnvGetter          func(appName, version string) []Env
+	BinDirGetter       func(version string) [][]string               // Binary dir
+	BinListGetter      func() []string                               // Binaries
+	FlagFileGetter     func() []string                               // Flags to find home dir of an app
+	EnvGetter          func(appName, version string) []Env           // Envs to set
+	DUrlDecorator      func(dUrl string, ft *request.Fetcher) string // Download url decorator
 	StoreMultiVersions bool
 }
 
@@ -88,7 +100,11 @@ func (i *Installer) Download() (zipFilePath string) {
 		}
 	}
 
-	i.Fetcher.SetUrl(conf.DecorateUrl(i.V.Url))
+	if i.DUrlDecorator != nil {
+		i.Fetcher.SetUrl(i.DUrlDecorator(i.V.Url, i.Fetcher))
+	} else {
+		i.Fetcher.SetUrl(i.V.Url)
+	}
 	zipFilePath = filepath.Join(zipDir, filepath.Base(i.V.Url))
 	i.Fetcher.GetAndSaveFile(zipFilePath)
 

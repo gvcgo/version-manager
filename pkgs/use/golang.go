@@ -25,6 +25,7 @@ var GoInstaller = &installer.Installer{
 			{Name: "GOROOT", Value: filepath.Join(conf.GetVMVersionsDir(appName), appName)},
 		}
 	},
+	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 }
 

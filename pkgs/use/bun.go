@@ -16,6 +16,7 @@ var BunInstaller = &installer.Installer{
 	BinListGetter: func() []string {
 		return []string{"bun"}
 	},
+	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 }
 

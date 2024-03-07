@@ -27,6 +27,7 @@ var DenoInstaller = &installer.Installer{
 		}
 		return r
 	},
+	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 }
 
