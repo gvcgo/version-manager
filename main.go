@@ -32,5 +32,6 @@ func main() {
 	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
 	// use.TestGo()
 	// use.TestBun()
-	use.TestDeno()
+	// use.TestDeno()
+	use.TestFd()
 }
