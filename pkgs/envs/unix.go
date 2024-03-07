@@ -1,3 +1,5 @@
+//go:build darwin || linux
+
 package envs
 
 import (
@@ -18,8 +20,7 @@ const (
 /*
 Unix/Linux envs manager.
 */
-type EnvManager struct {
-}
+type EnvManager struct{}
 
 func NewEnvManager() (em *EnvManager) {
 	em = &EnvManager{}
@@ -60,6 +61,36 @@ func (em *EnvManager) addShellFileToShellConfig() {
 	}
 }
 
+func (em *EnvManager) UnsetPath() {
+	shellFile := filepath.Join(conf.GetVersionManagerWorkDir(), ShellFileName)
+	content, _ := os.ReadFile(shellFile)
+	data := string(content)
+	envStr := fmt.Sprintf(`export PATH=%s:$PATH`, conf.GetAppBinDir())
+	if strings.Contains(data, conf.GetAppBinDir()) {
+		data = strings.TrimSpace(strings.ReplaceAll(data, envStr, ""))
+	}
+	os.WriteFile(shellFile, []byte(data), os.ModePerm)
+	em.removeShellFileFromShellConfig()
+}
+
+func (em *EnvManager) removeShellFileFromShellConfig() {
+	shellConfFile := utils.GetShellConfigFilePath()
+	if shellConfFile != "" {
+		data := ""
+		if ok, _ := gutils.PathIsExist(shellConfFile); ok {
+			content, _ := os.ReadFile(shellConfFile)
+			data = string(content)
+		}
+		shellFile := filepath.Join(conf.GetVersionManagerWorkDir(), ShellFileName)
+
+		envStr := fmt.Sprintf(`. %s`, shellFile)
+		if strings.Contains(data, envStr) {
+			data = strings.TrimSpace(strings.ReplaceAll(data, envStr, ""))
+		}
+		os.WriteFile(shellConfFile, []byte(data), os.ModePerm)
+	}
+}
+
 func (em *EnvManager) Set(key, value string) {
 	shellFile := filepath.Join(conf.GetVersionManagerWorkDir(), ShellFileName)
 	content, _ := os.ReadFile(shellFile)
@@ -73,4 +104,16 @@ func (em *EnvManager) Set(key, value string) {
 	}
 	os.WriteFile(shellFile, []byte(data), os.ModePerm)
 	em.addShellFileToShellConfig()
+}
+
+func (em *EnvManager) UnSet(key string) {
+	shellFile := filepath.Join(conf.GetVersionManagerWorkDir(), ShellFileName)
+	content, _ := os.ReadFile(shellFile)
+	data := string(content)
+	for _, line := range strings.Split(data, "\n") {
+		if strings.Contains(line, key) {
+			data = strings.TrimSpace(strings.ReplaceAll(data, line, ""))
+		}
+	}
+	os.WriteFile(shellFile, []byte(data), os.ModePerm)
 }

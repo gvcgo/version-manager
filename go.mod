@@ -8,6 +8,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.8.0
 	github.com/gvcgo/goutils v0.8.7
 	github.com/spf13/cobra v1.8.0
+	golang.org/x/sys v0.15.0
 )
 
 require (
@@ -51,7 +52,6 @@ require (
 	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
