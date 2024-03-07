@@ -9,7 +9,7 @@ import (
 
 var GoInstaller = &installer.Installer{
 	AppName:   "go",
-	Version:   "1.22.1",
+	Version:   "1.22.0",
 	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	BinDirGetter: func(version string) [][]string {

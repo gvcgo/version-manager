@@ -15,6 +15,10 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
 
+const (
+	SymbolicsInfoFileName string = "symbolics.info"
+)
+
 type Env struct {
 	Name  string
 	Value string
@@ -146,10 +150,36 @@ func (i *Installer) CreateVersionSymbol() {
 	}
 }
 
+func (i *Installer) removeOldSymbolic() {
+	infoFile := filepath.Join(conf.GetVMVersionsDir(i.AppName), SymbolicsInfoFileName)
+	content, _ := os.ReadFile(infoFile)
+	if len(content) > 0 {
+		sList := strings.Split(string(content), "\n")
+		binDir := conf.GetAppBinDir()
+		for _, symbolic := range sList {
+			os.RemoveAll(filepath.Join(binDir, symbolic))
+		}
+	}
+	os.RemoveAll(infoFile)
+}
+
+func (i *Installer) saveSymbolicInfo(symbolic string) {
+	infoFile := filepath.Join(conf.GetVMVersionsDir(i.AppName), SymbolicsInfoFileName)
+	content, _ := os.ReadFile(infoFile)
+	data := string(content)
+	if data == "" {
+		data = symbolic
+	} else {
+		data = data + "\n" + symbolic
+	}
+	os.WriteFile(infoFile, []byte(data), os.ModePerm)
+}
+
 func (i *Installer) CreateBinarySymbol() {
 	if i.BinDirGetter != nil {
 		symbolPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
 		if ok, _ := gutils.PathIsExist(symbolPath); ok {
+			i.removeOldSymbolic()
 			for _, bDir := range i.BinDirGetter(i.Version) {
 				d := filepath.Join(symbolPath, filepath.Join(bDir...))
 				if dList, err := os.ReadDir(d); err == nil {
@@ -157,10 +187,8 @@ func (i *Installer) CreateBinarySymbol() {
 						if !dd.IsDir() {
 							fPath := filepath.Join(d, dd.Name())
 							symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
-							// if ok, _ := gutils.PathIsExist(symPath); ok {
-							// 	os.RemoveAll(symPath)
-							// }
 							utils.SymbolicLink(fPath, symPath)
+							i.saveSymbolicInfo(dd.Name())
 						}
 					}
 				}
