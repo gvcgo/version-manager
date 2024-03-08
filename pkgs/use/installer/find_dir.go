@@ -30,9 +30,11 @@ func (h *HomeDirFinder) Find(startDir string) {
 		// Get all filenames in current dir.
 		fileNames := ""
 		for _, d := range dList {
-			if !d.IsDir() {
-				fileNames += d.Name()
-			}
+			// if !d.IsDir() {
+			// 	fileNames += d.Name()
+			// }
+			// including dir names.
+			fileNames += d.Name()
 		}
 
 		// Test current dir.

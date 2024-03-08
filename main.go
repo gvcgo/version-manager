@@ -38,5 +38,6 @@ func main() {
 	// use.TestFzF()
 	// use.TestGradle()
 	// use.TestJulia()
-	use.TestMaven()
+	// use.TestMaven()
+	use.TestNeovim()
 }
