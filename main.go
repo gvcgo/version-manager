@@ -34,8 +34,9 @@ func main() {
 	// use.TestBun()
 	// use.TestDeno()
 	// use.TestFd()
-	use.TestFlutter()
+	// use.TestFlutter()
 	// use.TestFzF()
 	// use.TestGradle()
 	// use.TestJulia()
+	use.TestMaven()
 }
