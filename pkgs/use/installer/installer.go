@@ -126,7 +126,8 @@ func handleUnzipFailedError(zipFilePath string, err error) {
 func (i *Installer) Unzip(zipFilePath string) {
 	if i.IsZipFile {
 		tempDir := conf.GetVMTempDir()
-		if arch, err := archiver.NewArchiver(zipFilePath, tempDir, false); err == nil {
+		// use archiver.
+		if arch, err := archiver.NewArchiver(zipFilePath, tempDir, true); err == nil {
 			_, err = arch.UnArchive()
 			if err != nil {
 				handleUnzipFailedError(zipFilePath, err)
