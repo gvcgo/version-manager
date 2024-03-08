@@ -22,7 +22,7 @@ var AppList []string = []string{
 	"bun", "cygwin", "deno", "fd", "flutter", "fzf", "git",
 	"go", "gradle", "gsudo", "jdk", "julia", "kotlin",
 	"maven", "miniconda", "msys2", "neovim", "nodejs",
-	"php", "python", "ripgrep", "rust", "sdkmanager",
+	"php", "python", "ripgrep", "rustup", "sdkmanager",
 	"typst-lsp", "typst", "v-analyzer", "v", "vscode",
 	"zig", "zls",
 }
