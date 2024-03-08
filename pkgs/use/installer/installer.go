@@ -211,7 +211,7 @@ func (i *Installer) CreateBinarySymbol() {
 		return
 	}
 	i.removeOldSymbolic()
-	if i.BinDirGetter != nil {
+	if i.BinDirGetter != nil && len(i.BinDirGetter(i.Version)) > 0 {
 		for _, bDir := range i.BinDirGetter(i.Version) {
 			d := filepath.Join(currentPath, filepath.Join(bDir...))
 			if dList, err := os.ReadDir(d); err == nil {

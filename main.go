@@ -39,5 +39,6 @@ func main() {
 	// use.TestGradle()
 	// use.TestJulia()
 	// use.TestMaven()
-	use.TestNeovim()
+	// use.TestNeovim()
+	use.TestNodejs()
 }
