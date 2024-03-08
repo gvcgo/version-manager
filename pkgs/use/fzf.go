@@ -8,22 +8,22 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/use/installer"
 )
 
-var BunInstaller = &installer.Installer{
-	AppName:   "bun",
-	Version:   "1.0.9",
+var FzFInstaller = installer.Installer{
+	AppName:   "fzf",
+	Version:   "0.46.1",
 	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
-		r := []string{"bun"}
+		r := []string{"fzf"}
 		if runtime.GOOS == gutils.Windows {
-			r = []string{"bun.exe"}
+			r = []string{"fzf.exe"}
 		}
 		return r
 	},
 	BinListGetter: func() []string {
-		r := []string{"bun"}
+		r := []string{"fzf"}
 		if runtime.GOOS == gutils.Windows {
-			r = []string{"bun.exe"}
+			r = []string{"fzf.exe"}
 		}
 		return r
 	},
@@ -31,11 +31,11 @@ var BunInstaller = &installer.Installer{
 	StoreMultiVersions: true,
 }
 
-func TestBun() {
-	zf := BunInstaller.Download()
-	BunInstaller.Unzip(zf)
-	BunInstaller.Copy()
-	BunInstaller.CreateVersionSymbol()
-	BunInstaller.CreateBinarySymbol()
-	BunInstaller.SetEnv()
+func TestFzF() {
+	zf := FzFInstaller.Download()
+	FzFInstaller.Unzip(zf)
+	FzFInstaller.Copy()
+	FzFInstaller.CreateVersionSymbol()
+	FzFInstaller.CreateBinarySymbol()
+	FzFInstaller.SetEnv()
 }

@@ -34,5 +34,6 @@ func main() {
 	// use.TestBun()
 	// use.TestDeno()
 	// use.TestFd()
-	use.TestFlutter()
+	// use.TestFlutter()
+	use.TestFzF()
 }
