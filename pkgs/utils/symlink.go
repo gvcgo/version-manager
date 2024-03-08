@@ -20,11 +20,13 @@ func IsFile(path string) bool {
 }
 
 func SymbolicLink(oldname, newname string) error {
-	if runtime.GOOS == gutils.Windows && IsFile(oldname) {
+	err := os.Symlink(oldname, newname)
+	if runtime.GOOS == gutils.Windows {
 		// Hardlink for windows files. Hardlink for windows in the same disk partion is supported.
 		// Softlink for windows files need admin previllege.
-		return os.Link(oldname, newname)
-	} else {
-		return os.Symlink(oldname, newname)
+		if err != nil {
+			err = os.Link(oldname, newname)
+		}
 	}
+	return err
 }
