@@ -233,35 +233,43 @@ func (i *Installer) CreateBinarySymbol() {
 	i.removeOldSymbolic()
 	if i.BinDirGetter != nil && len(i.BinDirGetter(i.Version)) > 0 {
 		for _, bDir := range i.BinDirGetter(i.Version) {
-			d := filepath.Join(currentPath, filepath.Join(bDir...))
-			if dList, err := os.ReadDir(d); err == nil {
-				for _, dd := range dList {
-					if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
-						fPath := filepath.Join(d, dd.Name())
-						if runtime.GOOS != gutils.Windows {
-							// add previlledge for exectution.
-							gutils.ExecuteSysCommand(false, "", "chmod", "+x", fPath)
+			if len(bDir) == 0 {
+				i.createBinarySymbolForCurrentDir(currentPath)
+			} else {
+				d := filepath.Join(currentPath, filepath.Join(bDir...))
+				if dList, err := os.ReadDir(d); err == nil {
+					for _, dd := range dList {
+						if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
+							fPath := filepath.Join(d, dd.Name())
+							if runtime.GOOS != gutils.Windows {
+								// add previlledge for exectution.
+								gutils.ExecuteSysCommand(false, "", "chmod", "+x", fPath)
+							}
+							symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
+							utils.SymbolicLink(fPath, symPath)
+							i.saveSymbolicInfo(dd.Name())
 						}
-						symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
-						utils.SymbolicLink(fPath, symPath)
-						i.saveSymbolicInfo(dd.Name())
 					}
 				}
 			}
 		}
 	} else {
-		dList, _ := os.ReadDir(currentPath)
-		for _, dd := range dList {
-			if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
-				fPath := filepath.Join(currentPath, dd.Name())
-				if runtime.GOOS != gutils.Windows {
-					// add previlledge for exectution.
-					gutils.ExecuteSysCommand(false, "", "chmod", "+x", fPath)
-				}
-				symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
-				utils.SymbolicLink(fPath, symPath)
-				i.saveSymbolicInfo(dd.Name())
+		i.createBinarySymbolForCurrentDir(currentPath)
+	}
+}
+
+func (i *Installer) createBinarySymbolForCurrentDir(currentPath string) {
+	dList, _ := os.ReadDir(currentPath)
+	for _, dd := range dList {
+		if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
+			fPath := filepath.Join(currentPath, dd.Name())
+			if runtime.GOOS != gutils.Windows {
+				// add previlledge for exectution.
+				gutils.ExecuteSysCommand(false, "", "chmod", "+x", fPath)
 			}
+			symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
+			utils.SymbolicLink(fPath, symPath)
+			i.saveSymbolicInfo(dd.Name())
 		}
 	}
 }
