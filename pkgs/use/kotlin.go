@@ -20,6 +20,7 @@ var KotlinInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	AddBinDirToPath:    true,
 }
 
 func TestKotlin() {

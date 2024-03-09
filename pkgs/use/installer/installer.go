@@ -284,7 +284,7 @@ func (i *Installer) preparePathValue(currentPath string) (pathValue string) {
 				if len(d) == 0 {
 					pathList = append(pathList, currentPath)
 				} else {
-					pathList = append(pathList, filepath.Join(d...))
+					pathList = append(pathList, filepath.Join(currentPath, filepath.Join(d...)))
 				}
 			}
 		}
