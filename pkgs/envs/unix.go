@@ -124,7 +124,7 @@ func (em *EnvManager) AddToPath(value string) {
 	content, _ := os.ReadFile(shellFile)
 	data := string(content)
 
-	envStr := fmt.Sprintf(`export PATH=%s;$PATH`, value)
+	envStr := fmt.Sprintf(`export PATH=%s:$PATH`, value)
 	if data == "" {
 		data = envStr
 	} else if !strings.Contains(data, envStr) {
@@ -140,7 +140,7 @@ func (em *EnvManager) DeleteFromPath(value string) {
 	content, _ := os.ReadFile(shellFile)
 	data := string(content)
 
-	envStr := fmt.Sprintf(`export PATH=%s;$PATH`, value)
+	envStr := fmt.Sprintf(`export PATH=%s:$PATH`, value)
 	if strings.Contains(data, envStr) {
 		data = strings.TrimSpace(strings.ReplaceAll(data, envStr, ""))
 	}

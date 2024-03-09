@@ -51,6 +51,7 @@ type Installer struct {
 	DUrlDecorator      func(dUrl string, ft *request.Fetcher) string // Download url decorator
 	StoreMultiVersions bool
 	ForceReDownload    bool
+	AddBinDirToPath    bool
 }
 
 func NewInstaller(appName, version string) (i *Installer) {
@@ -230,6 +231,17 @@ func (i *Installer) CreateBinarySymbol() {
 	if ok, _ := gutils.PathIsExist(currentPath); !ok {
 		return
 	}
+	// Adds binary dir to $PATH env directly.
+	if i.AddBinDirToPath {
+		pathValue := i.preparePathValue(currentPath)
+		if pathValue != "" {
+			em := envs.NewEnvManager()
+			em.AddToPath(pathValue)
+		}
+		return // Do not create symbolics in .vm/bin any more.
+	}
+
+	// Or creates symbolics in .vm/bin/
 	i.removeOldSymbolic()
 	if i.BinDirGetter != nil && len(i.BinDirGetter(i.Version)) > 0 {
 		for _, bDir := range i.BinDirGetter(i.Version) {
@@ -258,6 +270,34 @@ func (i *Installer) CreateBinarySymbol() {
 	}
 }
 
+func (i *Installer) preparePathValue(currentPath string) (pathValue string) {
+	if i.BinDirGetter == nil {
+		pathValue = currentPath
+	} else {
+		pathList := []string{}
+		bdList := i.BinDirGetter(i.Version)
+
+		if len(bdList) == 0 {
+			pathList = append(pathList, currentPath)
+		} else {
+			for _, d := range bdList {
+				if len(d) == 0 {
+					pathList = append(pathList, currentPath)
+				} else {
+					pathList = append(pathList, filepath.Join(d...))
+				}
+			}
+		}
+		// join multi path value
+		sep := ":"
+		if runtime.GOOS == gutils.Windows {
+			sep = ";"
+		}
+		pathValue = strings.Join(pathList, sep)
+	}
+	return
+}
+
 func (i *Installer) createBinarySymbolForCurrentDir(currentPath string) {
 	dList, _ := os.ReadDir(currentPath)
 	for _, dd := range dList {
@@ -282,4 +322,14 @@ func (i *Installer) SetEnv() {
 		}
 	}
 	em.SetPath()
+}
+
+// TODO: delete version.
+func (i *Installer) DeleteVersion() {
+
+}
+
+// TODO: delete all.
+func (i *Installer) DeleteAll() {
+
 }
