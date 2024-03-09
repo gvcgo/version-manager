@@ -42,5 +42,6 @@ func main() {
 	// use.TestNeovim()
 	// use.TestNodejs()
 	// use.TestProtobuf()
-	use.TestRipgrep()
+	// use.TestRipgrep()
+	use.TestTypstLsp()
 }

@@ -2,7 +2,9 @@ package installer
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/archiver"
@@ -106,7 +108,11 @@ func (i *Installer) Download() (zipFilePath string) {
 		i.Fetcher.SetUrl(i.V.Url)
 	}
 	zipFilePath = filepath.Join(zipDir, filepath.Base(i.V.Url))
-	i.Fetcher.GetAndSaveFile(zipFilePath)
+	if i.BinaryRenameTo != "" {
+		i.Fetcher.GetAndSaveFile(zipFilePath, false)
+	} else {
+		i.Fetcher.GetAndSaveFile(zipFilePath)
+	}
 
 	// checksum
 	if i.V.Sum != "" && i.V.SumType != "" {
@@ -135,6 +141,24 @@ func (i *Installer) Unzip(zipFilePath string) {
 			}
 		} else {
 			handleUnzipFailedError(zipFilePath, err)
+		}
+	} else if i.BinaryRenameTo != "" {
+		binName := filepath.Base(zipFilePath)
+		if strings.Contains(binName, i.BinaryRenameTo) {
+			newName := i.BinaryRenameTo
+			if runtime.GOOS == gutils.Windows {
+				newName = i.BinaryRenameTo + ".exe"
+			}
+
+			os.MkdirAll(conf.GetVMTempDir(), os.ModePerm)
+			newPath := filepath.Join(conf.GetVMTempDir(), newName)
+			// copy and rename binary file to tmp dir.
+			if err := gutils.CopyAFile(zipFilePath, newPath); err != nil {
+				gprint.PrintError("Copy file %x to tmp dir failed: %+v", zipFilePath, err)
+			}
+			if runtime.GOOS != gutils.Windows {
+				exec.Command("chmod", "+x", newPath).Run()
+			}
 		}
 	}
 }
