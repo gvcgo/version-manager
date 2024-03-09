@@ -44,5 +44,6 @@ func main() {
 	// use.TestProtobuf()
 	// use.TestRipgrep()
 	// use.TestTypstLsp()
-	use.TestTypst()
+	// use.TestTypst()
+	use.TestVlangLsp()
 }
