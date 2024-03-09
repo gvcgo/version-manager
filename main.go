@@ -41,5 +41,6 @@ func main() {
 	// use.TestMaven()
 	// use.TestNeovim()
 	// use.TestNodejs()
-	use.TestProtobuf()
+	// use.TestProtobuf()
+	use.TestRipgrep()
 }
