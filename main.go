@@ -47,5 +47,6 @@ func main() {
 	// use.TestTypst()
 	// use.TestVlangLsp()
 	// use.TestVlang()
-	use.TestZig()
+	// use.TestZig()
+	use.TestZigLsp()
 }
