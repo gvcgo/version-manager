@@ -105,8 +105,7 @@ func (em *EnvManager) UnsetPath() {
 		return
 	}
 	if strings.Contains(value, binDir) {
-		value = strings.ReplaceAll(value, binDir, "")
-		value = strings.ReplaceAll(value, ";;", ";")
+		value = strings.ReplaceAll(strings.ReplaceAll(value, binDir, ""), ";;", ";")
 		err := em.Key.SetStringValue(PathEnvName, value)
 		if err != nil {
 			gprint.PrintError("Unset env $path failed: %s, %+v", binDir, err)
@@ -149,6 +148,52 @@ func (em *EnvManager) Unset(key string) {
 	if err != nil {
 		gprint.PrintError("Unset env '%s' failed: %+v", key, err)
 		return
+	}
+	em.broadcast()
+	em.CloseKey()
+}
+
+func (em *EnvManager) AddToPath(value string) {
+	if em.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
+
+	oldPathValue, _, err := em.Key.GetStringValue(PathEnvName)
+	if err != nil {
+		gprint.PrintError("Get env $path failed: %+v", err)
+		return
+	}
+	if !strings.Contains(oldPathValue, value) {
+		newPathValue := value + ";" + oldPathValue
+		err := em.Key.SetStringValue(PathEnvName, newPathValue)
+		if err != nil {
+			gprint.PrintError("Set env $path failed: %s, %+v", value, err)
+			return
+		}
+	}
+	em.broadcast()
+	em.CloseKey()
+}
+
+func (em *EnvManager) DeleteFromPath(value string) {
+	if em.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
+
+	oldPathValue, _, err := em.Key.GetStringValue(PathEnvName)
+	if err != nil {
+		gprint.PrintError("Get env $path failed: %+v", err)
+		return
+	}
+	if strings.Contains(oldPathValue, value) {
+		newPathValue := strings.ReplaceAll(strings.ReplaceAll(oldPathValue, value, ""), ";;", ";")
+		err := em.Key.SetStringValue(PathEnvName, newPathValue)
+		if err != nil {
+			gprint.PrintError("Unset env $path failed: %s, %+v", value, err)
+			return
+		}
 	}
 	em.broadcast()
 	em.CloseKey()

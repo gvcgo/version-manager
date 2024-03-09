@@ -117,3 +117,33 @@ func (em *EnvManager) UnSet(key string) {
 	}
 	os.WriteFile(shellFile, []byte(data), os.ModePerm)
 }
+
+// Adds new item to $PATH env.
+func (em *EnvManager) AddToPath(value string) {
+	shellFile := filepath.Join(conf.GetVersionManagerWorkDir(), ShellFileName)
+	content, _ := os.ReadFile(shellFile)
+	data := string(content)
+
+	envStr := fmt.Sprintf(`export PATH=%s;$PATH`, value)
+	if data == "" {
+		data = envStr
+	} else if !strings.Contains(data, envStr) {
+		data = data + "\n" + envStr
+	}
+	os.WriteFile(shellFile, []byte(data), os.ModePerm)
+	em.addShellFileToShellConfig()
+}
+
+// Deletes an item from $PATH env.
+func (em *EnvManager) DeleteFromPath(value string) {
+	shellFile := filepath.Join(conf.GetVersionManagerWorkDir(), ShellFileName)
+	content, _ := os.ReadFile(shellFile)
+	data := string(content)
+
+	envStr := fmt.Sprintf(`export PATH=%s;$PATH`, value)
+	if strings.Contains(data, envStr) {
+		data = strings.TrimSpace(strings.ReplaceAll(data, envStr, ""))
+	}
+	os.WriteFile(shellFile, []byte(data), os.ModePerm)
+	em.addShellFileToShellConfig()
+}
