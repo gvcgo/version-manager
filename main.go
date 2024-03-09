@@ -48,5 +48,6 @@ func main() {
 	// use.TestVlangLsp()
 	// use.TestVlang()
 	// use.TestZig()
-	use.TestZigLsp()
+	// use.TestZigLsp()
+	use.TestKotlin()
 }
