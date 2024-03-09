@@ -2,7 +2,6 @@ package installer
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -27,14 +26,13 @@ type Env struct {
 	Value string
 }
 
-func DefaultDecorator(dUrl string, ft *request.Fetcher) string {
+var DefaultDecorator = func(dUrl string, ft *request.Fetcher) string {
 	// proxy
 	pxy := os.Getenv(conf.VMProxyEnvName)
-	if gutils.VerifyUrls(pxy) || strings.Contains(dUrl, "://") {
+	if gutils.VerifyUrls(pxy) || strings.Contains(pxy, "://") {
 		ft.Proxy = pxy
 		return dUrl
 	}
-	// reverse proxy
 	return conf.DecorateUrl(dUrl)
 }
 
@@ -52,6 +50,7 @@ type Installer struct {
 	EnvGetter          func(appName, version string) []Env           // Envs to set
 	DUrlDecorator      func(dUrl string, ft *request.Fetcher) string // Download url decorator
 	StoreMultiVersions bool
+	ForceReDownload    bool
 }
 
 func NewInstaller(appName, version string) (i *Installer) {
@@ -108,11 +107,7 @@ func (i *Installer) Download() (zipFilePath string) {
 		i.Fetcher.SetUrl(i.V.Url)
 	}
 	zipFilePath = filepath.Join(zipDir, filepath.Base(i.V.Url))
-	if i.BinaryRenameTo != "" {
-		i.Fetcher.GetAndSaveFile(zipFilePath, false)
-	} else {
-		i.Fetcher.GetAndSaveFile(zipFilePath)
-	}
+	i.Fetcher.GetAndSaveFile(zipFilePath, i.ForceReDownload)
 
 	// checksum
 	if i.V.Sum != "" && i.V.SumType != "" {
@@ -157,7 +152,8 @@ func (i *Installer) Unzip(zipFilePath string) {
 				gprint.PrintError("Copy file %x to tmp dir failed: %+v", zipFilePath, err)
 			}
 			if runtime.GOOS != gutils.Windows {
-				exec.Command("chmod", "+x", newPath).Run()
+				// add previlledge for exectution.
+				gutils.ExecuteSysCommand(false, "", "chmod", "+x", newPath)
 			}
 		}
 	}
@@ -242,6 +238,10 @@ func (i *Installer) CreateBinarySymbol() {
 				for _, dd := range dList {
 					if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
 						fPath := filepath.Join(d, dd.Name())
+						if runtime.GOOS != gutils.Windows {
+							// add previlledge for exectution.
+							gutils.ExecuteSysCommand(false, "", "chmod", "+x", fPath)
+						}
 						symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
 						utils.SymbolicLink(fPath, symPath)
 						i.saveSymbolicInfo(dd.Name())
@@ -254,6 +254,10 @@ func (i *Installer) CreateBinarySymbol() {
 		for _, dd := range dList {
 			if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
 				fPath := filepath.Join(currentPath, dd.Name())
+				if runtime.GOOS != gutils.Windows {
+					// add previlledge for exectution.
+					gutils.ExecuteSysCommand(false, "", "chmod", "+x", fPath)
+				}
 				symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
 				utils.SymbolicLink(fPath, symPath)
 				i.saveSymbolicInfo(dd.Name())

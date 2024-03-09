@@ -23,6 +23,7 @@ var TypstLspInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 }
 
 func TestTypstLsp() {

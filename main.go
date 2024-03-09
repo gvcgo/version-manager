@@ -43,5 +43,6 @@ func main() {
 	// use.TestNodejs()
 	// use.TestProtobuf()
 	// use.TestRipgrep()
-	use.TestTypstLsp()
+	// use.TestTypstLsp()
+	use.TestTypst()
 }
