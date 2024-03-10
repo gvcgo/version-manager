@@ -40,6 +40,9 @@ func DecorateUrl(dUrl string) string {
 
 /*
 Installation directories.
+
+Example:
+export VM_APP_INSTALL_DIR="~/.vm/"
 */
 const (
 	VMWorkDirEnvName string = "VM_APP_INSTALL_DIR"
