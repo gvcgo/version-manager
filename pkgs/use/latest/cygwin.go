@@ -1,1 +1,5 @@
 package latest
+
+/*
+Cygwin installer.
+*/

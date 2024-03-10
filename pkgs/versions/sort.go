@@ -132,3 +132,6 @@ func SortVersion(vs []string) []string {
 	}
 	return QuickSort(vList)
 }
+
+// TODO: quick sort.
+// TODO: string.
