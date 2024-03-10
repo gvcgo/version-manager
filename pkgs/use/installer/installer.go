@@ -49,6 +49,7 @@ type Installer struct {
 	FlagFileGetter     func() []string                               // Flags to find home dir of an app
 	EnvGetter          func(appName, version string) []Env           // Envs to set
 	DUrlDecorator      func(dUrl string, ft *request.Fetcher) string // Download url decorator
+	PostInstall        func(appName, version string)
 	StoreMultiVersions bool
 	ForceReDownload    bool
 	AddBinDirToPath    bool
@@ -322,6 +323,11 @@ func (i *Installer) SetEnv() {
 		}
 	}
 	em.SetPath()
+
+	// PostInstall
+	if i.PostInstall != nil {
+		i.PostInstall(i.AppName, i.Version)
+	}
 }
 
 // TODO: delete version.

@@ -37,7 +37,6 @@ var ArchHandlerList = map[string]func(archType, osType string) string{
 	"gsudo":      ToAnyArch,
 	"maven":      ToAnyArch,
 	"neovim":     ToUniverseForMac,
-	"php":        ToUnixArch,
 	"python":     ToAnyArch,
 	"rust":       ToAnyArch,
 	"sdkmanager": ToAnyArch,
@@ -66,7 +65,6 @@ var OsHandlerList = map[string]func(archType, osType string) string{
 	"gradle": ToAnyOs,
 	"gsudo":  ToWindowsOnly,
 	"maven":  ToAnyOs,
-	"php":    ToUnixOs,
 	"python": ToAnyOs,
 	"rust":   ToUnixOs,
 }

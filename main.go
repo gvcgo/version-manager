@@ -50,5 +50,6 @@ func main() {
 	// use.TestZig()
 	// use.TestZigLsp()
 	// use.TestKotlin()
-	use.TestJdk()
+	// use.TestJdk()
+	use.TestPHP()
 }
