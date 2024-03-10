@@ -25,31 +25,10 @@ import (
 	"os"
 
 	"github.com/gvcgo/version-manager/pkgs/conf"
-	"github.com/gvcgo/version-manager/pkgs/use"
+	"github.com/gvcgo/version-manager/pkgs/use/multi"
 )
 
 func main() {
 	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
-	// use.TestGo()
-	// use.TestBun()
-	// use.TestDeno()
-	// use.TestFd()
-	// use.TestFlutter()
-	// use.TestFzF()
-	// use.TestGradle()
-	// use.TestJulia()
-	// use.TestMaven()
-	// use.TestNeovim()
-	// use.TestNodejs()
-	// use.TestProtobuf()
-	// use.TestRipgrep()
-	// use.TestTypstLsp()
-	// use.TestTypst()
-	// use.TestVlangLsp()
-	// use.TestVlang()
-	// use.TestZig()
-	// use.TestZigLsp()
-	// use.TestKotlin()
-	// use.TestJdk()
-	use.TestPHP()
+	multi.RunInstaller(multi.VersionKeeper["php"])
 }
