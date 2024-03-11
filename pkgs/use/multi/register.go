@@ -20,6 +20,11 @@ type VersionManager interface {
 	CreateVersionSymbol()
 	CreateBinarySymbol()
 	SetEnv()
+	GetInstall() func(appName, version, zipFilePath string)
+	InstallApp(zipFilePath string)
+	UnInstallApp()
+	DeleteVersion()
+	DeleteAll()
 }
 
 // TODO: use mirror url in China.
@@ -594,6 +599,19 @@ var ZigInstaller = &installer.Installer{
 	StoreMultiVersions: true,
 }
 
+// TODO: git for windows.
+// TODO: gsudo for windows.
+
+/*
+Only latest version.
+TODO: cygwin
+TODO: msys2
+TODO: rustup
+TODO: sdkmanager
+TODO: miniconda
+TODO: vscode
+*/
+
 func init() {
 	VersionKeeper["bun"] = BunInstaller
 	VersionKeeper["deno"] = DenoInstaller
@@ -623,8 +641,13 @@ func init() {
 func RunInstaller(manager VersionManager) {
 	zf := manager.Download()
 	manager.Unzip(zf)
-	manager.Copy()
-	manager.CreateVersionSymbol()
-	manager.CreateBinarySymbol()
-	manager.SetEnv()
+	if manager.GetInstall() != nil {
+		manager.InstallApp(zf) // customed installation.
+	} else {
+		// ordinary installation.
+		manager.Copy()
+		manager.CreateVersionSymbol()
+		manager.CreateBinarySymbol()
+		manager.SetEnv()
+	}
 }

@@ -49,10 +49,13 @@ type Installer struct {
 	FlagFileGetter     func() []string                               // Flags to find home dir of an app
 	EnvGetter          func(appName, version string) []Env           // Envs to set
 	DUrlDecorator      func(dUrl string, ft *request.Fetcher) string // Download url decorator
-	PostInstall        func(appName, version string)
+	PostInstall        func(appName, version string)                 // post install hook
+	Install            func(appName, version, zipFileName string)    // customed installation.
+	UnInstall          func(appName, version string)                 // customed uninstallation.
 	StoreMultiVersions bool
 	ForceReDownload    bool
 	AddBinDirToPath    bool
+	LatestVersionOnly  bool
 }
 
 func NewInstaller(appName, version string) (i *Installer) {
@@ -90,8 +93,27 @@ func (i *Installer) SearchVersion() {
 	}
 }
 
+func (i *Installer) SearchLatestVersion() {
+	if i.Searcher == nil {
+		i.Searcher = search.NewSearcher()
+	}
+	vf := i.Searcher.GetVersions(i.AppName)
+	if v, ok := vf["latest"]; ok {
+		i.V = &v[0]
+		return
+	}
+	for _, v := range vf {
+		i.V = &v[0]
+		return
+	}
+}
+
 func (i *Installer) Download() (zipFilePath string) {
-	i.SearchVersion()
+	if !i.LatestVersionOnly {
+		i.SearchVersion()
+	} else {
+		i.SearchLatestVersion()
+	}
 	if i.V == nil {
 		return
 	}
@@ -117,6 +139,10 @@ func (i *Installer) Download() (zipFilePath string) {
 			zipFilePath = ""
 			os.RemoveAll(zipFilePath) // checksum failed.
 		}
+	}
+	if zipFilePath == "" {
+		gprint.PrintError("Failed to download file: %s", i.V.Url)
+		os.Exit(1)
 	}
 	return
 }
@@ -341,6 +367,24 @@ func (i *Installer) SetEnv() {
 	// PostInstall
 	if i.PostInstall != nil {
 		i.PostInstall(i.AppName, i.Version)
+	}
+}
+
+func (i *Installer) GetInstall() func(appName, version, zipFileName string) {
+	return i.Install
+}
+
+// customed installation.
+func (i *Installer) InstallApp(zipFilePath string) {
+	if i.Install == nil {
+		i.Install(i.AppName, i.Version, zipFilePath)
+	}
+}
+
+// customed uninstall.
+func (i *Installer) UnInstallApp() {
+	if i.UnInstall == nil {
+		i.UnInstall(i.AppName, i.Version)
 	}
 }
 

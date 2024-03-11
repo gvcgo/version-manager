@@ -1,5 +1,0 @@
-package latest
-
-/*
-Cygwin installer.
-*/
