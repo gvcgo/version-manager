@@ -606,8 +606,23 @@ var ZigInstaller = &installer.Installer{
 Only latest version.
 TODO: cygwin
 TODO: msys2
-TODO: rustup
 TODO: sdkmanager
+*/
+var RustupInstaller = &installer.Installer{
+	AppName:        "rustup",
+	Version:        "latest",
+	Fetcher:        conf.GetFetcher(),
+	IsZipFile:      false,
+	BinaryRenameTo: "rustup-init",
+	FlagFileGetter: func() []string {
+		return []string{"rustup"}
+	},
+	DUrlDecorator:   installer.DefaultDecorator,
+	ForceReDownload: false,
+}
+
+/*
+customed installation.
 TODO: miniconda
 TODO: vscode
 */
@@ -629,6 +644,7 @@ func init() {
 	VersionKeeper["php"] = PHPInstaller
 	VersionKeeper["protobuf"] = ProtobufInstaller
 	VersionKeeper["ripgrep"] = RipgrepInstaller
+	VersionKeeper["rustup"] = RustupInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst"] = TypstInstaller

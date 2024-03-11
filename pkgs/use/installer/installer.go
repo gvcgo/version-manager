@@ -55,7 +55,6 @@ type Installer struct {
 	StoreMultiVersions bool
 	ForceReDownload    bool
 	AddBinDirToPath    bool
-	LatestVersionOnly  bool
 }
 
 func NewInstaller(appName, version string) (i *Installer) {
@@ -109,7 +108,7 @@ func (i *Installer) SearchLatestVersion() {
 }
 
 func (i *Installer) Download() (zipFilePath string) {
-	if !i.LatestVersionOnly {
+	if i.StoreMultiVersions {
 		i.SearchVersion()
 	} else {
 		i.SearchLatestVersion()

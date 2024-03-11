@@ -30,5 +30,5 @@ import (
 
 func main() {
 	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
-	multi.RunInstaller(multi.VersionKeeper["tree-sitter"])
+	multi.RunInstaller(multi.VersionKeeper["rustup"])
 }
