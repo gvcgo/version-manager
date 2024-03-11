@@ -442,6 +442,19 @@ var RipgrepInstaller = &installer.Installer{
 	StoreMultiVersions: true,
 }
 
+var TreesitterInstaller = &installer.Installer{
+	AppName:        "tree-sitter",
+	Version:        "0.22.1",
+	Fetcher:        conf.GetFetcher(),
+	IsZipFile:      true,
+	BinaryRenameTo: "tree-sitter",
+	FlagFileGetter: func() []string {
+		return []string{"tree-sitter"}
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+}
+
 var TypstLspInstaller = &installer.Installer{
 	AppName:        "typst-lsp",
 	Version:        "0.12.1",
@@ -588,6 +601,7 @@ func init() {
 	VersionKeeper["php"] = PHPInstaller
 	VersionKeeper["protobuf"] = ProtobufInstaller
 	VersionKeeper["ripgrep"] = RipgrepInstaller
+	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst"] = TypstInstaller
 	VersionKeeper["v-analyzer"] = VlangLspInstaller

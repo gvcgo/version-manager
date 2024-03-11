@@ -130,7 +130,11 @@ func (i *Installer) Unzip(zipFilePath string) {
 	if i.IsZipFile {
 		tempDir := conf.GetVMTempDir()
 		// use archiver.
-		if arch, err := archiver.NewArchiver(zipFilePath, tempDir, true); err == nil {
+		useArchiver := true
+		if strings.HasSuffix(zipFilePath, ".gz") && !strings.HasSuffix(zipFilePath, ".tar.gz") {
+			useArchiver = false
+		}
+		if arch, err := archiver.NewArchiver(zipFilePath, tempDir, useArchiver); err == nil {
 			_, err = arch.UnArchive()
 			if err != nil {
 				handleUnzipFailedError(zipFilePath, err)
@@ -139,7 +143,17 @@ func (i *Installer) Unzip(zipFilePath string) {
 		} else {
 			handleUnzipFailedError(zipFilePath, err)
 		}
-	} else if i.BinaryRenameTo != "" {
+
+		// Rename binary in temp dir.
+		if i.BinaryRenameTo != "" {
+			dList, _ := os.ReadDir(tempDir)
+			for _, d := range dList {
+				if !d.IsDir() && strings.Contains(d.Name(), i.BinaryRenameTo) {
+					os.Rename(filepath.Join(tempDir, d.Name()), filepath.Join(tempDir, i.BinaryRenameTo))
+				}
+			}
+		}
+	} else if !i.IsZipFile && i.BinaryRenameTo != "" {
 		binName := filepath.Base(zipFilePath)
 		if strings.Contains(binName, i.BinaryRenameTo) {
 			newName := i.BinaryRenameTo
