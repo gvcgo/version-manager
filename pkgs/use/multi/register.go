@@ -13,12 +13,21 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/use/installer"
 )
 
+type VersionManager interface {
+	Download() (zipFilePath string)
+	Unzip(zipFilePath string)
+	Copy()
+	CreateVersionSymbol()
+	CreateBinarySymbol()
+	SetEnv()
+}
+
 // TODO: use mirror url in China.
 
 /*
 Keeps multi versions.
 */
-var VersionKeeper = map[string]*installer.Installer{}
+var VersionKeeper = map[string]VersionManager{}
 
 var BunInstaller = &installer.Installer{
 	AppName:   "bun",
@@ -453,6 +462,7 @@ var TreesitterInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 }
 
 var TypstLspInstaller = &installer.Installer{
@@ -610,11 +620,11 @@ func init() {
 	VersionKeeper["zig"] = ZigInstaller
 }
 
-func RunInstaller(ins *installer.Installer) {
-	zf := ins.Download()
-	ins.Unzip(zf)
-	ins.Copy()
-	ins.CreateVersionSymbol()
-	ins.CreateBinarySymbol()
-	ins.SetEnv()
+func RunInstaller(manager VersionManager) {
+	zf := manager.Download()
+	manager.Unzip(zf)
+	manager.Copy()
+	manager.CreateVersionSymbol()
+	manager.CreateBinarySymbol()
+	manager.SetEnv()
 }
