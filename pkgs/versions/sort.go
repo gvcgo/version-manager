@@ -13,31 +13,32 @@ type Item interface {
 	String() string
 }
 
-func QSort(iList []Item) (r []Item) {
-	if len(iList) < 1 {
-		return iList
-	}
-	mid := iList[0]
-	left := make([]Item, 0)
-	right := make([]Item, 0)
-	for i := 1; i < len(iList); i++ {
-		// from the latest to the oldest.
-		if !mid.Greater(iList[i]) {
-			left = append(left, iList[i])
-		} else {
-			right = append(right, iList[i])
+func partition(iList []Item, left int, right int) (mid int) {
+	pivot := iList[right]
+	i := left
+	j := left
+	for j < right {
+		if iList[j].Greater(pivot) {
+			iList[i], iList[j] = iList[j], iList[i]
+			i++
 		}
+		j++
 	}
-	left, right = QSort(left), QSort(right)
-	r = append(r, left...)
-	r = append(r, mid)
-	r = append(r, right...)
-	return r
+	iList[i], iList[right] = iList[right], iList[i]
+	return i
+}
+
+func quickSort(iList []Item, left int, right int) {
+	if left < right {
+		mid := partition(iList, left, right)
+		quickSort(iList, left, mid-1)
+		quickSort(iList, mid+1, right)
+	}
 }
 
 func QuickSort(iList []Item) (r []string) {
-	items := QSort(iList)
-	for _, itm := range items {
+	quickSort(iList, 0, len(iList)-1)
+	for _, itm := range iList {
 		r = append(r, itm.String())
 	}
 	return
@@ -133,5 +134,4 @@ func SortVersion(vs []string) []string {
 	return QuickSort(vList)
 }
 
-// TODO: quick sort.
 // TODO: string.

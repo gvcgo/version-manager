@@ -13,6 +13,8 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/use/installer"
 )
 
+// TODO: use mirror url in China.
+
 /*
 Keeps multi versions.
 */
