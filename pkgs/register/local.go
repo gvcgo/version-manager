@@ -31,7 +31,7 @@ func ShowInstalled(appName string) {
 	}
 
 	columns := []gtable.Column{
-		{Title: fmt.Sprintf("installed version list for %v", appName), Width: 60},
+		{Title: fmt.Sprintf("installed version list for %v", appName), Width: 75},
 	}
 
 	rows := []gtable.Row{}
@@ -46,8 +46,8 @@ func ShowInstalled(appName string) {
 		gtable.WithColumns(columns),
 		gtable.WithRows(rows),
 		gtable.WithFocused(true),
-		gtable.WithHeight(25),
-		gtable.WithWidth(100),
+		gtable.WithHeight(15),
+		gtable.WithWidth(80),
 	)
 	t.Run()
 }
