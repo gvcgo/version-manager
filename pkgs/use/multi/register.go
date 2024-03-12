@@ -601,6 +601,8 @@ var ZigInstaller = &installer.Installer{
 	StoreMultiVersions: true,
 }
 
+var PythonInstaller = installer.NewCondaInstaller()
+
 /*
 Windows only.
 or
@@ -797,6 +799,7 @@ func init() {
 	VersionKeeper["node"] = NodejsInstaller
 	VersionKeeper["php"] = PHPInstaller
 	VersionKeeper["protobuf"] = ProtobufInstaller
+	VersionKeeper["python"] = PythonInstaller
 	VersionKeeper["ripgrep"] = RipgrepInstaller
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
@@ -814,6 +817,7 @@ func RunInstaller(manager VersionManager) {
 	zf := manager.Download()
 	manager.Unzip(zf)
 	if manager.GetInstall() != nil {
+		fmt.Println("xxxx ")
 		manager.InstallApp(zf) // customed installation.
 	} else {
 		// ordinary installation.

@@ -30,5 +30,7 @@ import (
 
 func main() {
 	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
-	multi.RunInstaller(multi.VersionKeeper["miniconda"])
+	multi.RunInstaller(multi.VersionKeeper["python"])
+	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
+	// fmt.Println(err)
 }
