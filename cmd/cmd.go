@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/register"
 	"github.com/spf13/cobra"
@@ -90,7 +91,7 @@ func (c *Cli) initiate() {
 		Use:     "uninstall",
 		Aliases: []string{"U"},
 		GroupID: GroupID,
-		Short:   "Uninstall a version or an app.",
+		Short:   "Uninstalls a version or an app.",
 		Long:    "Example: 1. vm U go@all; 2. vm U go@1.22.1",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 || !strings.Contains(args[0], "@") {
@@ -123,6 +124,54 @@ func (c *Cli) initiate() {
 				return
 			}
 			register.ShowInstalled(args[0])
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "set-proxy",
+		Aliases: []string{"sp"},
+		GroupID: GroupID,
+		Short:   "Sets proxy for version manager.",
+		Long:    "Example: vm sp http://127.0.0.1:2023",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+			pUrl := args[0]
+			conf.SaveConfigFile(&conf.Config{ProxyURI: pUrl})
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "set-reverse-proxy",
+		Aliases: []string{"sr", "srp"},
+		GroupID: GroupID,
+		Short:   "Sets reverse proxy for version manager.",
+		Long:    "Example: vm sr https://gvc.1710717.xyz/proxy/",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+			rPxy := args[0]
+			conf.SaveConfigFile(&conf.Config{ReverseProxy: rPxy})
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "set-app-dir",
+		Aliases: []string{"sd", "sad"},
+		GroupID: GroupID,
+		Short:   "Sets installation dir for apps.",
+		Long:    "Example: vm sd <where-to-install-apps>.",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+			appDir := args[0]
+			conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
 		},
 	})
 }
