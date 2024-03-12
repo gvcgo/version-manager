@@ -12,7 +12,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/envs"
-	"github.com/gvcgo/version-manager/pkgs/search"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
@@ -39,7 +38,7 @@ var DefaultDecorator = func(dUrl string, ft *request.Fetcher) string {
 type Installer struct {
 	AppName            string
 	Version            string
-	Searcher           *search.Searcher
+	Searcher           *Searcher
 	Fetcher            *request.Fetcher
 	V                  *versions.VersionItem
 	IsZipFile          bool
@@ -62,7 +61,7 @@ func NewInstaller(appName, version string) (i *Installer) {
 	i = &Installer{
 		AppName:  appName,
 		Version:  version,
-		Searcher: search.NewSearcher(),
+		Searcher: NewSearcher(),
 		Fetcher:  conf.GetFetcher(),
 	}
 	return
@@ -71,7 +70,7 @@ func NewInstaller(appName, version string) (i *Installer) {
 // Searches version files for an application.
 func (i *Installer) SearchVersion() {
 	if i.Searcher == nil {
-		i.Searcher = search.NewSearcher()
+		i.Searcher = NewSearcher()
 	}
 	vf := i.Searcher.GetVersions(i.AppName)
 	vs := make([]string, 0)
@@ -95,7 +94,7 @@ func (i *Installer) SearchVersion() {
 
 func (i *Installer) SearchLatestVersion() {
 	if i.Searcher == nil {
-		i.Searcher = search.NewSearcher()
+		i.Searcher = NewSearcher()
 	}
 	vf := i.Searcher.GetVersions(i.AppName)
 	if v, ok := vf["latest"]; ok {

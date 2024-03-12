@@ -1,16 +1,13 @@
-package search
+package installer
 
 import (
-	"strings"
+	"fmt"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/version-manager/pkgs/tui"
+	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
 
-/*
-Show available versions for an app.
-*/
 type Searcher struct {
 	VersionInfo *versions.VersionInfo
 }
@@ -40,5 +37,25 @@ func (s *Searcher) Search(appName string) {
 		gprint.PrintWarning("No versions found!")
 		return
 	}
-	tui.ShowAsPortView(appName, strings.Join(vl, "\n"))
+
+	columns := []gtable.Column{
+		{Title: fmt.Sprintf("%v version", appName), Width: 60},
+	}
+
+	rows := []gtable.Row{}
+
+	for _, verName := range vl {
+		rows = append(rows, gtable.Row{
+			gprint.CyanStr(verName),
+		})
+	}
+
+	t := gtable.NewTable(
+		gtable.WithColumns(columns),
+		gtable.WithRows(rows),
+		gtable.WithFocused(true),
+		gtable.WithHeight(25),
+		gtable.WithWidth(100),
+	)
+	t.Run()
 }

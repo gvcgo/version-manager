@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/register"
-	"github.com/gvcgo/version-manager/pkgs/search"
 	"github.com/spf13/cobra"
 )
 
@@ -44,7 +44,7 @@ func (c *Cli) initiate() {
 				cmd.Help()
 				return
 			}
-			sch := search.NewSearcher()
+			sch := installer.NewSearcher()
 			sch.Search(args[0])
 		},
 	})

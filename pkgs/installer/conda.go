@@ -9,7 +9,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/envs"
-	"github.com/gvcgo/version-manager/pkgs/search"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
@@ -25,7 +24,7 @@ Use miniconda as installer.
 type CondaInstaller struct {
 	AppName   string
 	Version   string
-	Searcher  *search.Searcher
+	Searcher  *Searcher
 	V         *versions.VersionItem
 	Install   func(appName, version, zipFilePath string)
 	UnInstall func(appName, version string)
@@ -35,7 +34,7 @@ func NewCondaInstaller() *CondaInstaller {
 	c := &CondaInstaller{
 		AppName:  "python",
 		Version:  "3.12.0",
-		Searcher: search.NewSearcher(),
+		Searcher: NewSearcher(),
 	}
 	c.Install = func(appName, version, zipFilePath string) {
 		if c.V == nil {
@@ -75,7 +74,7 @@ func NewCondaInstaller() *CondaInstaller {
 
 func (c *CondaInstaller) SearchVersion() {
 	if c.Searcher == nil {
-		c.Searcher = search.NewSearcher()
+		c.Searcher = NewSearcher()
 	}
 	vf := c.Searcher.GetVersions(c.AppName)
 	vs := make([]string, 0)
