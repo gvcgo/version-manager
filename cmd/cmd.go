@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/version-manager/pkgs/register"
 	"github.com/gvcgo/version-manager/pkgs/search"
 	"github.com/spf13/cobra"
 )
@@ -54,7 +55,7 @@ func (c *Cli) initiate() {
 		GroupID: GroupID,
 		Short:   "Shows the supported applications.",
 		Run: func(cmd *cobra.Command, args []string) {
-			search.ShowAppList()
+			register.ShowAppList()
 		},
 	})
 }

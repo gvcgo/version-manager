@@ -27,6 +27,7 @@ type VersionManager interface {
 	UnInstallApp()
 	DeleteVersion()
 	DeleteAll()
+	ClearCache()
 }
 
 // TODO: use mirror url in China.
@@ -820,7 +821,6 @@ func RunInstaller(manager VersionManager) {
 	zf := manager.Download()
 	manager.Unzip(zf)
 	if manager.GetInstall() != nil {
-		fmt.Println("xxxx ")
 		manager.InstallApp(zf) // customed installation.
 	} else {
 		// ordinary installation.
@@ -829,4 +829,8 @@ func RunInstaller(manager VersionManager) {
 		manager.CreateBinarySymbol()
 		manager.SetEnv()
 	}
+}
+
+func RunUnInstaller(manager VersionManager) {
+	manager.UnInstallApp()
 }

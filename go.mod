@@ -6,6 +6,7 @@ require (
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.8.0
+	github.com/gogf/gf/v2 v2.6.1
 	github.com/gvcgo/goutils v0.8.7
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/sys v0.15.0
@@ -22,7 +23,6 @@ require (
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
-	github.com/gogf/gf/v2 v2.6.1 // indirect
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/gvcgo/xtractr v0.0.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect

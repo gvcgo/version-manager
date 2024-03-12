@@ -125,3 +125,5 @@ func (c *CondaInstaller) UnInstallApp() {
 }
 func (c *CondaInstaller) DeleteVersion() {}
 func (c *CondaInstaller) DeleteAll()     {}
+
+func (c *CondaInstaller) ClearCache() {}

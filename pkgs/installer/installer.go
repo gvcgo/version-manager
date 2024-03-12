@@ -394,25 +394,69 @@ func (i *Installer) InstallApp(zipFilePath string) {
 
 // customed uninstall.
 func (i *Installer) UnInstallApp() {
-	if i.UnInstall != nil {
-		i.UnInstall(i.AppName, i.Version)
+	if i.Version == "all" {
+		if i.UnInstall != nil {
+			i.UnInstall(i.AppName, i.Version)
+		} else {
+			i.DeleteAll()
+		}
+	} else {
+		i.DeleteVersion()
 	}
 }
 
-// TODO: delete version.
+// Removes a version.
 func (i *Installer) DeleteVersion() {
-	// delete symbolics.
+	// whether in use or not.
+	vDir := conf.GetVMVersionsDir(i.AppName)
+	if dest, err := os.Readlink(filepath.Join(vDir, i.AppName)); err == nil {
+		version := filepath.Base(dest)
+		if version == i.Version {
+			gprint.PrintWarning("version %s is currently in use.", version)
+			return
+		}
+	}
 
-	// delete version dir.
-
-	// delete env.
+	// remove a version
+	versionDir := filepath.Join(vDir, i.Version)
+	if err := os.RemoveAll(versionDir); err != nil {
+		gprint.PrintError("failed to remove version %s: %+v", i.Version, err)
+	}
 }
 
-// TODO: delete all.
+// Removes all installed versions of an app.
 func (i *Installer) DeleteAll() {
 	// delete symbolics.
+	infoFile := filepath.Join(conf.GetVMVersionsDir(i.AppName), SymbolicsInfoFileName)
+	data, _ := os.ReadFile(infoFile)
+	binDir := conf.GetAppBinDir()
+	for _, symbolicName := range strings.Split(string(data), "\n") {
+		symbolicPath := filepath.Join(binDir, symbolicName)
+		if ok, _ := gutils.PathIsExist(symbolicPath); ok {
+			os.Remove(symbolicPath)
+		}
+	}
 
 	// delete version dir.
+	vDir := conf.GetVMVersionsDir(i.AppName)
+	os.RemoveAll(vDir)
 
-	// delete env.
+	// delete env
+	em := envs.NewEnvManager()
+	if i.EnvGetter != nil {
+		for _, env := range i.EnvGetter(i.AppName, i.Version) {
+			em.UnSet(env.Name)
+		}
+	}
+	if i.AddBinDirToPath {
+		pathValue := i.preparePathValue(filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName))
+		if pathValue != "" {
+			em := envs.NewEnvManager()
+			em.DeleteFromPath(pathValue)
+		}
+	}
+}
+
+func (i *Installer) ClearCache() {
+	os.RemoveAll(conf.GetZipFileDir(i.AppName))
 }

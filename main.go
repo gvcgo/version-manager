@@ -33,4 +33,6 @@ func main() {
 	register.RunInstaller(register.VersionKeeper["python"])
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)
+	// l, _ := os.Readlink(filepath.Join(conf.GetVMVersionsDir("python"), "python"))
+	// fmt.Println(l)
 }
