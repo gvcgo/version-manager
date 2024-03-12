@@ -776,7 +776,10 @@ var MinicondaInstaller = &installer.Installer{
 	},
 }
 
-var VSCodeInstaller = &installer.Installer{}
+var VSCodeInstaller = &installer.Installer{
+	AppName: "vscode",
+	Version: "latest",
+}
 
 func init() {
 	VersionKeeper["bun"] = BunInstaller
