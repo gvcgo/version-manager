@@ -25,12 +25,12 @@ import (
 	"os"
 
 	"github.com/gvcgo/version-manager/pkgs/conf"
-	"github.com/gvcgo/version-manager/pkgs/use/multi"
+	"github.com/gvcgo/version-manager/pkgs/register"
 )
 
 func main() {
 	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
-	multi.RunInstaller(multi.VersionKeeper["python"])
+	register.RunInstaller(register.VersionKeeper["python"])
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)
 }

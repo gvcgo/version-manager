@@ -1,4 +1,4 @@
-package multi
+package register
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/envs"
-	"github.com/gvcgo/version-manager/pkgs/use/installer"
+	"github.com/gvcgo/version-manager/pkgs/installer"
 )
 
 type VersionManager interface {

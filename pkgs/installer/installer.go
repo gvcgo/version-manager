@@ -401,10 +401,18 @@ func (i *Installer) UnInstallApp() {
 
 // TODO: delete version.
 func (i *Installer) DeleteVersion() {
+	// delete symbolics.
 
+	// delete version dir.
+
+	// delete env.
 }
 
 // TODO: delete all.
 func (i *Installer) DeleteAll() {
+	// delete symbolics.
 
+	// delete version dir.
+
+	// delete env.
 }
