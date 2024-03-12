@@ -1,10 +1,15 @@
 package cmd
 
 import (
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/envs"
 	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/register"
 	"github.com/spf13/cobra"
@@ -172,6 +177,31 @@ func (c *Cli) initiate() {
 			}
 			appDir := args[0]
 			conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "install-self",
+		Aliases: []string{"i", "is"},
+		GroupID: GroupID,
+		Short:   "Installs version manager.",
+		Run: func(cmd *cobra.Command, args []string) {
+			vmBinName := "vm"
+			if runtime.GOOS == gutils.Windows {
+				vmBinName = "vm.exe"
+			}
+			binPath := filepath.Join(conf.GetManagerDir(), vmBinName)
+			if ok, _ := gutils.PathIsExist(binPath); ok {
+				os.RemoveAll(binPath)
+			}
+			currentBinPath, _ := os.Executable()
+			if strings.HasSuffix(currentBinPath, vmBinName) {
+				gutils.CopyFile(currentBinPath, binPath)
+			}
+			em := envs.NewEnvManager()
+			em.AddToPath(conf.GetManagerDir())
+
+			// TODO: Set Proxy and Dir.
 		},
 	})
 }

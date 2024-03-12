@@ -37,10 +37,15 @@ type Config struct {
 	AppInstallationDir string `json:"app_installation_dir"`
 }
 
-func getConfPath() string {
+func GetManagerDir() string {
 	homeDir, _ := os.UserHomeDir()
 	managerDir := filepath.Join(homeDir, ".vm")
 	os.MkdirAll(managerDir, os.ModePerm) // create dir if not exist.
+	return managerDir
+}
+
+func getConfPath() string {
+	managerDir := GetManagerDir()
 	return filepath.Join(managerDir, "config.json")
 }
 
@@ -68,7 +73,6 @@ func LoadConfigFile() (c *Config) {
 
 func SaveConfigFile(c *Config) {
 	cfgPath := getConfPath()
-
 	oldCfg := &Config{}
 	if data, err := os.ReadFile(cfgPath); err == nil {
 		json.Unmarshal(data, oldCfg)
@@ -114,8 +118,7 @@ func DecorateUrl(dUrl string) string {
 func GetVersionManagerWorkDir() string {
 	d := os.Getenv(VMWorkDirEnvName)
 	if d == "" {
-		homeDir, _ := os.UserHomeDir()
-		d = filepath.Join(homeDir, ".vm")
+		d = GetManagerDir()
 	}
 	os.MkdirAll(d, os.ModePerm)
 	return d

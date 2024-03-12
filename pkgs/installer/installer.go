@@ -35,6 +35,8 @@ var DefaultDecorator = func(dUrl string, ft *request.Fetcher) string {
 	return conf.DecorateUrl(dUrl)
 }
 
+// TODO: create extra symbolics for app. Example: bunx for bun.
+
 type Installer struct {
 	AppName            string
 	Version            string

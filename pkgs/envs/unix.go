@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	ShellFileName string = "shell.sh"
+	ShellFileName string = "vm_env.sh"
 )
 
 /*
