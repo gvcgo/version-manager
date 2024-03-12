@@ -11,6 +11,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/envs"
 	"github.com/gvcgo/version-manager/pkgs/use/installer"
 )
 
@@ -688,6 +689,26 @@ var RustupInstaller = &installer.Installer{
 	ForceReDownload: true,
 }
 
+var SDKManagerInstaller = &installer.Installer{
+	AppName:   "sdkmanager",
+	Version:   "latest",
+	Fetcher:   conf.GetFetcher(),
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"bin", "lib"}
+	},
+	BinDirGetter: func(version string) [][]string {
+		return [][]string{
+			{"bin"},
+		}
+	},
+	AddBinDirToPath: true,
+}
+
+/*
+customed installation.
+TODO: vscode
+*/
 var RustInstaller = &installer.Installer{
 	AppName:    "rust",
 	Version:    "latest",
@@ -717,28 +738,41 @@ var RustInstaller = &installer.Installer{
 	},
 }
 
-var SDKManagerInstaller = &installer.Installer{
-	AppName:   "sdkmanager",
+var MinicondaInstaller = &installer.Installer{
+	AppName:   "miniconda",
 	Version:   "latest",
 	Fetcher:   conf.GetFetcher(),
-	IsZipFile: true,
-	FlagFileGetter: func() []string {
-		return []string{"bin", "lib"}
-	},
-	BinDirGetter: func(version string) [][]string {
-		return [][]string{
-			{"bin"},
+	IsZipFile: false,
+	Install: func(appName, version, zipFileName string) {
+		vDir := filepath.Join(conf.GetVMVersionsDir(appName), appName)
+		if ok, _ := gutils.PathIsExist(vDir); ok {
+			os.RemoveAll(vDir)
+		}
+		var err error
+		if runtime.GOOS != gutils.Windows {
+			// bash ~/miniconda.sh -b -p $HOME/miniconda
+			gutils.ExecuteSysCommand(false, "", "chmod", "+x", zipFileName)
+			_, err = gutils.ExecuteSysCommand(false, "", "bash", zipFileName, "-b", "-p", vDir)
+		} else {
+			// start /wait "" Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
+			_, err = gutils.ExecuteSysCommand(false, "",
+				"start", "/wait", "", zipFileName, "/InstallationType=JustMe",
+				"/RegisterPython=0", "/S", fmt.Sprintf("/D=%s", vDir))
+		}
+		if err != nil {
+			gprint.PrintError("Install %s failed.", appName)
+		} else {
+			binDir := filepath.Join(vDir, "bin")
+			if ok, _ := gutils.PathIsExist(binDir); ok {
+				em := envs.NewEnvManager()
+				em.AddToPath(binDir)
+			}
 		}
 	},
-	AddBinDirToPath: true,
+	UnInstall: func(appName, version string) {
+		// TODO: uninstall miniconda.
+	},
 }
-
-/*
-customed installation.
-TODO: miniconda
-TODO: vscode
-*/
-var MinicondaInstaller = &installer.Installer{}
 
 var VSCodeInstaller = &installer.Installer{}
 
@@ -757,6 +791,7 @@ func init() {
 	VersionKeeper["julia"] = JuliaInstaller
 	VersionKeeper["kotlin"] = KotlinInstaller
 	VersionKeeper["maven"] = MavenInstaller
+	VersionKeeper["miniconda"] = MinicondaInstaller
 	VersionKeeper["msys2"] = Msys2Installer
 	VersionKeeper["neovim"] = NeovimInstaller
 	VersionKeeper["node"] = NodejsInstaller
