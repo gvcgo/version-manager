@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/pkgs/conf"
@@ -601,6 +602,9 @@ var ZigInstaller = &installer.Installer{
 
 // TODO: git for windows.
 // TODO: gsudo for windows.
+var GitWinInstaller = &installer.Installer{}
+
+var GsudoWinInstaller = &installer.Installer{}
 
 /*
 Only latest version.
@@ -608,6 +612,10 @@ TODO: cygwin
 TODO: msys2
 TODO: sdkmanager
 */
+var CygwinInstaller = &installer.Installer{}
+
+var Msys2Installer = &installer.Installer{}
+
 var RustupInstaller = &installer.Installer{
 	AppName:        "rustup",
 	Version:        "latest",
@@ -618,14 +626,45 @@ var RustupInstaller = &installer.Installer{
 		return []string{"rustup"}
 	},
 	DUrlDecorator:   installer.DefaultDecorator,
-	ForceReDownload: false,
+	ForceReDownload: true,
 }
+
+var RustInstaller = &installer.Installer{
+	AppName:    "rust",
+	Version:    "latest",
+	Fetcher:    conf.GetFetcher(),
+	IsZipFile:  false,
+	NoDownload: true,
+	Install: func(appName, version, zipFileName string) {
+		rustDir := conf.GetVMVersionsDir(appName)
+		binDir := conf.GetAppBinDir()
+		rustupInitName := "rustup-init"
+		if runtime.GOOS == gutils.Windows {
+			rustupInitName += ".exe"
+		}
+		binPath := filepath.Join(binDir, rustupInitName)
+		if ok, _ := gutils.PathIsExist(binPath); ok {
+			os.Setenv("CARGO_HOME", filepath.Join(rustDir, "cargo"))
+			os.Setenv("RUSTUP_HOME", filepath.Join(rustDir, "rustups"))
+			if _, err := gutils.ExecuteSysCommand(false, "", binPath); err != nil {
+				gprint.PrintError("Execute %s failed.", rustupInitName)
+			}
+		} else {
+			gprint.PrintWarning("Please intall rustup-init first.")
+		}
+	},
+}
+
+var SDKManagerInstaller = &installer.Installer{}
 
 /*
 customed installation.
 TODO: miniconda
 TODO: vscode
 */
+var MinicondaInstaller = &installer.Installer{}
+
+var VSCodeInstaller = &installer.Installer{}
 
 func init() {
 	VersionKeeper["bun"] = BunInstaller
@@ -644,6 +683,7 @@ func init() {
 	VersionKeeper["php"] = PHPInstaller
 	VersionKeeper["protobuf"] = ProtobufInstaller
 	VersionKeeper["ripgrep"] = RipgrepInstaller
+	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller

@@ -52,9 +52,10 @@ type Installer struct {
 	PostInstall        func(appName, version string)                 // post install hook
 	Install            func(appName, version, zipFileName string)    // customed installation.
 	UnInstall          func(appName, version string)                 // customed uninstallation.
-	StoreMultiVersions bool
-	ForceReDownload    bool
-	AddBinDirToPath    bool
+	StoreMultiVersions bool                                          // installs only the latest version if false
+	ForceReDownload    bool                                          // force to redownload the cached zip file
+	AddBinDirToPath    bool                                          // uses $PATH instead of creating symbolics
+	NoDownload         bool                                          // diable download
 }
 
 func NewInstaller(appName, version string) (i *Installer) {
@@ -108,6 +109,9 @@ func (i *Installer) SearchLatestVersion() {
 }
 
 func (i *Installer) Download() (zipFilePath string) {
+	if i.NoDownload {
+		return
+	}
 	if i.StoreMultiVersions {
 		i.SearchVersion()
 	} else {
@@ -139,7 +143,7 @@ func (i *Installer) Download() (zipFilePath string) {
 			os.RemoveAll(zipFilePath) // checksum failed.
 		}
 	}
-	if zipFilePath == "" {
+	if zipFilePath == "" && i.Install == nil {
 		gprint.PrintError("Failed to download file: %s", i.V.Url)
 		os.Exit(1)
 	}
@@ -375,14 +379,14 @@ func (i *Installer) GetInstall() func(appName, version, zipFileName string) {
 
 // customed installation.
 func (i *Installer) InstallApp(zipFilePath string) {
-	if i.Install == nil {
+	if i.Install != nil {
 		i.Install(i.AppName, i.Version, zipFilePath)
 	}
 }
 
 // customed uninstall.
 func (i *Installer) UnInstallApp() {
-	if i.UnInstall == nil {
+	if i.UnInstall != nil {
 		i.UnInstall(i.AppName, i.Version)
 	}
 }
