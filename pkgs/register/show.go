@@ -27,9 +27,10 @@ func ShowAppList() {
 	rows := []gtable.Row{}
 
 	for _, appName := range al {
+		ver := VersionKeeper[appName]
 		rows = append(rows, gtable.Row{
 			gprint.CyanStr(appName),
-			gprint.GreenStr("... "),
+			gprint.GreenStr(ver.GetHomepage()),
 		})
 	}
 

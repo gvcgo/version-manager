@@ -28,6 +28,7 @@ type CondaInstaller struct {
 	V         *versions.VersionItem
 	Install   func(appName, version, zipFilePath string)
 	UnInstall func(appName, version string)
+	HomePage  string
 }
 
 func NewCondaInstaller() *CondaInstaller {
@@ -35,6 +36,7 @@ func NewCondaInstaller() *CondaInstaller {
 		AppName:  "python",
 		Version:  "3.12.0",
 		Searcher: NewSearcher(),
+		HomePage: "https://anaconda.org/conda-forge/python/files",
 	}
 	c.Install = func(appName, version, zipFilePath string) {
 		if c.V == nil {
@@ -126,3 +128,7 @@ func (c *CondaInstaller) DeleteVersion() {}
 func (c *CondaInstaller) DeleteAll()     {}
 
 func (c *CondaInstaller) ClearCache() {}
+
+func (c *CondaInstaller) GetHomepage() string {
+	return c.HomePage
+}

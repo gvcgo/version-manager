@@ -55,6 +55,7 @@ type Installer struct {
 	ForceReDownload    bool                                          // force to redownload the cached zip file
 	AddBinDirToPath    bool                                          // uses $PATH instead of creating symbolics
 	NoDownload         bool                                          // diable download
+	HomePage           string                                        // home page of the app
 }
 
 func NewInstaller(appName, version string) (i *Installer) {
@@ -458,4 +459,8 @@ func (i *Installer) DeleteAll() {
 
 func (i *Installer) ClearCache() {
 	os.RemoveAll(conf.GetZipFileDir(i.AppName))
+}
+
+func (i *Installer) GetHomepage() string {
+	return i.HomePage
 }

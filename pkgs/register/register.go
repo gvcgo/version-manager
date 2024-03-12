@@ -28,6 +28,7 @@ type VersionManager interface {
 	DeleteVersion()
 	DeleteAll()
 	ClearCache()
+	GetHomepage() string
 }
 
 // TODO: use mirror url in China.
@@ -58,6 +59,7 @@ var BunInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://bun.sh",
 }
 
 var DenoInstaller = &installer.Installer{
@@ -81,6 +83,7 @@ var DenoInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://deno.com/",
 }
 
 var FdInstaller = &installer.Installer{
@@ -100,6 +103,7 @@ var FdInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://github.com/sharkdp/fd",
 }
 
 var FlutterInstaller = &installer.Installer{
@@ -126,6 +130,7 @@ var FlutterInstaller = &installer.Installer{
 		return strings.ReplaceAll(dUrl, "https://storage.googleapis.com", "https://storage.flutter-io.cn")
 	},
 	StoreMultiVersions: true,
+	HomePage:           "https://flutter.dev/",
 }
 
 var FzFInstaller = &installer.Installer{
@@ -149,6 +154,7 @@ var FzFInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://github.com/junegunn/fzf",
 }
 
 var GoInstaller = &installer.Installer{
@@ -171,6 +177,7 @@ var GoInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://go.dev/",
 }
 
 var GradleInstaller = &installer.Installer{
@@ -188,6 +195,7 @@ var GradleInstaller = &installer.Installer{
 	},
 	// DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://gradle.org/",
 }
 
 var JdkInstaller = &installer.Installer{
@@ -234,6 +242,7 @@ var JdkInstaller = &installer.Installer{
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 	AddBinDirToPath:    true,
+	HomePage:           "https://adoptium.net/",
 }
 
 var JuliaInstaller = &installer.Installer{
@@ -258,6 +267,7 @@ var JuliaInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://julialang.org/",
 }
 
 var KotlinInstaller = &installer.Installer{
@@ -276,6 +286,7 @@ var KotlinInstaller = &installer.Installer{
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 	AddBinDirToPath:    true,
+	HomePage:           "https://kotlinlang.org/",
 }
 
 var MavenInstaller = &installer.Installer{
@@ -296,6 +307,7 @@ var MavenInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://maven.apache.org/",
 }
 
 var NeovimInstaller = &installer.Installer{
@@ -320,6 +332,7 @@ var NeovimInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://neovim.io/",
 }
 
 var NodejsInstaller = &installer.Installer{
@@ -345,6 +358,7 @@ var NodejsInstaller = &installer.Installer{
 		return r
 	},
 	StoreMultiVersions: true,
+	HomePage:           "https://nodejs.org/en",
 }
 
 var PHPInstaller = &installer.Installer{
@@ -410,6 +424,7 @@ var PHPInstaller = &installer.Installer{
 	},
 	DUrlDecorator:   installer.DefaultDecorator,
 	AddBinDirToPath: true,
+	HomePage:        "https://github.com/pmmp/PHP-Binaries",
 }
 
 var ProtobufInstaller = &installer.Installer{
@@ -434,6 +449,7 @@ var ProtobufInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://protobuf.dev/",
 }
 
 var RipgrepInstaller = &installer.Installer{
@@ -457,6 +473,7 @@ var RipgrepInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://github.com/BurntSushi/ripgrep",
 }
 
 var TreesitterInstaller = &installer.Installer{
@@ -471,6 +488,7 @@ var TreesitterInstaller = &installer.Installer{
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 	ForceReDownload:    true,
+	HomePage:           "https://tree-sitter.github.io/tree-sitter/",
 }
 
 var TypstLspInstaller = &installer.Installer{
@@ -489,6 +507,7 @@ var TypstLspInstaller = &installer.Installer{
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 	ForceReDownload:    true,
+	HomePage:           "https://github.com/nvarner/typst-lsp",
 }
 
 var TypstInstaller = &installer.Installer{
@@ -510,6 +529,7 @@ var TypstInstaller = &installer.Installer{
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 	ForceReDownload:    true,
+	HomePage:           "https://typst.app/",
 }
 
 var VlangLspInstaller = &installer.Installer{
@@ -526,6 +546,7 @@ var VlangLspInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://github.com/v-analyzer/v-analyzer",
 }
 
 var VlangInstaller = &installer.Installer{
@@ -555,6 +576,7 @@ var VlangInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://vlang.io/",
 }
 
 var ZigLspInstaller = &installer.Installer{
@@ -582,6 +604,7 @@ var ZigLspInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	HomePage:           "https://github.com/zigtools/zls",
 }
 
 var ZigInstaller = &installer.Installer{
@@ -600,6 +623,7 @@ var ZigInstaller = &installer.Installer{
 		return r
 	},
 	StoreMultiVersions: true,
+	HomePage:           "https://ziglang.org/",
 }
 
 var PythonInstaller = installer.NewCondaInstaller()
@@ -626,6 +650,7 @@ var GitWinInstaller = &installer.Installer{
 		}
 	},
 	AddBinDirToPath: true,
+	HomePage:        "https://gitforwindows.org/",
 }
 
 var GsudoWinInstaller = &installer.Installer{
@@ -653,6 +678,7 @@ var GsudoWinInstaller = &installer.Installer{
 		return []string{"gsudo.exe"}
 	},
 	ForceReDownload: true,
+	HomePage:        "https://gerardog.github.io/gsudo/",
 }
 
 var CygwinInstaller = &installer.Installer{
@@ -665,6 +691,7 @@ var CygwinInstaller = &installer.Installer{
 		return []string{"setup-x86_64.exe"}
 	},
 	ForceReDownload: true,
+	HomePage:        "https://www.cygwin.com/",
 }
 
 var Msys2Installer = &installer.Installer{
@@ -677,6 +704,7 @@ var Msys2Installer = &installer.Installer{
 		return []string{"msys2-x86_64-latest.exe"}
 	},
 	ForceReDownload: true,
+	HomePage:        "https://www.msys2.org/",
 }
 
 var RustupInstaller = &installer.Installer{
@@ -690,6 +718,7 @@ var RustupInstaller = &installer.Installer{
 	},
 	DUrlDecorator:   installer.DefaultDecorator,
 	ForceReDownload: true,
+	HomePage:        "https://rustup.rs/",
 }
 
 var SDKManagerInstaller = &installer.Installer{
@@ -706,6 +735,7 @@ var SDKManagerInstaller = &installer.Installer{
 		}
 	},
 	AddBinDirToPath: true,
+	HomePage:        "https://developer.android.com/tools/sdkmanager",
 }
 
 /*
@@ -739,6 +769,7 @@ var RustInstaller = &installer.Installer{
 	UnInstall: func(appName, version string) {
 		// TODO: rust uninstall.
 	},
+	HomePage: "https://www.rust-lang.org/",
 }
 
 var MinicondaInstaller = &installer.Installer{
@@ -775,11 +806,13 @@ var MinicondaInstaller = &installer.Installer{
 	UnInstall: func(appName, version string) {
 		// TODO: uninstall miniconda.
 	},
+	HomePage: "https://docs.anaconda.com/free/miniconda/index.html",
 }
 
 var VSCodeInstaller = &installer.Installer{
-	AppName: "vscode",
-	Version: "latest",
+	AppName:  "vscode",
+	Version:  "latest",
+	HomePage: "https://code.visualstudio.com/",
 }
 
 func init() {
