@@ -157,6 +157,14 @@ func handleUnzipFailedError(zipFilePath string, err error) {
 
 func (i *Installer) Unzip(zipFilePath string) {
 	if i.IsZipFile {
+		// rename PortableGit zip file.
+		if strings.HasSuffix(zipFilePath, ".7z.exe") {
+			newPath := strings.ReplaceAll(zipFilePath, ".7z.exe", ".7z")
+			if err := os.Rename(zipFilePath, newPath); err == nil {
+				zipFilePath = newPath
+			}
+		}
+
 		tempDir := conf.GetVMTempDir()
 		// use archiver.
 		useArchiver := true

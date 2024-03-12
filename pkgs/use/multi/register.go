@@ -600,21 +600,80 @@ var ZigInstaller = &installer.Installer{
 	StoreMultiVersions: true,
 }
 
-// TODO: git for windows.
-// TODO: gsudo for windows.
-var GitWinInstaller = &installer.Installer{}
-
-var GsudoWinInstaller = &installer.Installer{}
-
 /*
-Only latest version.
-TODO: cygwin
-TODO: msys2
-TODO: sdkmanager
+Windows only.
+or
+Latest version only.
 */
-var CygwinInstaller = &installer.Installer{}
+var GitWinInstaller = &installer.Installer{
+	AppName:   "git",
+	Version:   "2.44.0",
+	Fetcher:   conf.GetFetcher(),
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"bin", "cmd", "usr"}
+	},
+	BinDirGetter: func(version string) [][]string {
+		return [][]string{
+			{"bin"},
+			{"usr", "bin"},
+			{"cmd"},
+			{"mingw64", "bin"},
+		}
+	},
+	AddBinDirToPath: true,
+}
 
-var Msys2Installer = &installer.Installer{}
+var GsudoWinInstaller = &installer.Installer{
+	AppName:   "gsudo",
+	Version:   "2.4.4",
+	Fetcher:   conf.GetFetcher(),
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"x86", "x64", "arm64"}
+	},
+	BinDirGetter: func(version string) (r [][]string) {
+		switch runtime.GOARCH {
+		case "amd64":
+			r = [][]string{{"x64"}}
+		case "arm64":
+			r = [][]string{{"arm64"}}
+		case "386":
+			r = [][]string{{"x86"}}
+		default:
+			r = [][]string{{"net46-AnyCpu"}}
+		}
+		return
+	},
+	BinListGetter: func() []string {
+		return []string{"gsudo.exe"}
+	},
+	ForceReDownload: true,
+}
+
+var CygwinInstaller = &installer.Installer{
+	AppName:        "cygwin",
+	Version:        "latest",
+	Fetcher:        conf.GetFetcher(),
+	IsZipFile:      false,
+	BinaryRenameTo: "cygwin-installer",
+	FlagFileGetter: func() []string {
+		return []string{"setup-x86_64.exe"}
+	},
+	ForceReDownload: true,
+}
+
+var Msys2Installer = &installer.Installer{
+	AppName:        "msys2",
+	Version:        "latest",
+	Fetcher:        conf.GetFetcher(),
+	IsZipFile:      false,
+	BinaryRenameTo: "msys2-installer",
+	FlagFileGetter: func() []string {
+		return []string{"msys2-x86_64-latest.exe"}
+	},
+	ForceReDownload: true,
+}
 
 var RustupInstaller = &installer.Installer{
 	AppName:        "rustup",
@@ -653,9 +712,26 @@ var RustInstaller = &installer.Installer{
 			gprint.PrintWarning("Please intall rustup-init first.")
 		}
 	},
+	UnInstall: func(appName, version string) {
+		// TODO: rust uninstall.
+	},
 }
 
-var SDKManagerInstaller = &installer.Installer{}
+var SDKManagerInstaller = &installer.Installer{
+	AppName:   "sdkmanager",
+	Version:   "latest",
+	Fetcher:   conf.GetFetcher(),
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"bin", "lib"}
+	},
+	BinDirGetter: func(version string) [][]string {
+		return [][]string{
+			{"bin"},
+		}
+	},
+	AddBinDirToPath: true,
+}
 
 /*
 customed installation.
@@ -668,16 +744,20 @@ var VSCodeInstaller = &installer.Installer{}
 
 func init() {
 	VersionKeeper["bun"] = BunInstaller
+	VersionKeeper["cygwin"] = CygwinInstaller
 	VersionKeeper["deno"] = DenoInstaller
 	VersionKeeper["fd"] = FdInstaller
 	VersionKeeper["flutter"] = FlutterInstaller
 	VersionKeeper["fzf"] = FzFInstaller
+	VersionKeeper["git"] = GitWinInstaller
+	VersionKeeper["gsudo"] = GsudoWinInstaller
 	VersionKeeper["go"] = GoInstaller
 	VersionKeeper["gradle"] = GradleInstaller
 	VersionKeeper["jdk"] = JdkInstaller
 	VersionKeeper["julia"] = JuliaInstaller
 	VersionKeeper["kotlin"] = KotlinInstaller
 	VersionKeeper["maven"] = MavenInstaller
+	VersionKeeper["msys2"] = Msys2Installer
 	VersionKeeper["neovim"] = NeovimInstaller
 	VersionKeeper["node"] = NodejsInstaller
 	VersionKeeper["php"] = PHPInstaller
@@ -685,6 +765,7 @@ func init() {
 	VersionKeeper["ripgrep"] = RipgrepInstaller
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
+	VersionKeeper["sdkmanager"] = SDKManagerInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst"] = TypstInstaller
