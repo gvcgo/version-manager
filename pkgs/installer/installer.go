@@ -67,6 +67,14 @@ func NewInstaller(appName, version string) (i *Installer) {
 	}
 	return
 }
+func (i *Installer) SetVersion(version string) {
+	if !i.StoreMultiVersions {
+		// the latest version only.
+		i.Version = "latest"
+		return
+	}
+	i.Version = version
+}
 
 // Searches version files for an application.
 func (i *Installer) SearchVersion() {
@@ -109,6 +117,14 @@ func (i *Installer) SearchLatestVersion() {
 }
 
 func (i *Installer) Download() (zipFilePath string) {
+	// if already installed, switch to the specified version.
+	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
+	if ok, _ := gutils.PathIsExist(versionPath); ok {
+		i.CreateVersionSymbol()
+		gprint.PrintSuccess("Switched to %s", i.Version)
+		return
+	}
+
 	if i.NoDownload {
 		return
 	}
@@ -156,6 +172,10 @@ func handleUnzipFailedError(zipFilePath string, err error) {
 }
 
 func (i *Installer) Unzip(zipFilePath string) {
+	if zipFilePath == "" {
+		return
+	}
+
 	if i.IsZipFile {
 		// rename PortableGit zip file.
 		if strings.HasSuffix(zipFilePath, ".7z.exe") {

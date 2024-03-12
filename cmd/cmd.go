@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/register"
@@ -56,6 +58,71 @@ func (c *Cli) initiate() {
 		Short:   "Shows the supported applications.",
 		Run: func(cmd *cobra.Command, args []string) {
 			register.ShowAppList()
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "use",
+		Aliases: []string{"u"},
+		GroupID: GroupID,
+		Short:   "Installs and switches to specified version.",
+		Long:    "Example: vm use go@1.22.1",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 || !strings.Contains(args[0], "@") {
+				cmd.Help()
+				return
+			}
+			sList := strings.Split(args[0], "@")
+			if len(sList) != 2 {
+				cmd.Help()
+				return
+			}
+			if ins, ok := register.VersionKeeper[sList[0]]; ok {
+				ins.SetVersion(sList[1])
+				register.RunInstaller(ins)
+			} else {
+				gprint.PrintError("Unsupported app: %s.", sList[0])
+			}
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "uninstall",
+		Aliases: []string{"U"},
+		GroupID: GroupID,
+		Short:   "Uninstall a version or an app.",
+		Long:    "Example: 1. vm U go@all; 2. vm U go@1.22.1",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 || !strings.Contains(args[0], "@") {
+				cmd.Help()
+				return
+			}
+			sList := strings.Split(args[0], "@")
+			if len(sList) != 2 {
+				cmd.Help()
+				return
+			}
+			if ins, ok := register.VersionKeeper[sList[0]]; ok {
+				ins.SetVersion(sList[1])
+				register.RunUnInstaller(ins)
+			} else {
+				gprint.PrintError("Unsupported app: %s.", sList[0])
+			}
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "local",
+		Aliases: []string{"l"},
+		GroupID: GroupID,
+		Short:   "Shows installed versions for an app.",
+		Long:    "Example: vm l go.",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+			register.ShowInstalled(args[0])
 		},
 	})
 }

@@ -29,6 +29,7 @@ type VersionManager interface {
 	DeleteAll()
 	ClearCache()
 	GetHomepage() string
+	SetVersion(version string)
 }
 
 // TODO: use mirror url in China.
