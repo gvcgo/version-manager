@@ -423,9 +423,10 @@ var PHPInstaller = &installer.Installer{
 			os.WriteFile(phpInitFile, []byte(s), os.ModePerm)
 		}
 	},
-	DUrlDecorator:   installer.DefaultDecorator,
-	AddBinDirToPath: true,
-	HomePage:        "https://github.com/pmmp/PHP-Binaries",
+	DUrlDecorator:      installer.DefaultDecorator,
+	AddBinDirToPath:    true,
+	StoreMultiVersions: true,
+	HomePage:           "https://github.com/pmmp/PHP-Binaries",
 }
 
 var ProtobufInstaller = &installer.Installer{
