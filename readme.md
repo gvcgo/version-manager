@@ -1,5 +1,5 @@
 <p style="" align="center">
-  <img src="https://github.com/moqsien/img_repo/raw/main/vm_header_photo_2.png" alt="Logo" width="240" height="80">
+  <img src="https://github.com/moqsien/img_repo/raw/main/vm_header_photo_2.png" alt="Logo" width="2400" height="800">
 </p>
 
 ### version-manager(vm)
