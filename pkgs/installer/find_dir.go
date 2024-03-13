@@ -12,6 +12,7 @@ Find home dir of unzipped directories.
 type HomeDirFinder struct {
 	Home      string
 	FlagFiles []string // unique file names that only exists in Home Dir.
+	ExceptDir bool
 }
 
 func NewFinder(flagFiles ...string) (h *HomeDirFinder) {
@@ -30,11 +31,14 @@ func (h *HomeDirFinder) Find(startDir string) {
 		// Get all filenames in current dir.
 		fileNames := ""
 		for _, d := range dList {
-			// if !d.IsDir() {
-			// 	fileNames += d.Name()
-			// }
-			// including dir names.
-			fileNames += d.Name()
+			if h.ExceptDir {
+				if !d.IsDir() {
+					fileNames += d.Name()
+				}
+			} else {
+				// including dir names.
+				fileNames += d.Name()
+			}
 		}
 
 		// Test current dir.

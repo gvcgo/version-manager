@@ -48,6 +48,7 @@ var BunInstaller = &installer.Installer{
 		}
 		return r
 	},
+	FlagDirExcepted: true,
 	BinListGetter: func() []string {
 		r := []string{"bun"}
 		if runtime.GOOS == gutils.Windows {
@@ -57,6 +58,7 @@ var BunInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://bun.sh",
 }
 

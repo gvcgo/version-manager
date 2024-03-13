@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -37,8 +38,6 @@ var DefaultDecorator = func(dUrl string, ft *request.Fetcher) string {
 	return conf.DecorateUrl(dUrl)
 }
 
-// TODO: create extra symbolics for app. Example: bunx for bun.
-
 type Installer struct {
 	AppName            string
 	Version            string
@@ -50,6 +49,7 @@ type Installer struct {
 	BinDirGetter       func(version string) [][]string               // Binary dir
 	BinListGetter      func() []string                               // Binaries
 	FlagFileGetter     func() []string                               // Flags to find home dir of an app
+	FlagDirExcepted    bool                                          // whether to find binaries only
 	EnvGetter          func(appName, version string) []Env           // Envs to set
 	DUrlDecorator      func(dUrl string, ft *request.Fetcher) string // Download url decorator
 	PostInstall        func(appName, version string)                 // post install hook
@@ -243,7 +243,9 @@ func (i *Installer) Copy() {
 	// find directory to copy.
 	if i.FlagFileGetter != nil {
 		f := NewFinder(i.FlagFileGetter()...)
+		f.ExceptDir = i.FlagDirExcepted
 		f.Find(conf.GetVMTempDir())
+
 		if f.Home != "" {
 			err := gutils.CopyDirectory(f.Home, filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version), true)
 			if err != nil {
@@ -339,6 +341,8 @@ func (i *Installer) CreateBinarySymbol() {
 							symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
 							utils.SymbolicLink(fPath, symPath)
 							i.saveSymbolicInfo(dd.Name())
+							// extra symbolic.
+							i.createExtraSymbolic(dd, fPath)
 						}
 					}
 				}
@@ -346,6 +350,21 @@ func (i *Installer) CreateBinarySymbol() {
 		}
 	} else {
 		i.createBinarySymbolForCurrentDir(currentPath)
+	}
+}
+
+func (i *Installer) createExtraSymbolic(dd fs.DirEntry, fPath string) {
+	// special: create bunx for bun.
+	if dd.Name() == "bun" {
+		extraSymbol := "bunx"
+		symPath := filepath.Join(conf.GetAppBinDir(), extraSymbol)
+		utils.SymbolicLink(fPath, symPath)
+		i.saveSymbolicInfo(extraSymbol)
+	} else if dd.Name() == "bun.exe" {
+		extraSymbol := "bunx.exe"
+		symPath := filepath.Join(conf.GetAppBinDir(), extraSymbol)
+		utils.SymbolicLink(fPath, symPath)
+		i.saveSymbolicInfo(extraSymbol)
 	}
 }
 
@@ -389,6 +408,8 @@ func (i *Installer) createBinarySymbolForCurrentDir(currentPath string) {
 			symPath := filepath.Join(conf.GetAppBinDir(), dd.Name())
 			utils.SymbolicLink(fPath, symPath)
 			i.saveSymbolicInfo(dd.Name())
+			// extra symbolic.
+			i.createExtraSymbolic(dd, fPath)
 		}
 	}
 }
