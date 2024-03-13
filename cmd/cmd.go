@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -170,21 +171,21 @@ func (c *Cli) initiate() {
 		},
 	})
 
-	c.rootCmd.AddCommand(&cobra.Command{
-		Use:     "set-app-dir",
-		Aliases: []string{"sd", "sad"},
-		GroupID: GroupID,
-		Short:   "Sets installation dir for apps.",
-		Long:    "Example: vm sd <where-to-install-apps>.",
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				cmd.Help()
-				return
-			}
-			appDir := args[0]
-			conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
-		},
-	})
+	// c.rootCmd.AddCommand(&cobra.Command{
+	// 	Use:     "set-app-dir",
+	// 	Aliases: []string{"sd", "sad"},
+	// 	GroupID: GroupID,
+	// 	Short:   "Sets installation dir for apps.",
+	// 	Long:    "Example: vm sd <where-to-install-apps>.",
+	// 	Run: func(cmd *cobra.Command, args []string) {
+	// 		if len(args) == 0 {
+	// 			cmd.Help()
+	// 			return
+	// 		}
+	// 		appDir := args[0]
+	// 		conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
+	// 	},
+	// })
 
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "install-self",
@@ -207,7 +208,14 @@ func (c *Cli) initiate() {
 			em := envs.NewEnvManager()
 			em.AddToPath(conf.GetManagerDir())
 
-			// TODO: Set Proxy and Dir.
+			// Sets app installation Dir.
+			fmt.Println(gprint.CyanStr(`Enter App Installation Dir["$Home/.vm/" by default]:`))
+			var appDir string
+			fmt.Scanln(&appDir)
+			if appDir == "" {
+				appDir = conf.GetManagerDir()
+			}
+			conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
 		},
 	})
 }
