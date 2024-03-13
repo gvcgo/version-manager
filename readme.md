@@ -123,3 +123,19 @@ Press "↑/k" to move up, "↓/j" to move down, "q" to quit.
 ### Installation
 
 Will be available soon.
+
+### Related dirs
+
+- vm installation dir
+```bash
+$HOME/.vm/
+```
+
+- application installation dir
+
+Specified during installation of **vm**.
+```bash
+~ % ./vm install-self
+Enter App Installation Dir["$Home/.vm/" by default]:
+/Users/moqsien/.vm
+```
