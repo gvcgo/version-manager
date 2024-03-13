@@ -12,20 +12,9 @@ import (
 )
 
 const (
+	// TODO: static acceleration.
 	RemoteVersionFilePattern string = "https://raw.githubusercontent.com/gvcgo/resources/main/%s.version.json"
 )
-
-/*
-Apps supported by version manager
-*/
-var AppList []string = []string{
-	"bun", "cygwin", "deno", "fd", "flutter", "fzf", "git",
-	"go", "gradle", "gsudo", "jdk", "julia", "kotlin",
-	"maven", "miniconda", "msys2", "neovim", "nodejs",
-	"php", "python", "ripgrep", "rustup", "sdkmanager",
-	"typst-lsp", "typst", "v-analyzer", "v", "vscode",
-	"zig", "zls",
-}
 
 type VersionItem struct {
 	Url     string `json:"Url"`

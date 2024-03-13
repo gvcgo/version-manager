@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/pkgs/conf"
@@ -67,7 +68,7 @@ func (c *Cli) initiate() {
 		},
 	})
 
-	c.rootCmd.AddCommand(&cobra.Command{
+	useCmd := &cobra.Command{
 		Use:     "use",
 		Aliases: []string{"u"},
 		GroupID: GroupID,
@@ -83,6 +84,9 @@ func (c *Cli) initiate() {
 				cmd.Help()
 				return
 			}
+			threads, _ := cmd.Flags().GetInt("threads")
+			os.Setenv(conf.VMDownloadThreadsEnvName, gconv.String(threads))
+
 			if ins, ok := register.VersionKeeper[sList[0]]; ok {
 				ins.SetVersion(sList[1])
 				register.RunInstaller(ins)
@@ -90,7 +94,9 @@ func (c *Cli) initiate() {
 				gprint.PrintError("Unsupported app: %s.", sList[0])
 			}
 		},
-	})
+	}
+	useCmd.Flags().IntP("threads", "t", 1, "Number of threads to use for downloading.")
+	c.rootCmd.AddCommand(useCmd)
 
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "uninstall",

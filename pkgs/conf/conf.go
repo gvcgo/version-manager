@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 )
@@ -26,9 +27,10 @@ export VM_REVERSE_PROXY_URL="https://gvc.1710717.xyz/proxy/"
 export VM_APP_INSTALL_DIR="~/.vm/"
 */
 const (
-	VMProxyEnvName        string = "VM_PROXY_URI"
-	VMReverseProxyEnvName string = "VM_REVERSE_PROXY_URL"
-	VMWorkDirEnvName      string = "VM_APP_INSTALL_DIR"
+	VMProxyEnvName           string = "VM_PROXY_URI"
+	VMReverseProxyEnvName    string = "VM_REVERSE_PROXY_URL"
+	VMWorkDirEnvName         string = "VM_APP_INSTALL_DIR"
+	VMDownloadThreadsEnvName string = "VM_DOWNLOAD_THREADS"
 )
 
 type Config struct {
@@ -100,7 +102,13 @@ get value from ENVs.
 
 // Sets proxy for fetcher.
 func GetFetcher() *request.Fetcher {
+	dthreads := os.Getenv(VMDownloadThreadsEnvName)
+	num := gconv.Int(dthreads)
+	if num <= 0 {
+		num = 1
+	}
 	r := request.NewFetcher()
+	r.SetThreadNum(num)
 	r.SetProxyEnvName(VMProxyEnvName)
 	return r
 }
