@@ -139,3 +139,22 @@ Specified during installation of **vm**.
 Enter App Installation Dir["$Home/.vm/" by default]:
 /Users/moqsien/.vm
 ```
+
+### Proxy
+**Choose either proxy or reverse-proxy.**
+
+- proxy
+```bash
+vm set-proxy <http://localhost:port or socks5://localhost:port>
+```
+
+- reverse proxy. 
+https://gvc.1710717.xyz/proxy/ is available for free.
+```bash
+vm set-reverse-proxy <https://gvc.1710717.xyz/proxy/>
+```
+
+- enable downloading from mirror sites in China.
+```bash
+vm use -mirror-in-china go@1.22.1
+```
