@@ -159,6 +159,50 @@ var FzFInstaller = &installer.Installer{
 	HomePage:           "https://github.com/junegunn/fzf",
 }
 
+var GleamInstaller = &installer.Installer{
+	AppName:   "gleam",
+	Version:   "1.0.0",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		r := []string{"gleam"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"gleam.exe"}
+		}
+		return r
+	},
+	FlagDirExcepted: true,
+	BinListGetter: func() []string {
+		r := []string{"gleam"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"gleam.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://gleam.run/",
+}
+
+var GlowInstaller = &installer.Installer{
+	AppName:   "glow",
+	Version:   "1.5.1",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"LICENSE"}
+	},
+	FlagDirExcepted: true,
+	BinListGetter: func() []string {
+		r := []string{"glow"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"glow.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://github.com/charmbracelet/glow",
+}
+
 var GoInstaller = &installer.Installer{
 	AppName:   "go",
 	Version:   "1.22.0",
@@ -551,6 +595,26 @@ var TypstInstaller = &installer.Installer{
 	HomePage:           "https://typst.app/",
 }
 
+var VHSInstaller = &installer.Installer{
+	AppName:   "vhs",
+	Version:   "0.7.1",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"LICENSE"}
+	},
+	FlagDirExcepted: true,
+	BinListGetter: func() []string {
+		r := []string{"vhs"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"vhs.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://github.com/charmbracelet/vhs",
+}
+
 var VlangLspInstaller = &installer.Installer{
 	AppName:   "v-analyzer",
 	Version:   "0.0.3",
@@ -749,7 +813,6 @@ var SDKManagerInstaller = &installer.Installer{
 
 /*
 customed installation.
-TODO: vscode
 */
 var RustInstaller = &installer.Installer{
 	AppName:    "rust",
@@ -839,11 +902,15 @@ func vscodeNoDownload() bool {
 	return runtime.GOOS == gutils.Linux
 }
 
+func vscodeIsZipFile() bool {
+	return runtime.GOOS == gutils.Windows
+}
+
 var VSCodeInstaller = &installer.Installer{
 	AppName:    "vscode",
 	Version:    "latest",
 	HomePage:   "https://code.visualstudio.com/",
-	IsZipFile:  true,
+	IsZipFile:  vscodeIsZipFile(),
 	NoDownload: vscodeNoDownload(),
 	Install: func(appName, version, zipFileName string) {
 		var installDir string = filepath.Join("/Applications", "Visual Studio Code.app") // macOS
@@ -923,6 +990,8 @@ func init() {
 	VersionKeeper["fzf"] = FzFInstaller
 	VersionKeeper["git"] = GitWinInstaller
 	VersionKeeper["gsudo"] = GsudoWinInstaller
+	VersionKeeper["gleam"] = GleamInstaller
+	VersionKeeper["glow"] = GlowInstaller
 	VersionKeeper["go"] = GoInstaller
 	VersionKeeper["gradle"] = GradleInstaller
 	VersionKeeper["jdk"] = JdkInstaller
@@ -943,6 +1012,7 @@ func init() {
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst"] = TypstInstaller
+	VersionKeeper["vhs"] = VHSInstaller
 	VersionKeeper["v-analyzer"] = VlangLspInstaller
 	VersionKeeper["v"] = VlangInstaller
 	VersionKeeper["vscode"] = VSCodeInstaller
