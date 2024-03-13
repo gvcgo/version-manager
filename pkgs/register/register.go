@@ -869,3 +869,7 @@ func RunInstaller(manager VersionManager) {
 func RunUnInstaller(manager VersionManager) {
 	manager.UnInstallApp()
 }
+
+func RunClearCache(manager VersionManager) {
+	manager.ClearCache()
+}

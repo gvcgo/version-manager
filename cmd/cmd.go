@@ -218,6 +218,24 @@ func (c *Cli) initiate() {
 			conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
 		},
 	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "clear-cache",
+		Aliases: []string{"c", "cc"},
+		GroupID: GroupID,
+		Short:   "Clear cached zip files for an app.",
+		Long:    "Example: vm c go",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+			appName := args[0]
+			if ins, ok := register.VersionKeeper[appName]; ok {
+				register.RunClearCache(ins)
+			}
+		},
+	})
 }
 
 func (that *Cli) Run() {
