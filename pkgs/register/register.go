@@ -835,11 +835,16 @@ var MinicondaInstaller = &installer.Installer{
 	HomePage: "https://docs.anaconda.com/free/miniconda/index.html",
 }
 
+func vscodeNoDownload() bool {
+	return runtime.GOOS == gutils.Linux
+}
+
 var VSCodeInstaller = &installer.Installer{
-	AppName:   "vscode",
-	Version:   "latest",
-	HomePage:  "https://code.visualstudio.com/",
-	IsZipFile: true,
+	AppName:    "vscode",
+	Version:    "latest",
+	HomePage:   "https://code.visualstudio.com/",
+	IsZipFile:  true,
+	NoDownload: vscodeNoDownload(),
 	Install: func(appName, version, zipFileName string) {
 		var installDir string = filepath.Join("/Applications", "Visual Studio Code.app") // macOS
 		homeDir, _ := os.UserHomeDir()
