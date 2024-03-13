@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	// TODO: static acceleration.
 	RemoteVersionFilePattern string = "https://raw.githubusercontent.com/gvcgo/resources/main/%s.version.json"
 )
 
@@ -59,7 +58,16 @@ func (v *VersionInfo) Parse() {
 		return
 	}
 	v.fetcher.Timeout = 120 * time.Second
-	u := conf.DecorateUrl(fmt.Sprintf(RemoteVersionFilePattern, v.AppName))
+	rawUrl := fmt.Sprintf(RemoteVersionFilePattern, v.AppName)
+	u := conf.DecorateUrl(rawUrl)
+	/*
+		Speedup.
+		Example: https://cdn.jsdelivr.net/gh/moqsien/neobox_resources@main/conf.txt
+	*/
+	if rawUrl == u && conf.UseMirrorSiteInChina() {
+		u = fmt.Sprintf("https://cdn.jsdelivr.net/gh/gvcgo/resources@main/%s.version.json", v.AppName)
+	}
+
 	v.fetcher.SetUrl(u)
 	if s, rCode := v.fetcher.GetString(); rCode == 200 {
 		if err := json.Unmarshal([]byte(s), &v.List); err != nil {
