@@ -2,10 +2,12 @@ package utils
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/gogf/gf/v2/os/genv"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 )
 
@@ -24,4 +26,29 @@ func GetShellConfigFilePath() string {
 	} else {
 		return ""
 	}
+}
+
+func CopyFileOnUnixSudo(from, to string) error {
+	cmd := exec.Command("sudo", "cp", "-R", from, to)
+	cmd.Env = genv.All()
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	return cmd.Run()
+}
+
+func DNForAPTonLinux() string {
+	_, err := gutils.ExecuteSysCommand(true, "", "apt", "--help")
+	if err == nil {
+		return "apt"
+	}
+	_, err = gutils.ExecuteSysCommand(true, "", "dnf", "--help")
+	if err == nil {
+		return "dnf"
+	}
+	_, err = gutils.ExecuteSysCommand(true, "", "yum", "--help")
+	if err == nil {
+		return "yum"
+	}
+	return ""
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/envs"
 	"github.com/gvcgo/version-manager/pkgs/installer"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 )
 
 // TODO: test for windows and linux.
@@ -835,9 +836,87 @@ var MinicondaInstaller = &installer.Installer{
 }
 
 var VSCodeInstaller = &installer.Installer{
-	AppName:  "vscode",
-	Version:  "latest",
-	HomePage: "https://code.visualstudio.com/",
+	AppName:   "vscode",
+	Version:   "latest",
+	HomePage:  "https://code.visualstudio.com/",
+	IsZipFile: true,
+	Install: func(appName, version, zipFileName string) {
+		var installDir string = filepath.Join("/Applications", "Visual Studio Code.app") // macOS
+		homeDir, _ := os.UserHomeDir()
+		if runtime.GOOS == gutils.Windows {
+			installDir = filepath.Join(homeDir, "AppData", "Local", "Programs", "Microsoft VS Code")
+		}
+		switch runtime.GOOS {
+		case gutils.Windows:
+			f := installer.NewFinder("bin")
+			f.Find(conf.GetVMTempDir())
+			if ok, _ := gutils.PathIsExist(f.Home); ok {
+				gutils.CopyDirectory(f.Home, installDir, true)
+				binPath := filepath.Join(installDir, "Code.exe")
+				if ok, _ := gutils.PathIsExist(binPath); ok {
+					symbolPath := filepath.Join(homeDir, "Desktop", "VSCode")
+					utils.SymbolicLink(binPath, symbolPath)
+				}
+			}
+		case gutils.Darwin:
+			f := installer.NewFinder("Visual Studio Code.app")
+			f.Find(conf.GetVMTempDir())
+			if ok, _ := gutils.PathIsExist(f.Home); ok {
+				utils.CopyFileOnUnixSudo(f.Home, installDir)
+			}
+		case gutils.Linux:
+			/*
+				https://code.visualstudio.com/docs/setup/linux
+
+				1.
+				sudo apt-get install wget gpg
+				wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+				sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+				sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+				rm -f packages.microsoft.gpg
+
+				sudo apt install apt-transport-https
+				sudo apt update
+				sudo apt install code # or code-insiders
+
+				2.
+				sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+				sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+
+				dnf check-update
+				sudo dnf install code # or code-insiders
+
+				yum check-update
+				sudo yum install code # or code-insiders
+			*/
+			installerCmd := utils.DNForAPTonLinux()
+			if installerCmd == "apt" {
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "apt-get", "install", "wget", "gpg")
+				gutils.ExecuteSysCommand(false, homeDir, "wget", "-qO-", "https://packages.microsoft.com/keys/microsoft.asc", "|", "gpg", "--dearmor", ">", "packages.microsoft.gpg")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "install", "-D", "-o", "root", "-g", "root", "-m", "644", "packages.microsoft.gpg", "/etc/apt/keyrings/packages.microsoft.gpg")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "sh", "-c", `'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'`)
+				gutils.ExecuteSysCommand(false, homeDir, "rm", "-f", "packages.microsoft.gpg")
+
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "apt", "install", "apt-transport-https")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "apt", "update")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "apt", "install", "code")
+			} else if installerCmd == "yum" {
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "rpm", "--import", "https://packages.microsoft.com/keys/microsoft.asc")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "sh", "-c", `'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'`)
+				gutils.ExecuteSysCommand(false, homeDir, "yum", "check-update")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "yum", "install", "code")
+			} else if installerCmd == "dnf" {
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "rpm", "--import", "https://packages.microsoft.com/keys/microsoft.asc")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "sh", "-c", `'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'`)
+				gutils.ExecuteSysCommand(false, homeDir, "dnf", "check-update")
+				gutils.ExecuteSysCommand(false, homeDir, "sudo", "dnf", "install", "code")
+			}
+		default:
+			gprint.PrintError("Not supported.")
+		}
+		os.RemoveAll(conf.GetVMTempDir())
+	},
+	UnInstall: func(appName, version string) {},
 }
 
 func init() {
@@ -871,6 +950,7 @@ func init() {
 	VersionKeeper["typst"] = TypstInstaller
 	VersionKeeper["v-analyzer"] = VlangLspInstaller
 	VersionKeeper["v"] = VlangInstaller
+	VersionKeeper["vscode"] = VSCodeInstaller
 	VersionKeeper["zls"] = ZigLspInstaller
 	VersionKeeper["zig"] = ZigInstaller
 }
