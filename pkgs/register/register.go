@@ -42,7 +42,6 @@ var VersionKeeper = map[string]VersionManager{}
 var BunInstaller = &installer.Installer{
 	AppName:   "bun",
 	Version:   "1.0.9",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"bun"}
@@ -66,7 +65,6 @@ var BunInstaller = &installer.Installer{
 var DenoInstaller = &installer.Installer{
 	AppName:   "deno",
 	Version:   "1.41.1",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"deno"}
@@ -90,7 +88,6 @@ var DenoInstaller = &installer.Installer{
 var FdInstaller = &installer.Installer{
 	AppName:   "fd",
 	Version:   "9.0.0",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"fd.1", "README.md"}
@@ -110,7 +107,6 @@ var FdInstaller = &installer.Installer{
 var FlutterInstaller = &installer.Installer{
 	AppName:   "flutter",
 	Version:   "3.19.2",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"README.md", "LICENSE", "CODEOWNERS"}
@@ -137,7 +133,6 @@ var FlutterInstaller = &installer.Installer{
 var FzFInstaller = &installer.Installer{
 	AppName:   "fzf",
 	Version:   "0.46.1",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"fzf"}
@@ -161,7 +156,6 @@ var FzFInstaller = &installer.Installer{
 var GoInstaller = &installer.Installer{
 	AppName:   "go",
 	Version:   "1.22.0",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	BinDirGetter: func(version string) [][]string {
 		return [][]string{
@@ -184,7 +178,6 @@ var GoInstaller = &installer.Installer{
 var GradleInstaller = &installer.Installer{
 	AppName:   "gradle",
 	Version:   "8.6",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"LICENSE"}
@@ -203,7 +196,6 @@ var JdkInstaller = &installer.Installer{
 	AppName: "jdk",
 	Version: "21.0.2_13",
 	// Version:   "8u402-b06",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"bin", "lib", "include"}
@@ -249,7 +241,6 @@ var JdkInstaller = &installer.Installer{
 var JuliaInstaller = &installer.Installer{
 	AppName:   "julia",
 	Version:   "1.10.2",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"LICENSE.md"}
@@ -274,7 +265,6 @@ var JuliaInstaller = &installer.Installer{
 var KotlinInstaller = &installer.Installer{
 	AppName:   "kotlin",
 	Version:   "1.9.23",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"bin", "tools", "klib"}
@@ -293,7 +283,6 @@ var KotlinInstaller = &installer.Installer{
 var MavenInstaller = &installer.Installer{
 	AppName:   "maven",
 	Version:   "3.9.6",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"LICENSE"}
@@ -314,7 +303,6 @@ var MavenInstaller = &installer.Installer{
 var NeovimInstaller = &installer.Installer{
 	AppName:   "neovim",
 	Version:   "0.9.5",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"bin"}
@@ -339,7 +327,6 @@ var NeovimInstaller = &installer.Installer{
 var NodejsInstaller = &installer.Installer{
 	AppName:   "nodejs",
 	Version:   "20.11.1",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"LICENSE", "README.md"}
@@ -365,7 +352,6 @@ var NodejsInstaller = &installer.Installer{
 var PHPInstaller = &installer.Installer{
 	AppName:   "php",
 	Version:   "php-8.3-latest",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"bin", "lib"}
@@ -432,7 +418,6 @@ var PHPInstaller = &installer.Installer{
 var ProtobufInstaller = &installer.Installer{
 	AppName:   "protobuf",
 	Version:   "25.3",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"bin"}
@@ -457,7 +442,6 @@ var ProtobufInstaller = &installer.Installer{
 var RipgrepInstaller = &installer.Installer{
 	AppName:   "ripgrep",
 	Version:   "14.1.0",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"rg"}
@@ -481,7 +465,6 @@ var RipgrepInstaller = &installer.Installer{
 var TreesitterInstaller = &installer.Installer{
 	AppName:        "tree-sitter",
 	Version:        "0.22.1",
-	Fetcher:        conf.GetFetcher(),
 	IsZipFile:      true,
 	BinaryRenameTo: "tree-sitter",
 	FlagFileGetter: func() []string {
@@ -496,7 +479,6 @@ var TreesitterInstaller = &installer.Installer{
 var TypstLspInstaller = &installer.Installer{
 	AppName:        "typst-lsp",
 	Version:        "0.12.1",
-	Fetcher:        conf.GetFetcher(),
 	IsZipFile:      false,
 	BinaryRenameTo: "typst-lsp",
 	FlagFileGetter: func() []string {
@@ -515,7 +497,6 @@ var TypstLspInstaller = &installer.Installer{
 var TypstInstaller = &installer.Installer{
 	AppName:   "typst",
 	Version:   "0.10.0",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"LICENSE"}
@@ -537,7 +518,6 @@ var TypstInstaller = &installer.Installer{
 var VlangLspInstaller = &installer.Installer{
 	AppName:   "v-analyzer",
 	Version:   "0.0.3",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"v-analyzer"}
@@ -554,7 +534,6 @@ var VlangLspInstaller = &installer.Installer{
 var VlangInstaller = &installer.Installer{
 	AppName:   "v",
 	Version:   "0.4.4",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		r := []string{"cmd", "v"}
@@ -584,7 +563,6 @@ var VlangInstaller = &installer.Installer{
 var ZigLspInstaller = &installer.Installer{
 	AppName:   "zls",
 	Version:   "0.11.0",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"README.md"}
@@ -612,7 +590,6 @@ var ZigLspInstaller = &installer.Installer{
 var ZigInstaller = &installer.Installer{
 	AppName:   "zig",
 	Version:   "0.11.0",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"LICENSE"}
@@ -638,7 +615,6 @@ Latest version only.
 var GitWinInstaller = &installer.Installer{
 	AppName:   "git",
 	Version:   "2.44.0",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"bin", "cmd", "usr"}
@@ -658,7 +634,6 @@ var GitWinInstaller = &installer.Installer{
 var GsudoWinInstaller = &installer.Installer{
 	AppName:   "gsudo",
 	Version:   "2.4.4",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"x86", "x64", "arm64"}
@@ -686,7 +661,6 @@ var GsudoWinInstaller = &installer.Installer{
 var CygwinInstaller = &installer.Installer{
 	AppName:        "cygwin",
 	Version:        "latest",
-	Fetcher:        conf.GetFetcher(),
 	IsZipFile:      false,
 	BinaryRenameTo: "cygwin-installer",
 	FlagFileGetter: func() []string {
@@ -699,7 +673,6 @@ var CygwinInstaller = &installer.Installer{
 var Msys2Installer = &installer.Installer{
 	AppName:        "msys2",
 	Version:        "latest",
-	Fetcher:        conf.GetFetcher(),
 	IsZipFile:      false,
 	BinaryRenameTo: "msys2-installer",
 	FlagFileGetter: func() []string {
@@ -712,7 +685,6 @@ var Msys2Installer = &installer.Installer{
 var RustupInstaller = &installer.Installer{
 	AppName:        "rustup",
 	Version:        "latest",
-	Fetcher:        conf.GetFetcher(),
 	IsZipFile:      false,
 	BinaryRenameTo: "rustup-init",
 	FlagFileGetter: func() []string {
@@ -726,7 +698,6 @@ var RustupInstaller = &installer.Installer{
 var SDKManagerInstaller = &installer.Installer{
 	AppName:   "sdkmanager",
 	Version:   "latest",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
 		return []string{"bin", "lib"}
@@ -747,7 +718,6 @@ TODO: vscode
 var RustInstaller = &installer.Installer{
 	AppName:    "rust",
 	Version:    "latest",
-	Fetcher:    conf.GetFetcher(),
 	IsZipFile:  false,
 	NoDownload: true,
 	Install: func(appName, version, zipFileName string) {
@@ -778,7 +748,6 @@ var RustInstaller = &installer.Installer{
 var MinicondaInstaller = &installer.Installer{
 	AppName:   "miniconda",
 	Version:   "latest",
-	Fetcher:   conf.GetFetcher(),
 	IsZipFile: false,
 	Install: func(appName, version, zipFileName string) {
 		vDir := filepath.Join(conf.GetVMVersionsDir(appName), appName)

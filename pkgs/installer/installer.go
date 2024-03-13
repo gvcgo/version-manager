@@ -119,6 +119,9 @@ func (i *Installer) SearchLatestVersion() {
 }
 
 func (i *Installer) Download() (zipFilePath string) {
+	if i.Fetcher == nil {
+		i.Fetcher = conf.GetFetcher()
+	}
 	// if already installed, switch to the specified version.
 	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
 	if ok, _ := gutils.PathIsExist(versionPath); ok {

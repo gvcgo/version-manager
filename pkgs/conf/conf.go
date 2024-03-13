@@ -46,14 +46,15 @@ func GetManagerDir() string {
 	return managerDir
 }
 
-func getConfPath() string {
+func GetConfPath() string {
 	managerDir := GetManagerDir()
 	return filepath.Join(managerDir, "config.json")
 }
 
 func LoadConfigFile() (c *Config) {
 	c = &Config{}
-	cfgPath := getConfPath()
+	cfgPath := GetConfPath()
+
 	if ok, _ := gutils.PathIsExist(cfgPath); ok {
 		data, _ := os.ReadFile(cfgPath)
 		json.Unmarshal(data, c)
@@ -61,20 +62,20 @@ func LoadConfigFile() (c *Config) {
 		return
 	}
 	// set ENVs.
-	if c.ProxyURI == "" {
+	if c.ProxyURI != "" {
 		os.Setenv(VMProxyEnvName, c.ProxyURI)
 	}
-	if c.ReverseProxy == "" {
+	if c.ReverseProxy != "" {
 		os.Setenv(VMReverseProxyEnvName, c.ReverseProxy)
 	}
-	if c.AppInstallationDir == "" {
+	if c.AppInstallationDir != "" {
 		os.Setenv(VMWorkDirEnvName, c.AppInstallationDir)
 	}
 	return
 }
 
 func SaveConfigFile(c *Config) {
-	cfgPath := getConfPath()
+	cfgPath := GetConfPath()
 	oldCfg := &Config{}
 	if data, err := os.ReadFile(cfgPath); err == nil {
 		json.Unmarshal(data, oldCfg)
@@ -89,7 +90,7 @@ func SaveConfigFile(c *Config) {
 	if c.AppInstallationDir != "" {
 		oldCfg.AppInstallationDir = c.AppInstallationDir
 	}
-	if content, err := json.Marshal(oldCfg); err == nil {
+	if content, err := json.MarshalIndent(oldCfg, "", "    "); err == nil {
 		os.WriteFile(cfgPath, content, os.ModePerm)
 	}
 }
@@ -109,7 +110,7 @@ func GetFetcher() *request.Fetcher {
 	}
 	r := request.NewFetcher()
 	r.SetThreadNum(num)
-	r.SetProxyEnvName(VMProxyEnvName)
+	r.Proxy = os.Getenv(VMProxyEnvName)
 	return r
 }
 

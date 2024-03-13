@@ -208,6 +208,9 @@ func (c *Cli) initiate() {
 			em := envs.NewEnvManager()
 			em.AddToPath(conf.GetManagerDir())
 
+			if ok, _ := gutils.PathIsExist(conf.GetConfPath()); ok {
+				return
+			}
 			// Sets app installation Dir.
 			fmt.Println(gprint.CyanStr(`Enter App Installation Dir["$Home/.vm/" by default]:`))
 			var appDir string
