@@ -848,20 +848,10 @@ var VSCodeInstaller = &installer.Installer{
 	Install: func(appName, version, zipFileName string) {
 		var installDir string = filepath.Join("/Applications", "Visual Studio Code.app") // macOS
 		homeDir, _ := os.UserHomeDir()
-		if runtime.GOOS == gutils.Windows {
-			installDir = filepath.Join(homeDir, "AppData", "Local", "Programs", "Microsoft VS Code")
-		}
 		switch runtime.GOOS {
 		case gutils.Windows:
-			f := installer.NewFinder("bin")
-			f.Find(conf.GetVMTempDir())
-			if ok, _ := gutils.PathIsExist(f.Home); ok {
-				gutils.CopyDirectory(f.Home, installDir, true)
-				binPath := filepath.Join(installDir, "Code.exe")
-				if ok, _ := gutils.PathIsExist(binPath); ok {
-					symbolPath := filepath.Join(homeDir, "Desktop", "VSCode")
-					utils.SymbolicLink(binPath, symbolPath)
-				}
+			if strings.HasSuffix(zipFileName, ".exe") {
+				gutils.ExecuteSysCommand(false, homeDir, zipFileName, "/VERYSILENT", "/MERGETASKS=!runcode")
 			}
 		case gutils.Darwin:
 			f := installer.NewFinder("Visual Studio Code.app")
@@ -869,6 +859,7 @@ var VSCodeInstaller = &installer.Installer{
 			if ok, _ := gutils.PathIsExist(f.Home); ok {
 				utils.CopyFileOnUnixSudo(f.Home, installDir)
 			}
+			os.RemoveAll(conf.GetVMTempDir())
 		case gutils.Linux:
 			/*
 				https://code.visualstudio.com/docs/setup/linux
@@ -919,7 +910,6 @@ var VSCodeInstaller = &installer.Installer{
 		default:
 			gprint.PrintError("Not supported.")
 		}
-		os.RemoveAll(conf.GetVMTempDir())
 	},
 	UnInstall: func(appName, version string) {},
 }
