@@ -348,6 +348,26 @@ var KotlinInstaller = &installer.Installer{
 	HomePage:           "https://kotlinlang.org/",
 }
 
+var LazyGitInstaller = &installer.Installer{
+	AppName:   "lazygit",
+	Version:   "0.40.2",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"LICENSE"}
+	},
+	FlagDirExcepted: true,
+	BinListGetter: func() []string {
+		r := []string{"lazygit"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"lazygit.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://github.com/jesseduffield/lazygit",
+}
+
 var MavenInstaller = &installer.Installer{
 	AppName:   "maven",
 	Version:   "3.9.6",
@@ -997,6 +1017,7 @@ func init() {
 	VersionKeeper["jdk"] = JdkInstaller
 	VersionKeeper["julia"] = JuliaInstaller
 	VersionKeeper["kotlin"] = KotlinInstaller
+	VersionKeeper["lazygit"] = LazyGitInstaller
 	VersionKeeper["maven"] = MavenInstaller
 	VersionKeeper["miniconda"] = MinicondaInstaller
 	VersionKeeper["msys2"] = Msys2Installer

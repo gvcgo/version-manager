@@ -22,6 +22,7 @@
 - tools
   - **commandlinetools**(for android)
   - **git**(for windows only)
+  - **lazygit**(depends on git)
   - **protoc**(protobuf)
   - **gsudo**(for windows only)
   - **vscode**
