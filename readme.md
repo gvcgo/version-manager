@@ -18,6 +18,7 @@
   - **vlang**(v, v-analyzer)
   - **zig**(zig, zls)
   - **typst**(typst, typst-lsp)
+  - **gleam**
 - tools
   - **commandlinetools**(for android)
   - **git**(for windows only)
@@ -29,6 +30,8 @@
   - **fzf**
   - **ripgrep**
   - **tree-sitter**
+  - **vhs**
+  - **glow**
 
 ### Usage
 ```bash
