@@ -68,6 +68,7 @@ func (em *EnvManager) UnsetPath() {
 	envStr := fmt.Sprintf(`export PATH=%s:$PATH`, conf.GetAppBinDir())
 	if strings.Contains(data, conf.GetAppBinDir()) {
 		data = strings.TrimSpace(strings.ReplaceAll(data, envStr, ""))
+		data = strings.ReplaceAll(data, "\n\n", "\n")
 	}
 	os.WriteFile(shellFile, []byte(data), os.ModePerm)
 	em.removeShellFileFromShellConfig()
@@ -143,6 +144,7 @@ func (em *EnvManager) DeleteFromPath(value string) {
 	envStr := fmt.Sprintf(`export PATH=%s:$PATH`, value)
 	if strings.Contains(data, envStr) {
 		data = strings.TrimSpace(strings.ReplaceAll(data, envStr, ""))
+		data = strings.ReplaceAll(data, "\n\n", "\n")
 	}
 	os.WriteFile(shellFile, []byte(data), os.ModePerm)
 	em.addShellFileToShellConfig()
