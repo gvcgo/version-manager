@@ -14,23 +14,23 @@
   - **kotlin**
   - **go**
   - **python**(miniconda, python)
-  - **php**
+  - **php**(php8.0+ only)
   - **javascript/typescript**(node, bun, deno)
   - **dart**(flutter, dart)
   - **julia**
-  - **c/c++**(cygwin, msys2)
+  - **c/c++**(cygwin-installer, msys2-installer)
   - **rust**(rustup-init)
   - **vlang**(v, v-analyzer)
   - **zig**(zig, zls)
   - **typst**(typst, typst-lsp)
   - **gleam**
 - tools
-  - **commandlinetools**(for android)
+  - **commandline-tools**(for android, latest version only)
   - **git**(for windows only)
   - **lazygit**(depends on git)
   - **protoc**(protobuf)
   - **gsudo**(for windows only)
-  - **vscode**
+  - **vscode**(latest version only)
   - **neovim**
   - **fd**
   - **fzf**
