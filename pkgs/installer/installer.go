@@ -473,15 +473,34 @@ func (i *Installer) DeleteAll() {
 	// delete env
 	em := envs.NewEnvManager()
 	if i.EnvGetter != nil {
-		for _, env := range i.EnvGetter(i.AppName, i.Version) {
-			em.UnSet(env.Name)
+		if i.AppName == "jdk" {
+			// handle jdk8.
+			for _, env := range i.EnvGetter(i.AppName, "8u") {
+				em.UnSet(env.Name)
+			}
+			for _, env := range i.EnvGetter(i.AppName, "all") {
+				em.UnSet(env.Name)
+			}
+		} else {
+			for _, env := range i.EnvGetter(i.AppName, i.Version) {
+				em.UnSet(env.Name)
+			}
 		}
 	}
 	if i.AddBinDirToPath {
-		pathValue := i.preparePathValue(filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName))
-		if pathValue != "" {
-			em := envs.NewEnvManager()
-			em.DeleteFromPath(pathValue)
+		versionList := []string{i.Version}
+		// handle jdk8.
+		if i.AppName == "jdk" {
+			versionList = []string{"8u", "all"}
+		}
+		for _, version := range versionList {
+			i.Version = version
+			pathValue := i.preparePathValue(filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName))
+			// fmt.Println("pathValue: ", pathValue)
+			if pathValue != "" {
+				em := envs.NewEnvManager()
+				em.DeleteFromPath(pathValue)
+			}
 		}
 	}
 }

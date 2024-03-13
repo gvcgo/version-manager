@@ -106,8 +106,8 @@ github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWm
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/grokify/html-strip-tags-go v0.0.1 h1:0fThFwLbW7P/kOiTBs03FsJSV9RM2M/Q/MOnCQxKMo0=
 github.com/grokify/html-strip-tags-go v0.0.1/go.mod h1:2Su6romC5/1VXOQMaWL2yb618ARB8iVo6/DR99A6d78=
-github.com/gvcgo/goutils v0.8.8 h1:ynIjL3RyACAHHGVAthoHKKELQiVz2hLSm1dXqYcWLBU=
-github.com/gvcgo/goutils v0.8.8/go.mod h1:g/gPJxbpSiLK0q8a1qpkaf6ec3LOcxb7jj1ekDsKqzY=
+github.com/gvcgo/goutils v0.8.9 h1:TFcpa847q3JO6ZtU/X+QCdULCV5uhj3k5IGd6Jkj/r8=
+github.com/gvcgo/goutils v0.8.9/go.mod h1:g/gPJxbpSiLK0q8a1qpkaf6ec3LOcxb7jj1ekDsKqzY=
 github.com/gvcgo/xtractr v0.0.3 h1:EtuXR2pTL1zNRShY6PcgtKHVA0264Tiyk6qMYz4dJzY=
 github.com/gvcgo/xtractr v0.0.3/go.mod h1:ZmFrtV/BMsuPXeePoDwGBS/2WVDQpdQzuTf6T7o5KmQ=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
