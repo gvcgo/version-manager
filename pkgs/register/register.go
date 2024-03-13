@@ -769,7 +769,8 @@ var RustInstaller = &installer.Installer{
 		}
 	},
 	UnInstall: func(appName, version string) {
-		// TODO: rust uninstall.
+		rustDir := conf.GetVMVersionsDir(appName)
+		os.RemoveAll(rustDir)
 	},
 	HomePage: "https://www.rust-lang.org/",
 }
@@ -806,7 +807,11 @@ var MinicondaInstaller = &installer.Installer{
 		}
 	},
 	UnInstall: func(appName, version string) {
-		// TODO: uninstall miniconda.
+		miniDir := conf.GetVMVersionsDir(appName)
+		os.RemoveAll(miniDir)
+		binDir := filepath.Join(miniDir, appName, "bin")
+		em := envs.NewEnvManager()
+		em.DeleteFromPath(binDir)
 	},
 	HomePage: "https://docs.anaconda.com/free/miniconda/index.html",
 }

@@ -414,14 +414,15 @@ func (i *Installer) InstallApp(zipFilePath string) {
 	}
 }
 
-// customed uninstall.
+// uninstall.
 func (i *Installer) UnInstallApp() {
+	if i.AppName == "" {
+		return
+	}
 	if i.Version == "all" {
-		if i.UnInstall != nil {
-			i.UnInstall(i.AppName, i.Version)
-		} else {
-			i.DeleteAll()
-		}
+		i.DeleteAll()
+	} else if !i.StoreMultiVersions && i.UnInstall != nil {
+		i.UnInstall(i.AppName, i.Version)
 	} else {
 		i.DeleteVersion()
 	}
@@ -448,6 +449,9 @@ func (i *Installer) DeleteVersion() {
 
 // Removes all installed versions of an app.
 func (i *Installer) DeleteAll() {
+	if i.AppName == "" {
+		return
+	}
 	// delete symbolics.
 	infoFile := filepath.Join(conf.GetVMVersionsDir(i.AppName), SymbolicsInfoFileName)
 	data, _ := os.ReadFile(infoFile)

@@ -2,6 +2,7 @@ package installer
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -69,7 +70,15 @@ func NewCondaInstaller() *CondaInstaller {
 	}
 
 	c.UnInstall = func(appName, version string) {
-		// TODO: uninstall python version.
+		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
+		slink, _ := os.Readlink(symbolicPath)
+		if filepath.Base(slink) == version {
+			gprint.PrintWarning("Can not remove a version currently in use: %s", version)
+			return
+		}
+
+		versionDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), version)
+		os.RemoveAll(versionDir)
 	}
 	return c
 }
@@ -112,24 +121,49 @@ func (c *CondaInstaller) Unzip(zipFilePath string) {}
 func (c *CondaInstaller) Copy() {}
 
 func (c *CondaInstaller) CreateVersionSymbol() {}
-func (c *CondaInstaller) CreateBinarySymbol()  {}
+
+func (c *CondaInstaller) CreateBinarySymbol() {}
 
 func (c *CondaInstaller) SetEnv() {}
+
 func (c *CondaInstaller) GetInstall() func(appName, version, zipFilePath string) {
 	return c.Install
 }
+
 func (c *CondaInstaller) InstallApp(zipFilePath string) {
 	if c.Install != nil {
 		c.Install(c.AppName, c.Version, zipFilePath)
 	}
 }
+
 func (c *CondaInstaller) UnInstallApp() {
-	if c.UnInstall != nil {
-		c.UnInstall(c.AppName, c.Version)
+	if c.AppName == "" {
+		return
+	}
+	if c.Version == "all" {
+		c.DeleteAll()
+	} else {
+		if c.UnInstall != nil {
+			c.UnInstall(c.AppName, c.Version)
+		}
 	}
 }
+
 func (c *CondaInstaller) DeleteVersion() {}
-func (c *CondaInstaller) DeleteAll()     {}
+
+func (c *CondaInstaller) DeleteAll() {
+	if c.AppName == "" {
+		return
+	}
+	vDir := conf.GetVMVersionsDir(c.AppName)
+	symbolicPath := filepath.Join(vDir, c.AppName)
+	binPath := filepath.Join(symbolicPath, "bin")
+	if ok, _ := gutils.PathIsExist(binPath); ok {
+		em := envs.NewEnvManager()
+		em.DeleteFromPath(binPath)
+	}
+	os.RemoveAll(vDir)
+}
 
 func (c *CondaInstaller) ClearCache() {}
 
