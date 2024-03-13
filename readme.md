@@ -126,12 +126,12 @@ Will be available soon.
 
 ### Related dirs
 
-- vm installation dir
+- **vm installation dir**
 ```bash
 $HOME/.vm/
 ```
 
-- application installation dir
+- **application installation dir**
 
 Specified during installation of **vm**.
 ```bash
@@ -143,18 +143,18 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 ### Proxy
 **Choose either proxy or reverse-proxy.**
 
-- proxy
+- **proxy**
 ```bash
 vm set-proxy <http://localhost:port or socks5://localhost:port>
 ```
 
-- reverse proxy. 
+- **reverse-proxy**
 https://gvc.1710717.xyz/proxy/ is available for free.
 ```bash
 vm set-reverse-proxy <https://gvc.1710717.xyz/proxy/>
 ```
 
-- enable downloading from mirror sites in China.
+- **enable downloading from mirror sites in China**.
 ```bash
 vm use -mirror-in-china go@1.22.1
 ```
