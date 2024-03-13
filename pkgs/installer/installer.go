@@ -29,7 +29,9 @@ var DefaultDecorator = func(dUrl string, ft *request.Fetcher) string {
 	// proxy
 	pxy := os.Getenv(conf.VMProxyEnvName)
 	if gutils.VerifyUrls(pxy) || strings.Contains(pxy, "://") {
-		ft.Proxy = pxy
+		if ft != nil {
+			ft.Proxy = pxy
+		}
 		return dUrl
 	}
 	return conf.DecorateUrl(dUrl)

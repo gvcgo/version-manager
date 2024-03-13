@@ -88,6 +88,13 @@ func (c *Cli) initiate() {
 			threads, _ := cmd.Flags().GetInt("threads")
 			os.Setenv(conf.VMDownloadThreadsEnvName, gconv.String(threads))
 
+			mirrorInChina, _ := cmd.Flags().GetBool("mirror_in_china")
+			if mirrorInChina {
+				os.Setenv(conf.VMUseMirrorInChinaEnvName, "true")
+			} else {
+				os.Setenv(conf.VMUseMirrorInChinaEnvName, "false")
+			}
+
 			if ins, ok := register.VersionKeeper[sList[0]]; ok {
 				ins.SetVersion(sList[1])
 				register.RunInstaller(ins)
@@ -97,6 +104,7 @@ func (c *Cli) initiate() {
 		},
 	}
 	useCmd.Flags().IntP("threads", "t", 1, "Number of threads to use for downloading.")
+	useCmd.Flags().BoolP("mirror_in_china", "c", false, "Downlowd from mirror sites in China.")
 	c.rootCmd.AddCommand(useCmd)
 
 	c.rootCmd.AddCommand(&cobra.Command{

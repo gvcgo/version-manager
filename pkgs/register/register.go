@@ -32,8 +32,6 @@ type VersionManager interface {
 	SetVersion(version string)
 }
 
-// TODO: use mirror url in China.
-
 /*
 Keeps multi versions.
 */
@@ -124,7 +122,11 @@ var FlutterInstaller = &installer.Installer{
 		return r
 	},
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
-		return strings.ReplaceAll(dUrl, "https://storage.googleapis.com", "https://storage.flutter-io.cn")
+		if conf.UseMirrorSiteInChina() {
+			return strings.ReplaceAll(dUrl, "https://storage.googleapis.com", "https://storage.flutter-io.cn")
+		} else {
+			return installer.DefaultDecorator(dUrl, ft)
+		}
 	},
 	StoreMultiVersions: true,
 	HomePage:           "https://flutter.dev/",
@@ -170,7 +172,13 @@ var GoInstaller = &installer.Installer{
 			{Name: "GOROOT", Value: filepath.Join(conf.GetVMVersionsDir(appName), appName)},
 		}
 	},
-	DUrlDecorator:      installer.DefaultDecorator,
+	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
+		if conf.UseMirrorSiteInChina() {
+			return strings.ReplaceAll(dUrl, "https://go.dev/dl/", "https://golang.google.cn/dl/")
+		} else {
+			return installer.DefaultDecorator(dUrl, ft)
+		}
+	},
 	StoreMultiVersions: true,
 	HomePage:           "https://go.dev/",
 }
@@ -188,6 +196,12 @@ var GradleInstaller = &installer.Installer{
 		}
 	},
 	// DUrlDecorator:      installer.DefaultDecorator,
+	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
+		if conf.UseMirrorSiteInChina() {
+			return strings.ReplaceAll(dUrl, "https://services.gradle.org/distributions/", "https://mirrors.cloud.tencent.com/gradle/")
+		}
+		return dUrl
+	},
 	StoreMultiVersions: true,
 	HomePage:           "https://gradle.org/",
 }
@@ -257,7 +271,13 @@ var JuliaInstaller = &installer.Installer{
 		}
 		return r
 	},
-	DUrlDecorator:      installer.DefaultDecorator,
+	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
+		if conf.UseMirrorSiteInChina() {
+			return strings.ReplaceAll(dUrl, "https://julialang-s3.julialang.org/", "https://mirrors.nju.edu.cn/julia-releases/")
+		} else {
+			return installer.DefaultDecorator(dUrl, ft)
+		}
+	},
 	StoreMultiVersions: true,
 	HomePage:           "https://julialang.org/",
 }
@@ -295,7 +315,12 @@ var MavenInstaller = &installer.Installer{
 	BinListGetter: func() []string {
 		return []string{"mvn"}
 	},
-	DUrlDecorator:      installer.DefaultDecorator,
+	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
+		if conf.UseMirrorSiteInChina() {
+			return strings.ReplaceAll(dUrl, "https://dlcdn.apache.org/maven/", "https://mirrors.aliyun.com/apache/maven/")
+		}
+		return installer.DefaultDecorator(dUrl, ft)
+	},
 	StoreMultiVersions: true,
 	HomePage:           "https://maven.apache.org/",
 }
@@ -345,7 +370,14 @@ var NodejsInstaller = &installer.Installer{
 		}
 		return r
 	},
+	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
+		if conf.UseMirrorSiteInChina() {
+			return strings.ReplaceAll(dUrl, "https://nodejs.org/download/release/", "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/")
+		}
+		return dUrl
+	},
 	StoreMultiVersions: true,
+	AddBinDirToPath:    true,
 	HomePage:           "https://nodejs.org/en",
 }
 
@@ -708,7 +740,7 @@ var SDKManagerInstaller = &installer.Installer{
 		}
 	},
 	AddBinDirToPath: true,
-	HomePage:        "https://developer.android.com/tools/sdkmanager",
+	HomePage:        "https://developer.android.google.cn/tools/releases/cmdline-tools",
 }
 
 /*
@@ -721,6 +753,14 @@ var RustInstaller = &installer.Installer{
 	IsZipFile:  false,
 	NoDownload: true,
 	Install: func(appName, version, zipFileName string) {
+		if conf.UseMirrorSiteInChina() {
+			/*
+				export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+				export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+			*/
+			os.Setenv("RUSTUP_DIST_SERVER", "https://mirrors.ustc.edu.cn/rust-static")
+			os.Setenv("RUSTUP_UPDATE_ROOT", "https://mirrors.ustc.edu.cn/rust-static/rustup")
+		}
 		rustDir := conf.GetVMVersionsDir(appName)
 		binDir := conf.GetAppBinDir()
 		rustupInitName := "rustup-init"
@@ -782,6 +822,12 @@ var MinicondaInstaller = &installer.Installer{
 		em := envs.NewEnvManager()
 		em.DeleteFromPath(binDir)
 	},
+	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
+		if conf.UseMirrorSiteInChina() {
+			return strings.ReplaceAll(dUrl, "https://repo.anaconda.com/miniconda/", "https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/")
+		}
+		return dUrl
+	},
 	HomePage: "https://docs.anaconda.com/free/miniconda/index.html",
 }
 
@@ -816,7 +862,7 @@ func init() {
 	VersionKeeper["ripgrep"] = RipgrepInstaller
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
-	VersionKeeper["sdkmanager"] = SDKManagerInstaller
+	VersionKeeper["cmdtools"] = SDKManagerInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst"] = TypstInstaller

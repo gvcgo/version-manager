@@ -51,6 +51,30 @@ func NewCondaInstaller() *CondaInstaller {
 			gprint.PrintWarning("No conda is installed. Please install miniconda first.")
 			return
 		}
+
+		if conf.UseMirrorSiteInChina() {
+			/*
+				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/main/
+				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
+				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/
+				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/
+				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/
+				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/
+				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/
+			*/
+			channelList := []string{
+				"https://mirrors.ustc.edu.cn/anaconda/pkgs/main/",
+				"https://mirrors.ustc.edu.cn/anaconda/pkgs/free/",
+				"https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/",
+				"https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/",
+				"https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/",
+				"https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/",
+				"https://mirrors.ustc.edu.cn/anaconda/cloud/",
+			}
+			for _, c := range channelList {
+				gutils.ExecuteSysCommand(false, "", "conda", "config", "--add", "channels", c)
+			}
+		}
 		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
 		_, err := gutils.ExecuteSysCommand(
 			false, "",

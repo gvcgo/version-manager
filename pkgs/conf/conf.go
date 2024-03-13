@@ -20,6 +20,7 @@ func init() {
 ENVs
 1. Proxies for Version Manager.
 2. App installation directories.
+3. Multi-thread downloading.
 
 Examples:
 export VM_PROXY_URI="http://127.0.0.1:2023"
@@ -27,10 +28,11 @@ export VM_REVERSE_PROXY_URL="https://gvc.1710717.xyz/proxy/"
 export VM_APP_INSTALL_DIR="~/.vm/"
 */
 const (
-	VMProxyEnvName           string = "VM_PROXY_URI"
-	VMReverseProxyEnvName    string = "VM_REVERSE_PROXY_URL"
-	VMWorkDirEnvName         string = "VM_APP_INSTALL_DIR"
-	VMDownloadThreadsEnvName string = "VM_DOWNLOAD_THREADS"
+	VMProxyEnvName            string = "VM_PROXY_URI"
+	VMReverseProxyEnvName     string = "VM_REVERSE_PROXY_URL"
+	VMWorkDirEnvName          string = "VM_APP_INSTALL_DIR"
+	VMDownloadThreadsEnvName  string = "VM_DOWNLOAD_THREADS"
+	VMUseMirrorInChinaEnvName string = "VM_USE_MIRROR_IN_CHINA"
 )
 
 type Config struct {
@@ -100,6 +102,11 @@ func SaveConfigFile(c *Config) {
 get value from ENVs.
 ======================================
 */
+
+// Use mirror site in China.
+func UseMirrorSiteInChina() bool {
+	return gconv.Bool(os.Getenv(VMUseMirrorInChinaEnvName))
+}
 
 // Sets proxy for fetcher.
 func GetFetcher() *request.Fetcher {
