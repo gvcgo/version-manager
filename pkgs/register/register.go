@@ -64,6 +64,30 @@ var BunInstaller = &installer.Installer{
 	HomePage:           "https://bun.sh",
 }
 
+var CoursierInstaller = &installer.Installer{
+	AppName:   "coursier",
+	Version:   "2.1.9",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		r := []string{"cs"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"cs.exe"}
+		}
+		return r
+	},
+	FlagDirExcepted: true,
+	BinListGetter: func() []string {
+		r := []string{"cs"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"cs.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://get-coursier.io/",
+}
+
 var DenoInstaller = &installer.Installer{
 	AppName:   "deno",
 	Version:   "1.41.1",
@@ -85,6 +109,30 @@ var DenoInstaller = &installer.Installer{
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
 	HomePage:           "https://deno.com/",
+}
+
+var DotNetInstaller = &installer.Installer{
+	AppName:         "dotnet",
+	Version:         "8.0.202",
+	IsZipFile:       true,
+	AddBinDirToPath: true,
+	FlagFileGetter: func() []string {
+		return []string{"shared", "sdk", "host"}
+	},
+	BinListGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"dotnet.exe"}
+		}
+		return []string{"dotnet"}
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	EnvGetter: func(appName, version string) []installer.Env {
+		return []installer.Env{
+			{Name: "DOTNET_ROOT", Value: filepath.Join(conf.GetVMVersionsDir(appName), appName)},
+		}
+	},
+	HomePage: "https://dotnet.microsoft.com/",
 }
 
 var FdInstaller = &installer.Installer{
@@ -562,6 +610,12 @@ var RipgrepInstaller = &installer.Installer{
 	HomePage:           "https://github.com/BurntSushi/ripgrep",
 }
 
+// TODO: Scala.
+var ScalaInstaller = &installer.Installer{
+	AppName: "scala",
+	Version: "",
+}
+
 var TreesitterInstaller = &installer.Installer{
 	AppName:        "tree-sitter",
 	Version:        "0.22.1",
@@ -1003,8 +1057,10 @@ var VSCodeInstaller = &installer.Installer{
 
 func init() {
 	VersionKeeper["bun"] = BunInstaller
+	VersionKeeper["coursier"] = CoursierInstaller
 	VersionKeeper["cygwin"] = CygwinInstaller
 	VersionKeeper["deno"] = DenoInstaller
+	VersionKeeper["dotnet"] = DotNetInstaller
 	VersionKeeper["fd"] = FdInstaller
 	VersionKeeper["flutter"] = FlutterInstaller
 	VersionKeeper["fzf"] = FzFInstaller

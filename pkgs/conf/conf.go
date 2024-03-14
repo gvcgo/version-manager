@@ -86,7 +86,7 @@ func SaveConfigFile(c *Config) {
 	if c.ProxyURI != "" {
 		oldCfg.ProxyURI = c.ProxyURI
 	}
-	if c.ProxyURI != "" {
+	if c.ReverseProxy != "" {
 		oldCfg.ReverseProxy = c.ReverseProxy
 	}
 	if c.AppInstallationDir != "" {

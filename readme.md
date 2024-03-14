@@ -12,14 +12,16 @@
 - programming languages
   - **java**(jdk, maven, gradle)
   - **kotlin**
+  - **scala**(coursier, scala)
   - **go**
   - **python**(miniconda, python)
   - **php**(php8.0+ only)
   - **javascript/typescript**(node, bun, deno)
   - **dart**(flutter, dart)
   - **julia**
+  - **.net**(dotnet-sdk)
   - **c/c++**(cygwin-installer, msys2-installer)
-  - **rust**(rustup-init)
+  - **rust**(rustup-init, rust)
   - **vlang**(v, v-analyzer)
   - **zig**(zig, zls)
   - **typst**(typst, typst-lsp)
@@ -149,6 +151,7 @@ vm set-proxy <http://localhost:port or socks5://localhost:port>
 ```
 
 - **reverse-proxy**
+
 https://gvc.1710717.xyz/proxy/ is available for free.
 ```bash
 vm set-reverse-proxy <https://gvc.1710717.xyz/proxy/>
