@@ -1052,7 +1052,9 @@ var VSCodeInstaller = &installer.Installer{
 			gprint.PrintError("Not supported.")
 		}
 	},
-	UnInstall: func(appName, version string) {},
+	UnInstall: func(appName, version string) {
+		gprint.PrintInfo("Please uninstall vscode manually.")
+	},
 }
 
 func init() {
