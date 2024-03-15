@@ -167,7 +167,9 @@ func (i *Installer) Download() (zipFilePath string) {
 	// checksum
 	if i.V.Sum != "" && i.V.SumType != "" {
 		if ok := gutils.CheckSum(zipFilePath, strings.TrimSpace(i.V.SumType), strings.TrimSpace(i.V.Sum)); !ok {
-			os.RemoveAll(zipFilePath) // checksum failed.
+			if zipFilePath != "" {
+				os.RemoveAll(zipFilePath) // checksum failed.
+			}
 			zipFilePath = ""
 		}
 	}
@@ -180,7 +182,9 @@ func (i *Installer) Download() (zipFilePath string) {
 
 func handleUnzipFailedError(zipFilePath string, err error) {
 	gprint.PrintError("Failed to unzip file: %s, %+v", zipFilePath, err)
-	os.RemoveAll(zipFilePath)
+	if zipFilePath != "" {
+		os.RemoveAll(zipFilePath)
+	}
 }
 
 func (i *Installer) Unzip(zipFilePath string) {
