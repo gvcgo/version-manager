@@ -41,6 +41,7 @@ var ArchHandlerList = map[string]func(archType, osType string) string{
 	"rust":       ToAnyArch,
 	"sdkmanager": ToAnyArch,
 	"vscode":     ToDarwinX64,
+	"scala":      ToAnyArch,
 }
 
 /*
@@ -67,4 +68,5 @@ var OsHandlerList = map[string]func(archType, osType string) string{
 	"maven":  ToAnyOs,
 	"python": ToAnyOs,
 	"rust":   ToUnixOs,
+	"scala":  ToAnyOs,
 }

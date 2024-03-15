@@ -1,10 +1,16 @@
 package installer
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/envs"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
 
@@ -36,11 +42,56 @@ func NewCoursierInstaller() *CoursierInstaller {
 		HomePage: "https://www.scala-lang.org/",
 	}
 	c.Install = func(appName, version, zipFilePath string) {
-		// TODO: scala install
+		if c.V == nil {
+			c.SearchVersion()
+		}
+		if c.V == nil {
+			gprint.PrintError("Can't find version: %s", c.Version)
+			return
+		}
+		if !IsCoursierInstalled() {
+			gprint.PrintWarning("No coursier is installed. Please install coursier first.")
+			os.Exit(1)
+		}
+
+		if conf.UseMirrorSiteInChina() {
+			os.Setenv(
+				"COURSIER_REPOSITORIES",
+				"https://maven.aliyun.com/repository/public|https://maven.scijava.org/content/repositories/public",
+			)
+		}
+
+		if strings.Contains(c.Version, "LTS") {
+			c.Version = strings.ReplaceAll(c.Version, "-LTS", "")
+			c.Version = strings.ReplaceAll(c.Version, " LTS", "")
+		}
+		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
+		_, err := gutils.ExecuteSysCommand(
+			false, "",
+			"cs", "install",
+			"-P",
+			fmt.Sprintf("--install-dir=%s", installDir),
+			fmt.Sprintf("scala:%s", c.Version),
+		)
+		if err == nil {
+			symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
+			os.RemoveAll(symbolicPath)
+			utils.SymbolicLink(installDir, symbolicPath)
+			em := envs.NewEnvManager()
+			em.AddToPath(symbolicPath)
+		}
 	}
 
 	c.UnInstall = func(appName, version string) {
-		// TODO: scala uninstall
+		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
+		slink, _ := os.Readlink(symbolicPath)
+		if filepath.Base(slink) == version {
+			gprint.PrintWarning("Can not remove a version currently in use: %s", version)
+			return
+		}
+
+		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), version)
+		os.RemoveAll(installDir)
 	}
 	return c
 }
@@ -75,6 +126,15 @@ func (c *CoursierInstaller) SearchVersion() {
 
 func (c *CoursierInstaller) Download() (zipFilePath string) {
 	c.SearchVersion()
+	if c.V != nil {
+		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
+		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
+		if ok, _ := gutils.PathIsExist(installDir); ok {
+			os.RemoveAll(symbolicPath)
+			utils.SymbolicLink(installDir, symbolicPath)
+			os.Exit(0)
+		}
+	}
 	return ""
 }
 
@@ -117,7 +177,13 @@ func (c *CoursierInstaller) DeleteAll() {
 	if c.AppName == "" {
 		return
 	}
-	// TODO: delete all for scala.
+	vDir := conf.GetVMVersionsDir(c.AppName)
+	symbolicPath := filepath.Join(vDir, c.AppName)
+	if ok, _ := gutils.PathIsExist(symbolicPath); ok {
+		em := envs.NewEnvManager()
+		em.DeleteFromPath(symbolicPath)
+	}
+	os.RemoveAll(vDir)
 }
 
 func (c *CoursierInstaller) ClearCache() {}

@@ -610,11 +610,7 @@ var RipgrepInstaller = &installer.Installer{
 	HomePage:           "https://github.com/BurntSushi/ripgrep",
 }
 
-// TODO: Scala.
-var ScalaInstaller = &installer.Installer{
-	AppName: "scala",
-	Version: "",
-}
+var ScalaInstaller = installer.NewCoursierInstaller()
 
 var TreesitterInstaller = &installer.Installer{
 	AppName:        "tree-sitter",
@@ -870,7 +866,7 @@ var RustupInstaller = &installer.Installer{
 }
 
 var SDKManagerInstaller = &installer.Installer{
-	AppName:   "sdkmanager",
+	AppName:   "sdkmanager", // commandline-tools
 	Version:   "latest",
 	IsZipFile: true,
 	FlagFileGetter: func() []string {
@@ -1059,6 +1055,7 @@ var VSCodeInstaller = &installer.Installer{
 
 func init() {
 	VersionKeeper["bun"] = BunInstaller
+	VersionKeeper["cmdtools"] = SDKManagerInstaller
 	VersionKeeper["coursier"] = CoursierInstaller
 	VersionKeeper["cygwin"] = CygwinInstaller
 	VersionKeeper["deno"] = DenoInstaller
@@ -1087,7 +1084,7 @@ func init() {
 	VersionKeeper["ripgrep"] = RipgrepInstaller
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
-	VersionKeeper["cmdtools"] = SDKManagerInstaller
+	VersionKeeper["scala"] = ScalaInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst"] = TypstInstaller

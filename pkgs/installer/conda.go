@@ -49,7 +49,7 @@ func NewCondaInstaller() *CondaInstaller {
 		}
 		if !IsMinicondaInstalled() {
 			gprint.PrintWarning("No conda is installed. Please install miniconda first.")
-			return
+			os.Exit(1)
 		}
 
 		if conf.UseMirrorSiteInChina() {
@@ -84,6 +84,7 @@ func NewCondaInstaller() *CondaInstaller {
 		)
 		if err == nil {
 			symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
+			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)
 			binPath := filepath.Join(symbolicPath, "bin")
 			if ok, _ := gutils.PathIsExist(binPath); ok {
@@ -101,8 +102,8 @@ func NewCondaInstaller() *CondaInstaller {
 			return
 		}
 
-		versionDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), version)
-		os.RemoveAll(versionDir)
+		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), version)
+		os.RemoveAll(installDir)
 	}
 	return c
 }
@@ -137,6 +138,15 @@ func (c *CondaInstaller) SearchVersion() {
 
 func (c *CondaInstaller) Download() (zipFilePath string) {
 	c.SearchVersion()
+	if c.V != nil {
+		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
+		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
+		if ok, _ := gutils.PathIsExist(installDir); ok {
+			os.RemoveAll(symbolicPath)
+			utils.SymbolicLink(installDir, symbolicPath)
+			os.Exit(0)
+		}
+	}
 	return ""
 }
 
