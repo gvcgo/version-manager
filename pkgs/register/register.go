@@ -178,10 +178,10 @@ var FlutterInstaller = &installer.Installer{
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
 		if conf.UseMirrorSiteInChina() {
 			return strings.ReplaceAll(dUrl, "https://storage.googleapis.com", "https://storage.flutter-io.cn")
-		} else {
-			return installer.DefaultDecorator(dUrl, ft)
 		}
+		return dUrl
 	},
+	AddBinDirToPath:    true,
 	StoreMultiVersions: true,
 	HomePage:           "https://flutter.dev/",
 }

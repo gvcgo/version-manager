@@ -167,8 +167,8 @@ func (i *Installer) Download() (zipFilePath string) {
 	// checksum
 	if i.V.Sum != "" && i.V.SumType != "" {
 		if ok := gutils.CheckSum(zipFilePath, strings.TrimSpace(i.V.SumType), strings.TrimSpace(i.V.Sum)); !ok {
-			zipFilePath = ""
 			os.RemoveAll(zipFilePath) // checksum failed.
+			zipFilePath = ""
 		}
 	}
 	if zipFilePath == "" && i.Install == nil {
