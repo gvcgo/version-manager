@@ -144,6 +144,7 @@ func (c *CondaInstaller) Download() (zipFilePath string) {
 		if ok, _ := gutils.PathIsExist(installDir); ok {
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)
+			gprint.PrintSuccess("Switched to %s", c.Version)
 			os.Exit(0)
 		}
 	}

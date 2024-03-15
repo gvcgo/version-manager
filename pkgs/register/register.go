@@ -85,6 +85,7 @@ var CoursierInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://get-coursier.io/",
 }
 

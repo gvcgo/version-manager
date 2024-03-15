@@ -31,7 +31,11 @@ func (s *Searcher) GetVersions(appName string) map[string]versions.VersionList {
 
 // Shows version list.
 func (s *Searcher) Search(appName string) {
-	s.init(appName)
+	if appName == "cmdtools" {
+		s.init("sdkmanager")
+	} else {
+		s.init(appName)
+	}
 	vl := s.VersionInfo.GetSortedVersionList()
 	if len(vl) == 0 {
 		gprint.PrintWarning("No versions found!")

@@ -72,7 +72,7 @@ func NewInstaller(appName, version string) (i *Installer) {
 	return
 }
 func (i *Installer) SetVersion(version string) {
-	if !i.StoreMultiVersions {
+	if !i.StoreMultiVersions && version != "all" {
 		// the latest version only.
 		i.Version = "latest"
 		return
@@ -111,11 +111,13 @@ func (i *Installer) SearchLatestVersion() {
 	}
 	vf := i.Searcher.GetVersions(i.AppName)
 	if v, ok := vf["latest"]; ok {
+		i.Version = "latest"
 		i.V = &v[0]
 		return
 	}
-	for _, v := range vf {
+	for vName, v := range vf {
 		i.V = &v[0]
+		i.Version = vName
 		return
 	}
 }
@@ -124,14 +126,6 @@ func (i *Installer) Download() (zipFilePath string) {
 	if i.Fetcher == nil {
 		i.Fetcher = conf.GetFetcher()
 	}
-	// if already installed, switch to the specified version.
-	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
-	if ok, _ := gutils.PathIsExist(versionPath); ok {
-		i.CreateVersionSymbol()
-		gprint.PrintSuccess("Switched to %s", i.Version)
-		return
-	}
-
 	if i.NoDownload {
 		return
 	}
@@ -140,9 +134,20 @@ func (i *Installer) Download() (zipFilePath string) {
 	} else {
 		i.SearchLatestVersion()
 	}
+
 	if i.V == nil {
 		return
 	}
+
+	// if already installed, switch to the specified version.
+	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
+	if ok, _ := gutils.PathIsExist(versionPath); ok {
+		i.CreateVersionSymbol()
+		gprint.PrintSuccess("Switched to %s", i.Version)
+		os.Exit(0)
+	}
+
+	// install new version.
 	zipDir := conf.GetZipFileDir(i.AppName)
 	if ok, _ := gutils.PathIsExist(zipDir); !ok {
 		if err := os.MkdirAll(zipDir, os.ModePerm); err != nil {
