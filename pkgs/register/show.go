@@ -7,7 +7,7 @@ import (
 )
 
 /*
-Show app list.
+Shows supported app list.
 */
 func ShowAppList() {
 

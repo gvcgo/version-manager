@@ -19,7 +19,7 @@
   - **javascript/typescript**(node, bun, deno)
   - **dart**(flutter, dart)
   - **julia**
-  - **.net**(dotnet-sdk)
+  - **.net**(dotnet-sdk, c#)
   - **c/c++**(cygwin-installer, msys2-installer)
   - **rust**(rustup-init, rust)
   - **vlang**(v, v-analyzer)
