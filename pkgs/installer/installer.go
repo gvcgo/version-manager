@@ -472,6 +472,7 @@ func (i *Installer) DeleteVersion() {
 	}
 
 	// remove a version
+	i.SearchVersion()
 	versionDir := filepath.Join(vDir, i.Version)
 	if err := os.RemoveAll(versionDir); err != nil {
 		gprint.PrintError("failed to remove version %s: %+v", i.Version, err)

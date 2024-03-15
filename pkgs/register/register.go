@@ -109,6 +109,7 @@ var DenoInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://deno.com/",
 }
 
