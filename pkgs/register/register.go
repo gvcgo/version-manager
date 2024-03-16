@@ -1079,7 +1079,7 @@ func init() {
 	VersionKeeper["miniconda"] = MinicondaInstaller
 	VersionKeeper["msys2"] = Msys2Installer
 	VersionKeeper["neovim"] = NeovimInstaller
-	VersionKeeper["node"] = NodejsInstaller
+	VersionKeeper["nodejs"] = NodejsInstaller
 	VersionKeeper["php"] = PHPInstaller
 	VersionKeeper["protobuf"] = ProtobufInstaller
 	VersionKeeper["python"] = PythonInstaller
