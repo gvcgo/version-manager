@@ -730,6 +730,7 @@ var VlangInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://vlang.io/",
 }
 
@@ -968,7 +969,8 @@ var MinicondaInstaller = &installer.Installer{
 		}
 		return dUrl
 	},
-	HomePage: "https://docs.anaconda.com/free/miniconda/index.html",
+	ForceReDownload: true,
+	HomePage:        "https://docs.anaconda.com/free/miniconda/index.html",
 }
 
 func vscodeNoDownload() bool {
