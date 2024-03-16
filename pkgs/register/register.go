@@ -979,7 +979,7 @@ func vscodeNoDownload() bool {
 }
 
 func vscodeIsZipFile() bool {
-	return runtime.GOOS == gutils.Windows
+	return runtime.GOOS != gutils.Windows
 }
 
 var VSCodeInstaller = &installer.Installer{
@@ -989,7 +989,6 @@ var VSCodeInstaller = &installer.Installer{
 	IsZipFile:  vscodeIsZipFile(),
 	NoDownload: vscodeNoDownload(),
 	Install: func(appName, version, zipFileName string) {
-		var installDir string = filepath.Join("/Applications", "Visual Studio Code.app") // macOS
 		homeDir, _ := os.UserHomeDir()
 		switch runtime.GOOS {
 		case gutils.Windows:
@@ -997,10 +996,12 @@ var VSCodeInstaller = &installer.Installer{
 				gutils.ExecuteSysCommand(false, homeDir, zipFileName, "/VERYSILENT", "/MERGETASKS=!runcode")
 			}
 		case gutils.Darwin:
-			f := installer.NewFinder("Visual Studio Code.app")
+			appName := "Visual Studio Code.app"
+			f := installer.NewFinder(appName)
 			f.Find(conf.GetVMTempDir())
-			if ok, _ := gutils.PathIsExist(f.Home); ok {
-				utils.CopyFileOnUnixSudo(f.Home, installDir)
+			appPath := filepath.Join(f.Home, appName)
+			if ok, _ := gutils.PathIsExist(appPath); ok {
+				utils.MoveFileOnUnixSudo(appPath, "/Applications")
 			}
 			os.RemoveAll(conf.GetVMTempDir())
 		case gutils.Linux:
@@ -1057,6 +1058,7 @@ var VSCodeInstaller = &installer.Installer{
 	UnInstall: func(appName, version string) {
 		gprint.PrintInfo("Please uninstall vscode manually.")
 	},
+	ForceReDownload: true,
 }
 
 func init() {

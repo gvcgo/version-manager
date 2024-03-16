@@ -37,6 +37,15 @@ func CopyFileOnUnixSudo(from, to string) error {
 	return cmd.Run()
 }
 
+func MoveFileOnUnixSudo(from, to string) error {
+	cmd := exec.Command("sudo", "mv", from, to)
+	cmd.Env = genv.All()
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	return cmd.Run()
+}
+
 func DNForAPTonLinux() string {
 	_, err := gutils.ExecuteSysCommand(true, "", "apt", "--help")
 	if err == nil {
