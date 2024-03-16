@@ -860,6 +860,7 @@ var Msys2Installer = &installer.Installer{
 	BinListGetter: func() []string {
 		return []string{"msys2-installer.exe"}
 	},
+	DUrlDecorator:   installer.DefaultDecorator,
 	ForceReDownload: true,
 	HomePage:        "https://www.msys2.org/",
 }
