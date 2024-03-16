@@ -372,9 +372,8 @@ var JuliaInstaller = &installer.Installer{
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
 		if conf.UseMirrorSiteInChina() {
 			return strings.ReplaceAll(dUrl, "https://julialang-s3.julialang.org/", "https://mirrors.nju.edu.cn/julia-releases/")
-		} else {
-			return installer.DefaultDecorator(dUrl, ft)
 		}
+		return dUrl
 	},
 	StoreMultiVersions: true,
 	HomePage:           "https://julialang.org/",
