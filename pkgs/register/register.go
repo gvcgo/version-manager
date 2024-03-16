@@ -463,6 +463,7 @@ var NeovimInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://neovim.io/",
 }
 
