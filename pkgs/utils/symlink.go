@@ -4,6 +4,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 )
 
@@ -27,6 +28,14 @@ func SymbolicLink(oldname, newname string) error {
 		if err != nil {
 			err = os.Link(oldname, newname)
 		}
+	}
+	if err != nil {
+		gprint.PrintError("create symbolic failed: %+v\n", err)
+		if runtime.GOOS == gutils.Windows {
+			gprint.PrintWarning("If you're on Windows11, then go to 'System>For developers' and enable the 'Developer Mode'.")
+			gprint.PrintWarning("If you're on Windows10, then you can use vm with 'Admin Privilege'.")
+		}
+		os.Exit(1)
 	}
 	return err
 }
