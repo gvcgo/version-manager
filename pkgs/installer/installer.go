@@ -195,6 +195,19 @@ func handleUnzipFailedError(zipFilePath string, err error) {
 	}
 }
 
+func (i *Installer) filterRenameBinary(binName string) bool {
+	if strings.Contains(binName, i.BinaryRenameTo) {
+		return true
+	}
+	if strings.Contains(binName, "msys2") && strings.HasSuffix(binName, ".exe") {
+		return true
+	}
+	if strings.Contains(binName, "setup") && strings.HasSuffix(binName, ".exe") {
+		return true
+	}
+	return false
+}
+
 func (i *Installer) Unzip(zipFilePath string) {
 	if zipFilePath == "" {
 		return
@@ -236,7 +249,7 @@ func (i *Installer) Unzip(zipFilePath string) {
 		}
 	} else if !i.IsZipFile && i.BinaryRenameTo != "" {
 		binName := filepath.Base(zipFilePath)
-		if strings.Contains(binName, i.BinaryRenameTo) {
+		if i.filterRenameBinary(binName) {
 			newName := i.BinaryRenameTo
 			if runtime.GOOS == gutils.Windows {
 				newName = i.BinaryRenameTo + ".exe"
@@ -247,6 +260,7 @@ func (i *Installer) Unzip(zipFilePath string) {
 			// copy and rename binary file to tmp dir.
 			if err := gutils.CopyAFile(zipFilePath, newPath); err != nil {
 				gprint.PrintError("Copy file %x to tmp dir failed: %+v", zipFilePath, err)
+				os.Exit(1)
 			}
 			if runtime.GOOS != gutils.Windows {
 				// add previlledge for exectution.

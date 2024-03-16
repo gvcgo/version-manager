@@ -833,13 +833,17 @@ var GsudoWinInstaller = &installer.Installer{
 	HomePage:        "https://gerardog.github.io/gsudo/",
 }
 
+// TODO: to be fixed.
 var CygwinInstaller = &installer.Installer{
 	AppName:        "cygwin",
 	Version:        "latest",
 	IsZipFile:      false,
 	BinaryRenameTo: "cygwin-installer",
 	FlagFileGetter: func() []string {
-		return []string{"setup-x86_64.exe"}
+		return []string{"cygwin-installer.exe"}
+	},
+	BinListGetter: func() []string {
+		return []string{"cygwin-installer.exe"}
 	},
 	ForceReDownload: true,
 	HomePage:        "https://www.cygwin.com/",
@@ -851,7 +855,10 @@ var Msys2Installer = &installer.Installer{
 	IsZipFile:      false,
 	BinaryRenameTo: "msys2-installer",
 	FlagFileGetter: func() []string {
-		return []string{"msys2-x86_64-latest.exe"}
+		return []string{"msys2-installer.exe"}
+	},
+	BinListGetter: func() []string {
+		return []string{"msys2-installer.exe"}
 	},
 	ForceReDownload: true,
 	HomePage:        "https://www.msys2.org/",
