@@ -701,6 +701,7 @@ var VlangLspInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://github.com/v-analyzer/v-analyzer",
 }
 
