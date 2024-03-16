@@ -87,6 +87,14 @@ func (i *Installer) SearchVersion() {
 	}
 	vf := i.Searcher.GetVersions(i.AppName)
 	vs := make([]string, 0)
+
+	// search by full name.
+	if v, ok := vf[i.Version]; ok {
+		i.V = &v[0]
+		return
+	}
+
+	// search by keywords.
 	for key := range vf {
 		if strings.Contains(key, i.Version) {
 			vs = append(vs, key)
