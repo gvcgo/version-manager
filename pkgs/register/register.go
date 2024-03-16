@@ -274,9 +274,8 @@ var GoInstaller = &installer.Installer{
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
 		if conf.UseMirrorSiteInChina() {
 			return strings.ReplaceAll(dUrl, "https://go.dev/dl/", "https://golang.google.cn/dl/")
-		} else {
-			return installer.DefaultDecorator(dUrl, ft)
 		}
+		return installer.DefaultDecorator(dUrl, ft)
 	},
 	StoreMultiVersions: true,
 	HomePage:           "https://go.dev/",
@@ -299,7 +298,7 @@ var GradleInstaller = &installer.Installer{
 		if conf.UseMirrorSiteInChina() {
 			return strings.ReplaceAll(dUrl, "https://services.gradle.org/distributions/", "https://mirrors.cloud.tencent.com/gradle/")
 		}
-		return dUrl
+		return installer.DefaultDecorator(dUrl, ft)
 	},
 	StoreMultiVersions: true,
 	HomePage:           "https://gradle.org/",
