@@ -61,10 +61,6 @@ func NewCoursierInstaller() *CoursierInstaller {
 			)
 		}
 
-		if strings.Contains(c.Version, "LTS") {
-			c.Version = strings.ReplaceAll(c.Version, "-LTS", "")
-			c.Version = strings.ReplaceAll(c.Version, " LTS", "")
-		}
 		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
 		_, err := gutils.ExecuteSysCommand(
 			false, "",
@@ -121,6 +117,11 @@ func (c *CoursierInstaller) SearchVersion() {
 	} else {
 		c.V = nil
 		gprint.PrintError("Found multiple versions: \n%v", strings.Join(vs, "\n"))
+	}
+	// Handle "LTS"
+	if strings.Contains(c.Version, "LTS") {
+		c.Version = strings.ReplaceAll(c.Version, "-LTS", "")
+		c.Version = strings.ReplaceAll(c.Version, " LTS", "")
 	}
 }
 
