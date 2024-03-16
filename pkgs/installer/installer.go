@@ -208,6 +208,17 @@ func (i *Installer) filterRenameBinary(binName string) bool {
 	return false
 }
 
+// use archiver or xtract.
+func useArchiver(zipFilePath string) bool {
+	if strings.HasSuffix(zipFilePath, ".gz") && !strings.HasSuffix(zipFilePath, ".tar.gz") {
+		return false
+	}
+	if strings.HasSuffix(zipFilePath, ".7z") {
+		return false
+	}
+	return true
+}
+
 func (i *Installer) Unzip(zipFilePath string) {
 	if zipFilePath == "" {
 		return
@@ -223,12 +234,8 @@ func (i *Installer) Unzip(zipFilePath string) {
 		}
 
 		tempDir := conf.GetVMTempDir()
-		// use archiver.
-		useArchiver := true
-		if strings.HasSuffix(zipFilePath, ".gz") && !strings.HasSuffix(zipFilePath, ".tar.gz") {
-			useArchiver = false
-		}
-		if arch, err := archiver.NewArchiver(zipFilePath, tempDir, useArchiver); err == nil {
+		gprint.PrintInfo("Unarchiving files, please wait...")
+		if arch, err := archiver.NewArchiver(zipFilePath, tempDir, useArchiver(zipFilePath)); err == nil {
 			_, err = arch.UnArchive()
 			if err != nil {
 				handleUnzipFailedError(zipFilePath, err)

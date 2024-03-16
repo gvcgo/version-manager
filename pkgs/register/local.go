@@ -47,7 +47,7 @@ func ShowInstalled(appName string) {
 		gtable.WithRows(rows),
 		gtable.WithFocused(true),
 		gtable.WithHeight(15),
-		gtable.WithWidth(80),
+		gtable.WithWidth(160),
 	)
 	t.Run()
 }

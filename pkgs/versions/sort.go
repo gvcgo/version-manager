@@ -166,3 +166,11 @@ func SortStringList(sl []string) []string {
 	}
 	return QuickSort(iList, true)
 }
+
+func SortStringListDesc(sl []string) []string {
+	iList := []Item{}
+	for _, s := range sl {
+		iList = append(iList, &StringComparator{s})
+	}
+	return QuickSort(iList, false)
+}

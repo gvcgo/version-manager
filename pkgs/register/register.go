@@ -802,8 +802,10 @@ var GitWinInstaller = &installer.Installer{
 			{"mingw64", "bin"},
 		}
 	},
-	AddBinDirToPath: true,
-	HomePage:        "https://gitforwindows.org/",
+	DUrlDecorator:      installer.DefaultDecorator,
+	AddBinDirToPath:    true,
+	StoreMultiVersions: true,
+	HomePage:           "https://gitforwindows.org/",
 }
 
 var GsudoWinInstaller = &installer.Installer{
@@ -829,11 +831,12 @@ var GsudoWinInstaller = &installer.Installer{
 	BinListGetter: func() []string {
 		return []string{"gsudo.exe"}
 	},
-	ForceReDownload: true,
-	HomePage:        "https://gerardog.github.io/gsudo/",
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	ForceReDownload:    true,
+	HomePage:           "https://gerardog.github.io/gsudo/",
 }
 
-// TODO: to be fixed.
 var CygwinInstaller = &installer.Installer{
 	AppName:        "cygwin",
 	Version:        "latest",

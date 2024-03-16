@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -105,13 +106,26 @@ func (v *VersionInfo) GetVersions() map[string]VersionList {
 	return v.CurrentList
 }
 
+func (v *VersionInfo) sortByString() bool {
+	l := []string{
+		"gsudo",
+		"git",
+		"v",
+	}
+	return strings.Contains(strings.Join(l, ""), v.AppName)
+}
+
 func (v *VersionInfo) GetSortedVersionList() (r []string) {
 	v.GetVersions()
 	for vName := range v.CurrentList {
 		r = append(r, vName)
 	}
 	if len(r) > 1 {
-		r = SortVersion(r)
+		if v.sortByString() {
+			r = SortStringListDesc(r)
+		} else {
+			r = SortVersion(r)
+		}
 	}
 	return
 }
