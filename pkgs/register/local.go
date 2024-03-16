@@ -16,11 +16,11 @@ Shows installed versions.
 */
 func ShowInstalled(appName string) {
 	vDir := conf.GetVMVersionsDir(appName)
-	if ok, _ := gutils.PathIsExist(vDir); !ok {
+	slink, _ := os.Readlink(filepath.Join(vDir, appName))
+	if ok, _ := gutils.PathIsExist(slink); !ok {
 		gprint.PrintInfo("No versions installed for %s.", appName)
 		return
 	}
-	slink, _ := os.Readlink(filepath.Join(vDir, appName))
 	currentVersion := filepath.Base(slink)
 	vList := []string{gprint.CyanStr(currentVersion) + gprint.YellowStr("<current>")}
 	dList, _ := os.ReadDir(vDir)

@@ -562,6 +562,7 @@ var PHPInstaller = &installer.Installer{
 	DUrlDecorator:      installer.DefaultDecorator,
 	AddBinDirToPath:    true,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://github.com/pmmp/PHP-Binaries",
 }
 
