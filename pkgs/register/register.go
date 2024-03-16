@@ -250,6 +250,7 @@ var GlowInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://github.com/charmbracelet/glow",
 }
 
