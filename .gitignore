@@ -21,3 +21,6 @@
 go.work
 
 cmd/vm/vm
+cmd/vm/vm.exe
+
+build_win.sh

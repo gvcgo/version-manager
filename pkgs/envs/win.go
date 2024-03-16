@@ -135,7 +135,7 @@ func (em *EnvManager) Set(key, value string) {
 	em.CloseKey()
 }
 
-func (em *EnvManager) Unset(key string) {
+func (em *EnvManager) UnSet(key string) {
 	if em.KeyInfo == nil {
 		gprint.PrintError("Windows registry key is closed.")
 		return
