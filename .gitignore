@@ -25,3 +25,4 @@ cmd/vm/vm.exe
 
 build_win.sh
 .DS_Store
+build_linux.sh
