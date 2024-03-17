@@ -61,3 +61,13 @@ func DNForAPTonLinux() string {
 	}
 	return ""
 }
+
+func UnzipForWindows(zipFilePath, dstDir string) error {
+	// expand -r file.zip C:\Users\username\Desktop\extracted
+	os.MkdirAll(dstDir, os.ModePerm)
+	_, err := gutils.ExecuteSysCommand(true, "",
+		"powershell",
+		"expand", "-r", zipFilePath,
+		dstDir)
+	return err
+}

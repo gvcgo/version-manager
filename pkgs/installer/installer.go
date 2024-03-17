@@ -189,6 +189,9 @@ func (i *Installer) Download() (zipFilePath string) {
 }
 
 func handleUnzipFailedError(zipFilePath string, err error) {
+	if err == nil {
+		return
+	}
 	gprint.PrintError("Failed to unzip file: %s, %+v", zipFilePath, err)
 	if zipFilePath != "" {
 		os.RemoveAll(zipFilePath)
@@ -235,12 +238,14 @@ func (i *Installer) Unzip(zipFilePath string) {
 
 		tempDir := conf.GetVMTempDir()
 		gprint.PrintInfo("Unarchiving files, please wait...")
+
 		if arch, err := archiver.NewArchiver(zipFilePath, tempDir, useArchiver(zipFilePath)); err == nil {
 			_, err = arch.UnArchive()
-			if err != nil {
-				handleUnzipFailedError(zipFilePath, err)
-				return
+			if err != nil && runtime.GOOS == gutils.Windows && strings.HasSuffix(zipFilePath, ".zip") {
+				err = utils.UnzipForWindows(zipFilePath, tempDir)
 			}
+			handleUnzipFailedError(zipFilePath, err)
+			return
 		} else {
 			handleUnzipFailedError(zipFilePath, err)
 		}
