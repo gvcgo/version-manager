@@ -106,11 +106,9 @@ func (v *VersionInfo) GetVersions() map[string]VersionList {
 	return v.CurrentList
 }
 
-func (v *VersionInfo) sortByString() bool {
+func (v *VersionInfo) sortByVersion() bool {
 	l := []string{
-		"gsudo",
-		"git",
-		"v",
+		"go",
 	}
 	return strings.Contains(strings.Join(l, ""), v.AppName)
 }
@@ -121,7 +119,7 @@ func (v *VersionInfo) GetSortedVersionList() (r []string) {
 		r = append(r, vName)
 	}
 	if len(r) > 1 {
-		if v.sortByString() {
+		if !v.sortByVersion() {
 			r = SortStringListDesc(r)
 		} else {
 			r = SortVersion(r)
