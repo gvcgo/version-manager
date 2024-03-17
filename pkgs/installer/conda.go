@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -87,6 +88,9 @@ func NewCondaInstaller() *CondaInstaller {
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)
 			binPath := filepath.Join(symbolicPath, "bin")
+			if runtime.GOOS == gutils.Windows {
+				binPath = symbolicPath
+			}
 			if ok, _ := gutils.PathIsExist(binPath); ok {
 				em := envs.NewEnvManager()
 				defer em.CloseKey()
@@ -194,6 +198,9 @@ func (c *CondaInstaller) DeleteAll() {
 	vDir := conf.GetVMVersionsDir(c.AppName)
 	symbolicPath := filepath.Join(vDir, c.AppName)
 	binPath := filepath.Join(symbolicPath, "bin")
+	if runtime.GOOS == gutils.Windows {
+		binPath = symbolicPath
+	}
 	if ok, _ := gutils.PathIsExist(binPath); ok {
 		em := envs.NewEnvManager()
 		defer em.CloseKey()
