@@ -42,6 +42,7 @@ var ArchHandlerList = map[string]func(archType, osType string) string{
 	"sdkmanager": ToAnyArch,
 	"vscode":     ToDarwinX64,
 	"scala":      ToAnyArch,
+	"v":          ToAnyArch,
 }
 
 /*

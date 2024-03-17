@@ -16,7 +16,7 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/utils"
 )
 
-// TODO: test for windows and linux.
+// TODO: test for linux.
 type VersionManager interface {
 	Download() (zipFilePath string)
 	Unzip(zipFilePath string)
