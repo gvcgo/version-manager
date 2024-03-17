@@ -90,7 +90,6 @@ func (em *EnvManager) SetPath() {
 		}
 	}
 	em.broadcast()
-	em.CloseKey()
 }
 
 func (em *EnvManager) UnsetPath() {
@@ -113,7 +112,6 @@ func (em *EnvManager) UnsetPath() {
 		}
 	}
 	em.broadcast()
-	em.CloseKey()
 }
 
 // Set envs.
@@ -132,7 +130,6 @@ func (em *EnvManager) Set(key, value string) {
 		return
 	}
 	em.broadcast()
-	em.CloseKey()
 }
 
 func (em *EnvManager) UnSet(key string) {
@@ -150,7 +147,6 @@ func (em *EnvManager) UnSet(key string) {
 		return
 	}
 	em.broadcast()
-	em.CloseKey()
 }
 
 func (em *EnvManager) AddToPath(value string) {
@@ -173,7 +169,6 @@ func (em *EnvManager) AddToPath(value string) {
 		}
 	}
 	em.broadcast()
-	em.CloseKey()
 }
 
 func (em *EnvManager) DeleteFromPath(value string) {
@@ -196,5 +191,4 @@ func (em *EnvManager) DeleteFromPath(value string) {
 		}
 	}
 	em.broadcast()
-	em.CloseKey()
 }

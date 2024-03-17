@@ -355,6 +355,7 @@ func (i *Installer) CreateBinarySymbol() {
 		pathValue := i.preparePathValue(currentPath)
 		if pathValue != "" {
 			em := envs.NewEnvManager()
+			defer em.CloseKey()
 			em.AddToPath(pathValue)
 		}
 		return // Do not create symbolics in .vm/bin any more.
@@ -454,6 +455,7 @@ func (i *Installer) createBinarySymbolForCurrentDir(currentPath string) {
 
 func (i *Installer) SetEnv() {
 	em := envs.NewEnvManager()
+	defer em.CloseKey()
 	if i.EnvGetter != nil {
 		for _, env := range i.EnvGetter(i.AppName, i.Version) {
 			em.Set(env.Name, env.Value)
@@ -534,6 +536,7 @@ func (i *Installer) DeleteAll() {
 
 	// delete env
 	em := envs.NewEnvManager()
+	defer em.CloseKey()
 	if i.EnvGetter != nil {
 		if i.AppName == "jdk" {
 			// handle jdk8.
@@ -561,6 +564,7 @@ func (i *Installer) DeleteAll() {
 			// fmt.Println("pathValue: ", pathValue)
 			if pathValue != "" {
 				em := envs.NewEnvManager()
+				defer em.CloseKey()
 				em.DeleteFromPath(pathValue)
 			}
 		}

@@ -89,6 +89,7 @@ func NewCondaInstaller() *CondaInstaller {
 			binPath := filepath.Join(symbolicPath, "bin")
 			if ok, _ := gutils.PathIsExist(binPath); ok {
 				em := envs.NewEnvManager()
+				defer em.CloseKey()
 				em.AddToPath(binPath)
 			}
 		}
@@ -195,6 +196,7 @@ func (c *CondaInstaller) DeleteAll() {
 	binPath := filepath.Join(symbolicPath, "bin")
 	if ok, _ := gutils.PathIsExist(binPath); ok {
 		em := envs.NewEnvManager()
+		defer em.CloseKey()
 		em.DeleteFromPath(binPath)
 	}
 	os.RemoveAll(vDir)

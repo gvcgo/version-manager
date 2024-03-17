@@ -149,3 +149,5 @@ func (em *EnvManager) DeleteFromPath(value string) {
 	os.WriteFile(shellFile, []byte(data), os.ModePerm)
 	em.addShellFileToShellConfig()
 }
+
+func (em *EnvManager) CloseKey() {}

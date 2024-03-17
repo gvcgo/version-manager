@@ -74,6 +74,7 @@ func NewCoursierInstaller() *CoursierInstaller {
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)
 			em := envs.NewEnvManager()
+			defer em.CloseKey()
 			em.AddToPath(symbolicPath)
 		}
 	}
@@ -183,6 +184,7 @@ func (c *CoursierInstaller) DeleteAll() {
 	symbolicPath := filepath.Join(vDir, c.AppName)
 	if ok, _ := gutils.PathIsExist(symbolicPath); ok {
 		em := envs.NewEnvManager()
+		defer em.CloseKey()
 		em.DeleteFromPath(symbolicPath)
 	}
 	os.RemoveAll(vDir)

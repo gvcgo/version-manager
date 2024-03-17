@@ -964,6 +964,7 @@ var MinicondaInstaller = &installer.Installer{
 			binDir := filepath.Join(vDir, "bin")
 			if ok, _ := gutils.PathIsExist(binDir); ok {
 				em := envs.NewEnvManager()
+				defer em.CloseKey()
 				em.AddToPath(binDir)
 			}
 		}
@@ -973,6 +974,7 @@ var MinicondaInstaller = &installer.Installer{
 		os.RemoveAll(miniDir)
 		binDir := filepath.Join(miniDir, appName, "bin")
 		em := envs.NewEnvManager()
+		defer em.CloseKey()
 		em.DeleteFromPath(binDir)
 	},
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {

@@ -214,6 +214,7 @@ func (c *Cli) initiate() {
 				gutils.CopyFile(currentBinPath, binPath)
 			}
 			em := envs.NewEnvManager()
+			defer em.CloseKey()
 			em.AddToPath(conf.GetManagerDir())
 
 			if ok, _ := gutils.PathIsExist(conf.GetConfPath()); ok {
