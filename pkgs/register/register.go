@@ -962,10 +962,14 @@ var MinicondaInstaller = &installer.Installer{
 			gprint.PrintError("Install %s failed.", appName)
 		} else {
 			binDir := filepath.Join(vDir, "bin")
+			binDir2 := filepath.Join(vDir, "condabin")
+			em := envs.NewEnvManager()
+			defer em.CloseKey()
 			if ok, _ := gutils.PathIsExist(binDir); ok {
-				em := envs.NewEnvManager()
-				defer em.CloseKey()
 				em.AddToPath(binDir)
+			}
+			if ok, _ := gutils.PathIsExist(binDir2); ok {
+				em.AddToPath(binDir2)
 			}
 		}
 	},
@@ -973,9 +977,11 @@ var MinicondaInstaller = &installer.Installer{
 		miniDir := conf.GetVMVersionsDir(appName)
 		os.RemoveAll(miniDir)
 		binDir := filepath.Join(miniDir, appName, "bin")
+		binDir2 := filepath.Join(miniDir, appName, "condabin")
 		em := envs.NewEnvManager()
 		defer em.CloseKey()
 		em.DeleteFromPath(binDir)
+		em.DeleteFromPath(binDir2)
 	},
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
 		if conf.UseMirrorSiteInChina() {
