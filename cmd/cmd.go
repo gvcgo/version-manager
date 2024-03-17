@@ -76,6 +76,18 @@ func (c *Cli) initiate() {
 		Short:   "Installs and switches to specified version.",
 		Long:    "Example: vm use go@1.22.1",
 		Run: func(cmd *cobra.Command, args []string) {
+			mirrorInChina, _ := cmd.Flags().GetBool("mirror_in_china")
+			rds, _ := cmd.Flags().GetBool("rustup-default-stable")
+			if rds {
+				// only for rustup default.
+				if mirrorInChina {
+					os.Setenv("RUSTUP_DIST_SERVER", "https://mirrors.ustc.edu.cn/rust-static")
+					os.Setenv("RUSTUP_UPDATE_ROOT", "https://mirrors.ustc.edu.cn/rust-static/rustup")
+				}
+				gutils.ExecuteSysCommand(false, "",
+					"rustup", "default", "stable")
+				return
+			}
 			if len(args) == 0 || !strings.Contains(args[0], "@") {
 				cmd.Help()
 				return
@@ -88,7 +100,6 @@ func (c *Cli) initiate() {
 			threads, _ := cmd.Flags().GetInt("threads")
 			os.Setenv(conf.VMDownloadThreadsEnvName, gconv.String(threads))
 
-			mirrorInChina, _ := cmd.Flags().GetBool("mirror_in_china")
 			if mirrorInChina {
 				os.Setenv(conf.VMUseMirrorInChinaEnvName, "true")
 			} else {
@@ -105,6 +116,7 @@ func (c *Cli) initiate() {
 	}
 	useCmd.Flags().IntP("threads", "t", 1, "Number of threads to use for downloading.")
 	useCmd.Flags().BoolP("mirror_in_china", "c", false, "Downlowd from mirror sites in China.")
+	useCmd.Flags().BoolP("rustup-default-stable", "r", false, "Set rustup default stable.")
 	c.rootCmd.AddCommand(useCmd)
 
 	c.rootCmd.AddCommand(&cobra.Command{

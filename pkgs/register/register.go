@@ -921,6 +921,9 @@ var RustInstaller = &installer.Installer{
 			rustupInitName += ".exe"
 		}
 		binPath := filepath.Join(binDir, rustupInitName)
+		if runtime.GOOS == gutils.Windows {
+			binPath, _ = os.Readlink(binPath)
+		}
 		if ok, _ := gutils.PathIsExist(binPath); ok {
 			os.Setenv("CARGO_HOME", filepath.Join(rustDir, "cargo"))
 			os.Setenv("RUSTUP_HOME", filepath.Join(rustDir, "rustups"))
