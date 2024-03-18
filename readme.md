@@ -77,7 +77,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 **demo**
 
-<script src="https://asciinema.org/a/647462.js" id="asciicast-647462" async="true"></script>
+<a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a>
 
 ### Related dirs
 
