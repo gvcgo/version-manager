@@ -3,8 +3,6 @@
   <img src="https://github.com/moqsien/img_repo/raw/main/vm_profile_image.png" alt="Logo" width="240" height="240">
 </p>
 
-------
-
 * [version-manager(vm)](#1)
 * [What's supported?](#2)
 * [Installation/Update](#3)
