@@ -47,12 +47,12 @@ You don't need any plugins, just vm. Then you can manage nearly everything you w
 ------
 
 ### Installation/Update
-- for MacOS/Linux
+- for **MacOS/Linux**(run the command below in terminal)
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.sh | sh
 ```
 
-- for Windows
+- for **Windows**(run the command below in powershell)
 ```powershell
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
