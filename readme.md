@@ -122,9 +122,16 @@ Flags:
 Press "↑/k" to move up, "↓/j" to move down, "q" to quit.
 ```
 
-### Installation
+### Installation/Update
+- for MacOS/Linux
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.sh | sh
+```
 
-Will be available soon.
+- for Windows
+```powershell
+powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
+```
 
 ### Related dirs
 
