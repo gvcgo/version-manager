@@ -1,0 +1,16 @@
+{
+    "arch_os_list": [
+        "darwin/amd64",
+        "darwin/arm64",
+        "linux/amd64",
+        "linux/arm64",
+        "windows/amd64",
+        "windows/arm64"
+    ],
+    "build_args": [
+        "-ldflags",
+        "-X main.GitTag=$(git describe --abbrev=0 --tags) -X main.GitHash=$(git show -s --format=%H)  -s -w",
+        "./cmd/vm/"
+    ],
+    "compress": true
+}

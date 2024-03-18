@@ -27,15 +27,19 @@ CLIs
 type Cli struct {
 	rootCmd *cobra.Command
 	groupID string
+	gitTag  string
+	gitHash string
 }
 
-func New() (c *Cli) {
+func New(gitTag, gitHash string) (c *Cli) {
 	c = &Cli{
 		rootCmd: &cobra.Command{
 			Short: "version manager",
 			Long:  "vm <Command> <SubCommand> --flags args...",
 		},
 		groupID: GroupID,
+		gitTag:  gitTag,
+		gitHash: gitHash,
 	}
 	c.rootCmd.AddGroup(&cobra.Group{ID: c.groupID, Title: "Command list: "})
 	c.initiate()
@@ -60,8 +64,8 @@ func (c *Cli) initiate() {
 	})
 
 	c.rootCmd.AddCommand(&cobra.Command{
-		Use:     "show",
-		Aliases: []string{"sh", "S"},
+		Use:     "list",
+		Aliases: []string{"l"},
 		GroupID: GroupID,
 		Short:   "Shows the supported applications.",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -146,7 +150,7 @@ func (c *Cli) initiate() {
 
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "local",
-		Aliases: []string{"l"},
+		Aliases: []string{"L"},
 		GroupID: GroupID,
 		Short:   "Shows installed versions for an app.",
 		Long:    "Example: vm l go.",
@@ -247,7 +251,7 @@ func (c *Cli) initiate() {
 		Use:     "clear-cache",
 		Aliases: []string{"c", "cc"},
 		GroupID: GroupID,
-		Short:   "Clear cached zip files for an app.",
+		Short:   "Clears cached zip files for an app.",
 		Long:    "Example: vm c go",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
@@ -258,6 +262,19 @@ func (c *Cli) initiate() {
 			if ins, ok := register.VersionKeeper[appName]; ok {
 				register.RunClearCache(ins)
 			}
+		},
+	})
+
+	c.rootCmd.AddCommand(&cobra.Command{
+		Use:     "version",
+		Aliases: []string{"v"},
+		GroupID: GroupID,
+		Short:   "Shows version info of version-manager.",
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(c.gitHash) > 7 {
+				c.gitHash = c.gitHash[:7]
+			}
+			fmt.Printf("%s(%s)\n", c.gitTag, c.gitHash)
 		},
 	})
 }
