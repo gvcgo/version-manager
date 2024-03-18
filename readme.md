@@ -4,6 +4,15 @@
 </p>
 
 ------
+
+* [version-manager(vm)](#1)
+* [What's supported?](#2)
+* [Installation/Update](#3)
+* [Proxy](#4)
+* [Subcommands](#5)
+* [Related dirs](#6)
+
+------
 ### version-manager(vm)
 
 **vm** is a simple version manager for programming **languages** and **tools**. It is totally created for general purpose.
@@ -59,6 +68,28 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 ------
 
+### Proxy
+**Choose either proxy or reverse-proxy.**
+
+- **proxy**
+```bash
+vm set-proxy <http://localhost:port or socks5://localhost:port>
+```
+
+- **reverse-proxy**
+
+```bash
+# reverse proxy <https://gvc.1710717.xyz/proxy/> is available for free.
+vm set-reverse-proxy https://gvc.1710717.xyz/proxy/
+```
+
+- **enable downloading from mirror sites in China**.
+```bash
+vm use -mirror-in-china go@1.22.1
+```
+
+------
+
 ### Subcommands
 
 | subcommand | args | desc |
@@ -72,7 +103,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 | **set-reverse-proxy** | https://gvc.1710717.xyz/proxy/ | Sets a reverse-proxy for vm. |
 | **set-proxy** | http or socks5 | Sets a local proxy for vm. |
 | **install-self** | - | Installs vm. |
-| **version** | sdk-name | Shows version info of vm. |
+| **version** | - | Shows version info of vm. |
 ------
 
 **demo**
@@ -93,26 +124,4 @@ Specified during installation of **vm**.
 ~ % ./vm install-self
 Enter App Installation Dir["$Home/.vm/" by default]:
 /Users/moqsien/.vm
-```
-
-------
-
-### Proxy
-**Choose either proxy or reverse-proxy.**
-
-- **proxy**
-```bash
-vm set-proxy <http://localhost:port or socks5://localhost:port>
-```
-
-- **reverse-proxy**
-
-```bash
-# reverse proxy <https://gvc.1710717.xyz/proxy/> is available for free.
-vm set-reverse-proxy https://gvc.1710717.xyz/proxy/
-```
-
-- **enable downloading from mirror sites in China**.
-```bash
-vm use -mirror-in-china go@1.22.1
 ```
