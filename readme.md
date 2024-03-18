@@ -13,12 +13,17 @@
 * [Related dirs](#6)
 
 ------
+<p id="1"></p>  
+
 ### version-manager(vm)
 
 **vm** is a simple version manager for programming **languages** and **tools**. It is totally created for general purpose.
 You don't need any plugins, just vm. Then you can manage nearly everything you want.
 
 ------
+
+<p id="2"></p>
+
 ### What's supported?
 
 - programming languages
@@ -55,6 +60,8 @@ You don't need any plugins, just vm. Then you can manage nearly everything you w
 
 ------
 
+<p id="3"></p>  
+
 ### Installation/Update
 - for **MacOS/Linux**(run the command below in terminal)
 ```bash
@@ -68,7 +75,10 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 ------
 
-### Proxy
+<p id="4"></p> 
+
+### Proxy 
+
 **Choose either proxy or reverse-proxy.**
 
 - **proxy**
@@ -89,6 +99,8 @@ vm use -mirror-in-china go@1.22.1
 ```
 
 ------
+
+<p id="5"></p> 
 
 ### Subcommands
 
