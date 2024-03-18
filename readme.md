@@ -7,6 +7,7 @@
 ### version-manager(vm)
 
 **vm** is a simple version manager for programming **languages** and **tools**. It is totally created for general purpose.
+You don't need any plugins, just vm. Then you can manage nearly everything you want.
 
 ------
 ### What's supported?
@@ -73,6 +74,10 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 | **install-self** | - | Installs vm. |
 | **version** | sdk-name | Shows version info of vm. |
 ------
+
+**demo**
+
+<script src="https://asciinema.org/a/647462.js" id="asciicast-647462" async="true"></script>
 
 ### Related dirs
 
