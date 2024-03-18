@@ -118,7 +118,8 @@ vm use -mirror-in-china go@1.22.1
 
 **demo**
 
-<a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a>
+<!-- <a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a> -->
+![demo](https://github.com/moqsien/img_repo/raw/main/vm.gif)
 
 ### Related dirs
 
