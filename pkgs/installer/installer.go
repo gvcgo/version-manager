@@ -46,6 +46,7 @@ type Installer struct {
 	V                  *versions.VersionItem
 	IsZipFile          bool
 	BinaryRenameTo     string
+	VersionFilter      func(dUrl string) bool
 	BinDirGetter       func(version string) [][]string               // Binary dir
 	BinListGetter      func() []string                               // Binaries
 	FlagFileGetter     func() []string                               // Flags to find home dir of an app
@@ -118,16 +119,30 @@ func (i *Installer) SearchLatestVersion() {
 		i.Searcher = NewSearcher()
 	}
 	vf := i.Searcher.GetVersions(i.AppName)
-	if v, ok := vf["latest"]; ok {
-		i.Version = "latest"
-		i.V = &v[0]
-		return
+	var (
+		v     versions.VersionList
+		ok    bool
+		vName string = "latest"
+	)
+	v, ok = vf[vName]
+	if !ok {
+		// Get the first item.
+		for vName, v = range vf {
+			break
+		}
 	}
-	for vName, v := range vf {
+
+	if i.VersionFilter != nil {
+		for _, vv := range v {
+			if i.VersionFilter(vv.Url) {
+				i.V = &vv
+				break
+			}
+		}
+	} else {
 		i.V = &v[0]
-		i.Version = vName
-		return
 	}
+	i.Version = vName
 }
 
 func (i *Installer) Download() (zipFilePath string) {

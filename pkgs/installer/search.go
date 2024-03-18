@@ -43,7 +43,7 @@ func (s *Searcher) Search(appName string) {
 	}
 
 	columns := []gtable.Column{
-		{Title: fmt.Sprintf("%v available versions", appName), Width: 60},
+		{Title: fmt.Sprintf("%v available versions", appName), Width: 150},
 	}
 
 	rows := []gtable.Row{}
