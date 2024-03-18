@@ -3,10 +3,12 @@
   <img src="https://github.com/moqsien/img_repo/raw/main/vm_profile_image.png" alt="Logo" width="240" height="240">
 </p>
 
+------
 ### version-manager(vm)
-------------------------
+
 **vm** is a simple version manager for programming **languages** and **tools**. It is totally created for general purpose.
 
+------
 ### What's supported?
 
 - programming languages
@@ -41,86 +43,7 @@
   - **vhs**
   - **glow**
 
-### Usage
-```bash
-~ % vm -h
-
-vm <Command> <SubCommand> --flags args...
-
-Usage:
-   [command]
-
-Command list:
-  clear-cache       Clear cached zip files for an app.
-  install-self      Installs version manager.
-  local             Shows installed versions for an app.
-  search            Shows the available versions of an application.
-  set-proxy         Sets proxy for version manager.
-  set-reverse-proxy Sets reverse proxy for version manager.
-  show              Shows the supported applications.
-  uninstall         Uninstalls a version or an app.
-  use               Installs and switches to specified version.
-
-Additional Commands:
-  completion        Generate the autocompletion script for the specified shell
-  help              Help about any command
-
-Flags:
-  -h, --help   help for this command
-
-Use " [command] --help" for more information about a command.
-```
-
-```bash
-~ % vm use -h
-
-Example: vm use go@1.22.1
-
-Usage:
-   use [flags]
-
-Aliases:
-  use, u
-
-Flags:
-  -h, --help              help for use
-  -c, --mirror_in_china   Downlowd from mirror sites in China.
-  -t, --threads int       Number of threads to use for downloading. (default 1)
-```
-
-```bash
-~ % vm search go
-
-  go available versions
- ──────────────────────────────────────────────────────────────
-  1.22.1
-  1.22.0
-  1.22rc2
-  1.22rc1
-  1.21.8
-  1.21.7
-  1.21.6
-  1.21.5
-  1.21.4
-  1.21.3
-  1.21.2
-  1.21.1
-  1.21.0
-  1.21rc4
-  1.21rc3
-  1.21rc2
-  1.20.14
-  1.20.13
-  1.20.12
-  1.20.11
-  1.20.10
-  1.20.9
-  1.20.8
-  1.20.7
-  1.20.6
-
-Press "↑/k" to move up, "↓/j" to move down, "q" to quit.
-```
+------
 
 ### Installation/Update
 - for MacOS/Linux
@@ -132,6 +55,24 @@ curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.g
 ```powershell
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
+
+------
+
+### Subcommands
+
+| subcommand | args | desc |
+|-------|-------|-------|
+| **list** | - | Shows what's supported. |
+| **search** | sdk-name | Shows available versions for a sdk. |
+| **use** | sdk-name@version | Installs/Swithes to the specific version of a sdk. |
+| **local** | sdk-name | Shows installed versions of a sdk. |
+| **uninstall** | sdk-name@version or sdk-name@all | Uninstalls versions for a sdk. |
+| **clear-cache** | sdk-name | Clears the cached files for a sdk. |
+| **set-reverse-proxy** | https://gvc.1710717.xyz/proxy/ | Sets a reverse-proxy for vm. |
+| **set-proxy** | http or socks5 | Sets a local proxy for vm. |
+| **install-self** | - | Installs vm. |
+| **version** | sdk-name | Shows version info of vm. |
+------
 
 ### Related dirs
 
@@ -149,6 +90,8 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 /Users/moqsien/.vm
 ```
 
+------
+
 ### Proxy
 **Choose either proxy or reverse-proxy.**
 
@@ -159,9 +102,9 @@ vm set-proxy <http://localhost:port or socks5://localhost:port>
 
 - **reverse-proxy**
 
-https://gvc.1710717.xyz/proxy/ is available for free.
 ```bash
-vm set-reverse-proxy <https://gvc.1710717.xyz/proxy/>
+# reverse proxy <https://gvc.1710717.xyz/proxy/> is available for free.
+vm set-reverse-proxy https://gvc.1710717.xyz/proxy/
 ```
 
 - **enable downloading from mirror sites in China**.
