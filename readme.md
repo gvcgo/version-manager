@@ -51,6 +51,7 @@ Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. H
   - **gsudo**(for windows only)
   - **vscode**(latest version only)
   - **neovim**
+  - **agg**
   - **fd**
   - **fzf**
   - **ripgrep**

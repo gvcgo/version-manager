@@ -59,6 +59,24 @@ Keeps multi versions.
 */
 var VersionKeeper = map[string]VersionManager{}
 
+var AggInstaller = &installer.Installer{
+	AppName:        "agg",
+	Version:        "1.4.3",
+	IsZipFile:      false,
+	BinaryRenameTo: "agg",
+	FlagFileGetter: func() []string {
+		r := []string{"agg"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"agg.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	ForceReDownload:    true,
+	HomePage:           "https://github.com/asciinema/agg",
+}
+
 var BunInstaller = &installer.Installer{
 	AppName:   "bun",
 	Version:   "1.0.9",
@@ -1097,6 +1115,7 @@ var VSCodeInstaller = &installer.Installer{
 }
 
 func init() {
+	VersionKeeper["agg"] = AggInstaller
 	VersionKeeper["bun"] = BunInstaller
 	VersionKeeper["cmdtools"] = SDKManagerInstaller
 	VersionKeeper["coursier"] = CoursierInstaller
