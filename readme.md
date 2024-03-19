@@ -18,6 +18,8 @@
 
 **vm** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
 
+Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. However, never of these can manage multi programming languages/tools. **gvc** does the job, but it adopts a lot of other features. Most importantly, **gvc** provides free VPNs/Proxies, which makes the promotion of it become impossible in China. So, **vfox** is born. Indeed, **vfox** implies some promising features by introducing lua runtime as plugins like neovim. Actually, **vfox** is not as perfect as what it implies. Therefore, **vm** comes.
+
 ------
 
 <p id="2"></p>
@@ -121,6 +123,8 @@ vm use -mirror-in-china go@1.22.1
 <!-- <a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a> -->
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm.gif)
 
+------
+
 <p id="6"></p> 
 
 ### Related dirs
@@ -138,6 +142,8 @@ Specified during installation of **vm**.
 Enter App Installation Dir["$Home/.vm/" by default]:
 /Users/moqsien/.vm
 ```
+
+------
 
 <p id="7"></p> 
 
