@@ -96,7 +96,7 @@ vm set-proxy <http://localhost:port or socks5://localhost:port>
 vm set-reverse-proxy https://gvc.1710717.xyz/proxy/
 ```
 
-- **使用国内镜像资源网站进行下载，对于部分由国内镜像的应用有效**.
+- **使用国内镜像资源网站进行下载，对于部分有国内镜像的应用有效**.
 ```bash
 vm use -mirror-in-china go@1.22.1
 ```
@@ -150,6 +150,6 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 
 <p id="7"></p> 
 
-### Windows用户需知
+### Windows用户须知
 
 **注意**: 如果你正在使用Win11，那么你需要开启**开发者模式**，因为vm在创建链接符号时需要相关权限。如果你正在使用Win10，遇到创建链接符号失败的错误时，建议使用管理员权限打开powershell后再重试。在Win下，通过**vm**安装应用成功之后，如果在当前powershell窗口中找不到该命令，可以关闭当前powershell窗口，再打开一个新的，此时环境变量就生效了，就可以找到相关命令了，这是Win的特性，暂时修正不了。
