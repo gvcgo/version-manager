@@ -6,7 +6,7 @@
 * [version-manager(vm)](#1)
 * [What's supported?](#2)
 * [Installation/Update](#3)
-* [Proxy](#4)
+* [How to set a proxy?](#4)
 * [Subcommands](#5)
 * [Related dirs](#6)
 
@@ -75,7 +75,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 <p id="4"></p> 
 
-### Proxy 
+### How to set a proxy?
 
 **Choose either proxy or reverse-proxy.**
 
