@@ -130,6 +130,10 @@ vm use -mirror-in-china go@1.22.1
 
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm_win.gif)
 
+**demo for linux**
+
+![demo](https://github.com/moqsien/img_repo/raw/main/vm_linux.gif)
+
 ------
 
 <p id="6"></p> 
