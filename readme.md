@@ -16,8 +16,7 @@
 
 ### version-manager(vm)
 
-**vm** is a simple version manager for programming **languages** and **tools**. It is totally created for general purpose.
-You don't need any plugins, just vm. Then you can manage nearly everything you want.
+**vm** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
 
 ------
 
@@ -25,7 +24,7 @@ You don't need any plugins, just vm. Then you can manage nearly everything you w
 
 ### What's supported?
 
-- programming languages
+- **programming languages**
   - **java**(jdk, maven, gradle)
   - **kotlin**
   - **scala**(coursier, scala)
@@ -42,7 +41,7 @@ You don't need any plugins, just vm. Then you can manage nearly everything you w
   - **zig**(zig, zls)
   - **typst**(typst, typst-lsp)
   - **gleam**
-- tools
+- **tools**
   - **commandline-tools**(for android, latest version only)
   - **git**(for windows only)
   - **lazygit**(depends on git)
