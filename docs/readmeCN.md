@@ -3,7 +3,7 @@
   <img src="https://github.com/moqsien/img_repo/raw/main/vm_profile_image.png" alt="Logo" width="240" height="240">
 </p>
 
-[中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md)|[En](https://github.com/gvcgo/version-manager)
+[中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
 * [vm简介](#1)
 * [vm都支持哪些编程语言和工具?](#2)
