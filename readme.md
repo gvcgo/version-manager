@@ -126,6 +126,10 @@ vm use -mirror-in-china go@1.22.1
 <!-- <a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a> -->
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm.gif)
 
+**demo for Win**
+
+![demo](https://github.com/moqsien/img_repo/raw/main/vm_win.gif)
+
 ------
 
 <p id="6"></p> 
