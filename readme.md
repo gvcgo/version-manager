@@ -121,7 +121,7 @@ vm use -mirror-in-china go@1.22.1
 | **version** | - | Shows version info of vm. |
 ------
 
-**demo**
+**demo for MacOS**
 
 <!-- <a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a> -->
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm.gif)
