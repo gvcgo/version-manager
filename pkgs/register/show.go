@@ -20,8 +20,8 @@ func ShowAppList() {
 	// tui.ShowAsPortView("supported apps", content)
 
 	columns := []gtable.Column{
-		{Title: "AppName", Width: 30},
-		{Title: "Homepage", Width: 120},
+		{Title: "AppName", Width: 50},
+		{Title: "Homepage", Width: 150},
 	}
 
 	rows := []gtable.Row{}

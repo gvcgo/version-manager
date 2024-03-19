@@ -39,7 +39,7 @@
   - **rust**(rustup-init, rust)
   - **vlang**(v, v-analyzer)
   - **zig**(zig, zls)
-  - **typst**(typst, typst-lsp)
+  - **typst**(typst, typst-lsp, typst-preview)
   - **gleam**
 - **tools**
   - **commandline-tools**(for android, latest version only)

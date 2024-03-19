@@ -667,6 +667,23 @@ var TypstLspInstaller = &installer.Installer{
 	HomePage:           "https://github.com/nvarner/typst-lsp",
 }
 
+var TypstPreviewInstaller = &installer.Installer{
+	AppName:        "typst-preview",
+	Version:        "0.11.1",
+	IsZipFile:      false,
+	BinaryRenameTo: "typst-preview",
+	FlagFileGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"typst-preview.exe"}
+		}
+		return []string{"typst-preview"}
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	ForceReDownload:    true,
+	HomePage:           "https://github.com/Enter-tainer/typst-preview",
+}
+
 var TypstInstaller = &installer.Installer{
 	AppName:   "typst",
 	Version:   "0.10.0",
@@ -1113,6 +1130,7 @@ func init() {
 	VersionKeeper["scala"] = ScalaInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
+	VersionKeeper["typst-preview"] = TypstPreviewInstaller
 	VersionKeeper["typst"] = TypstInstaller
 	VersionKeeper["vhs"] = VHSInstaller
 	VersionKeeper["v-analyzer"] = VlangLspInstaller
