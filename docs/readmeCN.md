@@ -109,7 +109,7 @@ vm use -mirror-in-china go@1.22.1
 
 | subcommand | args | desc |
 |-------|-------|-------|
-| **list** | - | 显示支持的sdk列表 |
+| **list** | - | 显示支持的sdk列表, 按k下翻列表，按j上反列表，按q退出列表 |
 | **search** | sdk-name | 显示该sdk支持的版本列表 |
 | **use** | sdk-name@version | 安装/切换sdk到指定版本 |
 | **local** | sdk-name | 显示sdk在本地已安装的版本 |
