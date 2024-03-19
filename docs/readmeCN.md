@@ -65,13 +65,13 @@
 
 <p id="3"></p>  
 
-### 一键安装或更新
-- for **MacOS/Linux**(run the command below in terminal)
+### 一键安装/更新vm
+- for **MacOS/Linux**(复制下面的命令到terminal执行即可)
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.sh | sh
 ```
 
-- for **Windows**(run the command below in powershell)
+- for **Windows**(复制下面的命令到powershell中执行即可)
 ```powershell
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
