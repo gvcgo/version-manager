@@ -109,16 +109,16 @@ vm use -mirror-in-china go@1.22.1
 
 | subcommand | args | desc |
 |-------|-------|-------|
-| **list** | - | Shows what's supported. |
-| **search** | sdk-name | Shows available versions for a sdk. |
-| **use** | sdk-name@version | Installs/Swithes to the specific version of a sdk. |
-| **local** | sdk-name | Shows installed versions of a sdk. |
-| **uninstall** | sdk-name@version or sdk-name@all | Uninstalls versions for a sdk. |
-| **clear-cache** | sdk-name | Clears the cached files for a sdk. |
-| **set-reverse-proxy** | https://gvc.1710717.xyz/proxy/ | Sets a reverse-proxy for vm. |
-| **set-proxy** | http or socks5( scheme://host:port ) | Sets a local proxy for vm. |
-| **install-self** | - | Installs vm. |
-| **version** | - | Shows version info of vm. |
+| **list** | - | 显示支持的sdk列表 |
+| **search** | sdk-name | 显示该sdk支持的版本列表 |
+| **use** | sdk-name@version | 安装/切换sdk到指定版本 |
+| **local** | sdk-name | 显示sdk在本地已安装的版本 |
+| **uninstall** | sdk-name@version or sdk-name@all | 卸载某个版本或者卸载所有版本 |
+| **clear-cache** | sdk-name | 清除本地已缓存的压缩文件 |
+| **set-reverse-proxy** | https://gvc.1710717.xyz/proxy/ | 设置反向代理，用于github下载加速 |
+| **set-proxy** | http or socks5( scheme://host:port ) | 设置本地代理，可用于任何网站的下载加速 |
+| **install-self** | - | 安装vm到$HOME/.vm，用户一般无需关心 |
+| **version** | - | 显示vm的版本信息 |
 ------
 
 **demo**
