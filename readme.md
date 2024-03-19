@@ -9,6 +9,7 @@
 * [How to set a proxy?](#4)
 * [Subcommands](#5)
 * [Related dirs](#6)
+* [For Windows](#7)
 
 ------
 <p id="1"></p>  
@@ -121,6 +122,8 @@ vm use -mirror-in-china go@1.22.1
 <!-- <a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a> -->
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm.gif)
 
+<p id="6"></p> 
+
 ### Related dirs
 
 - **vm installation dir**
@@ -136,3 +139,9 @@ Specified during installation of **vm**.
 Enter App Installation Dir["$Home/.vm/" by default]:
 /Users/moqsien/.vm
 ```
+
+<p id="7"></p> 
+
+### For Windows
+
+**Note**: If you are using vm on Windows11, you need to enable the **Developer Mode** as vm requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurs, you can try vm with **Admin Privilege**.
