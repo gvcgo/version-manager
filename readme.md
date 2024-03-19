@@ -3,6 +3,8 @@
   <img src="https://github.com/moqsien/img_repo/raw/main/vm_profile_image.png" alt="Logo" width="240" height="240">
 </p>
 
+[中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md)|[En](https://github.com/gvcgo/version-manager)
+
 * [version-manager(vm)](#1)
 * [What's supported?](#2)
 * [Installation/Update](#3)
