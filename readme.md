@@ -20,7 +20,7 @@
 
 **vm** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
 
-Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. However, never of these can manage multi programming languages/tools. **gvc** does the job, but it adopts a lot of other features. Most importantly, **gvc** provides free VPNs/Proxies, which makes the promotion of it become impossible in China. So, **vfox** is born. Indeed, **vfox** implies some promising features by introducing lua runtime as plugins like neovim. Actually, **vfox** is not as perfect as what it implies. Therefore, **vm** comes.
+Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. However, never of these can manage multi programming languages/tools. **gvc** does the job, but it adopts a lot of other features. Most importantly, **gvc** provides free VPNs/Proxies, which makes the promotion of it become impossible in China. So, **vfox** is born. Indeed, **vfox** implies some promising features by introducing lua runtime as plugins like neovim. Actually, **vfox** is not as perfect as what it promises. Therefore, **vm** comes.
 
 ------
 
