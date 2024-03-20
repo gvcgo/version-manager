@@ -6,12 +6,13 @@
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
 * [version-manager(vm)](#1)
-* [What's supported?](#2)
-* [Installation/Update](#3)
-* [How to set a proxy?](#4)
-* [Subcommands](#5)
-* [Related dirs](#6)
-* [For Windows](#7)
+* [vm vs vfox](#2)
+* [What's supported?](#3)
+* [Installation/Update](#4)
+* [How to set a proxy?](#5)
+* [Subcommands](#6)
+* [Related dirs](#7)
+* [For Windows](#8)
 
 ------
 <p id="1"></p>  
@@ -23,8 +24,44 @@
 Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. However, never of these can manage multiple programming languages. **gvc** does the job, but it adopts a lot of other features. Most importantly, **gvc** provides free VPNs/Proxies, which makes its promotion become impossible in China. So, **vfox** is born. Indeed, **vfox** implies some promising features by introducing lua runtime as plugins just like neovim. Actually, **vfox** is not as perfect as what it promises. Therefore, **vm** comes.
 
 ------
+<p id="2"></p> 
 
-<p id="2"></p>
+### vm vs vfox
+
+| sdk | vm | vfox |
+|-------|-------|-------|
+| **java(jdk)** | ✅︎ | ✅︎ |
+| **maven** | ✅︎ | ✅︎ |
+| **gradle** | ✅︎ | ✅︎ |
+| **kotlin** | ✅︎ | ✅︎ |
+| **scala** | ✅︎ | ❌︎ |
+| **python** | ✅︎ | ✅︎ |
+| **miniconda** | ✅︎ | ❌︎ |
+| **go** | ✅︎ | ✅︎ |
+| **node** | ✅︎ | ✅︎ |
+| **deno** | ✅︎ | ✅︎ |
+| **bun** | ✅︎ | ❌︎ |
+| **flutter(dart)** | ✅︎ | ✅︎ |
+| **.net** | ✅︎ | ✅︎ |
+| **zig** | ✅︎ | ✅︎ |
+| **php** | ✅︎ | ❌︎ |
+| **rust** | ✅︎ | ❌︎ |
+| **cmdline-tool(android)** | ✅︎ | ❌︎ |
+| **vlang** | ✅︎ | ❌︎ |
+| **cygwin** | ✅︎ | ❌︎ |
+| **msys2** | ✅︎ | ❌︎ |
+| **julia** | ✅︎ | ❌︎ |
+| **typst** | ✅︎ | ❌︎ |
+| **gleam** | ✅︎ | ❌︎ |
+| **git-for-windows** | ✅︎ | ❌︎ |
+| **neovim** | ✅︎ | ❌︎ |
+| **vscode** | ✅︎ | ❌︎ |
+| **protobuf(protoc)** | ✅︎ | ❌︎ |
+| **lazygit** | ✅︎ | ❌︎ |
+
+------
+
+<p id="3"></p>
 
 ### What's supported?
 
@@ -63,7 +100,7 @@ Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. H
 
 ------
 
-<p id="3"></p>  
+<p id="4"></p>  
 
 ### Installation/Update
 - for **MacOS/Linux**(run the command below in terminal)
@@ -78,7 +115,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 ------
 
-<p id="4"></p> 
+<p id="5"></p> 
 
 ### How to set a proxy?
 
@@ -103,7 +140,7 @@ vm use -mirror-in-china go@1.22.1
 
 ------
 
-<p id="5"></p> 
+<p id="6"></p> 
 
 ### Subcommands
 
@@ -136,7 +173,7 @@ vm use -mirror-in-china go@1.22.1
 
 ------
 
-<p id="6"></p> 
+<p id="7"></p> 
 
 ### Related dirs
 
@@ -156,7 +193,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 
 ------
 
-<p id="7"></p> 
+<p id="8"></p> 
 
 ### For Windows
 

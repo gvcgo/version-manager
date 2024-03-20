@@ -6,6 +6,7 @@
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
 * [vm简介](#1)
+* [vm和vfox对比](#2)
 * [vm都支持哪些编程语言和工具?](#2)
 * [一键安装或更新](#3)
 * [如何设置代理?](#4)
@@ -23,8 +24,44 @@
 可能你已经听说过 **sdkman**, **gvm**, **pyenv**, **phpenv** 等工具。然而，这些工具都不能管理多种编程语言/工具。最早出现的**gvc** 确实可以做到管理多种语言和工具，但它集成了很多其他特性，比较臃肿。最重要的是，**gvc** 提供了免费的 VPN或者说代理，这使得在国内推广**gvc**变得不太现实。因此，后来诞生了**vfox**。确实，**vfox**专注于编程语言版本管理，从它的主页来看，它暗示了一些非常有吸引力的功能，比如类似neovim的lua插件功能。但实际上，**vfox**并没有描述的那样完美。通过引入lua运行时，lua需要调用go代码中的爬虫相关功能才能实现各种版本的下载和管理，对于复杂页面来说，无疑更增复杂度。所以，**vfox**支持的编程语言和工具还是很有限。基于这些原因，在**gvc**的基础上，**vm**诞生了。
 
 ------
+<p id="2"></p> 
 
-<p id="2"></p>
+### vm和vfox对比
+
+| sdk | vm | vfox |
+|-------|-------|-------|
+| **java(jdk)** | ✅︎ | ✅︎ |
+| **maven** | ✅︎ | ✅︎ |
+| **gradle** | ✅︎ | ✅︎ |
+| **kotlin** | ✅︎ | ✅︎ |
+| **scala** | ✅︎ | ❌︎ |
+| **python** | ✅︎ | ✅︎ |
+| **miniconda** | ✅︎ | ❌︎ |
+| **go** | ✅︎ | ✅︎ |
+| **node** | ✅︎ | ✅︎ |
+| **deno** | ✅︎ | ✅︎ |
+| **bun** | ✅︎ | ❌︎ |
+| **flutter(dart)** | ✅︎ | ✅︎ |
+| **.net** | ✅︎ | ✅︎ |
+| **zig** | ✅︎ | ✅︎ |
+| **php** | ✅︎ | ❌︎ |
+| **rust** | ✅︎ | ❌︎ |
+| **cmdline-tool(android)** | ✅︎ | ❌︎ |
+| **vlang** | ✅︎ | ❌︎ |
+| **cygwin** | ✅︎ | ❌︎ |
+| **msys2** | ✅︎ | ❌︎ |
+| **julia** | ✅︎ | ❌︎ |
+| **typst** | ✅︎ | ❌︎ |
+| **gleam** | ✅︎ | ❌︎ |
+| **git-for-windows** | ✅︎ | ❌︎ |
+| **neovim** | ✅︎ | ❌︎ |
+| **vscode** | ✅︎ | ❌︎ |
+| **protobuf(protoc)** | ✅︎ | ❌︎ |
+| **lazygit** | ✅︎ | ❌︎ |
+
+------
+
+<p id="3"></p>
 
 ### vm都支持些什么语言和工具?
 
@@ -63,7 +100,7 @@
 
 ------
 
-<p id="3"></p>  
+<p id="4"></p>  
 
 ### 一键安装/更新vm
 - for **MacOS/Linux**(复制下面的命令到terminal执行即可)
@@ -78,7 +115,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 ------
 
-<p id="4"></p> 
+<p id="5"></p> 
 
 ### 如何设置代理?
 
@@ -103,7 +140,7 @@ vm use -mirror-in-china go@1.22.1
 
 ------
 
-<p id="5"></p> 
+<p id="6"></p> 
 
 ### 子命令介绍
 
@@ -136,7 +173,7 @@ vm use -mirror-in-china go@1.22.1
 
 ------
 
-<p id="6"></p> 
+<p id="7"></p> 
 
 ### 相关目录
 
@@ -156,7 +193,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 
 ------
 
-<p id="7"></p> 
+<p id="8"></p> 
 
 ### Windows用户须知
 
