@@ -107,7 +107,7 @@ vm use -mirror-in-china go@1.22.1
 
 ### 子命令介绍
 
-| subcommand | args | desc |
+| 子命令 | 参数 | 功能 |
 |-------|-------|-------|
 | **list** | - | 显示支持的sdk列表, 按k下翻列表，按j上反列表，按q退出列表 |
 | **search** | sdk-name | 显示该sdk支持的版本列表 |
