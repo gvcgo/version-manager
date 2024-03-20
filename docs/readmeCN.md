@@ -28,7 +28,7 @@
 
 ### vm都支持些什么语言和工具?
 
-- **programming languages**
+- **编程语言**
   - **java**(jdk, maven, gradle)
   - **kotlin**
   - **scala**(coursier, scala)
@@ -45,7 +45,7 @@
   - **zig**(zig, zls)
   - **typst**(typst, typst-lsp, typst-preview)
   - **gleam**
-- **tools**
+- **编程工具**
   - **commandline-tools**(for android, latest version only)
   - **git**(for windows only)
   - **lazygit**(depends on git)
