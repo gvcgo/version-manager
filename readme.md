@@ -26,7 +26,7 @@ Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. H
 ------
 <p id="2"></p> 
 
-### vm vs vfox
+### vm Vs vfox
 
 | sdk | vm | vfox |
 |-------|-------|-------|
