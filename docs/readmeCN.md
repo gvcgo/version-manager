@@ -6,8 +6,8 @@
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
 * [vm简介](#1)
+* [功能介绍](#2)
 * [vm和vfox对比](#2)
-* [vm都支持哪些编程语言和工具?](#2)
 * [一键安装或更新](#3)
 * [如何设置代理?](#4)
 * [子命令介绍](#5)
@@ -21,10 +21,21 @@
 
 **vm** 是一个简单，跨平台，并且经过良好测试的版本管理工具。它完全是为了通用目的而创建的。你不需要任何插件，只需要 vm 就可以管理所有东西。
 
-可能你已经听说过 **sdkman**, **gvm**, **pyenv**, **phpenv** 等工具。然而，这些工具都不能管理多种编程语言/工具。最早出现的**gvc** 确实可以做到管理多种语言和工具，但它集成了很多其他特性，比较臃肿。最重要的是，**gvc** 提供了免费的 VPN或者说代理，这使得在国内推广**gvc**变得不太现实。因此，后来诞生了**vfox**。确实，**vfox**专注于编程语言版本管理，从它的主页来看，它暗示了一些非常有吸引力的功能，比如类似neovim的lua插件功能。但实际上，**vfox**并没有描述的那样完美。通过引入lua运行时，lua需要调用go代码中的爬虫相关功能才能实现各种版本的下载和管理，对于复杂页面来说，无疑更增复杂度。所以，**vfox**支持的编程语言和工具还是很有限。基于这些原因，在**gvc**的基础上，**vm**诞生了。
+可能你已经听说过 **sdkman**, **gvm**, **pyenv**, **phpenv** 等工具。然而，这些工具都不能管理多种编程语言。最早出现的**gvc** 确实可以做到管理多种语言和工具，但它集成了很多其他特性，比较臃肿。最重要的是，**gvc** 提供了免费的 VPN或者说代理，这使得在国内推广**gvc**变得不太现实。因此，后来诞生了**vfox**。确实，**vfox**专注于编程语言版本管理，从它的主页来看，它暗示了一些非常有吸引力的功能，比如类似neovim的lua插件功能。但实际上，**vfox**并没有描述的那样完美。通过引入lua运行时，lua需要调用go代码中的爬虫相关功能才能实现各种版本的下载和管理，对于复杂页面来说，并没有降低复杂度，反而使得复杂度提高。所以，**vfox**支持的编程语言和工具还是很有限。基于这些原因，在**gvc**的基础上，**vm**诞生了。**vm**支持了国内程序员常用的几乎所有编程语言，并且支持了vlang、zig、typst等新兴的有一定潜力的语言。不管你是老鸟还是菜鸟，它都能给你带来一定的便利。你不用手动去找任何资源，就能轻松安装管理各种版本，尝试新的语言，新的特性。
 
 ------
-<p id="2"></p> 
+
+<p id="2"></p>
+
+### 功能介绍
+
+- 安装和卸载某个版本的sdk
+- 在不同版本的sdk之间切换
+- 管理环境变量
+- 对neovim和vscode用户友好，可以一键安装neovim和vscode。同时，neovim中一些明星插件的安装也可以一键完成安装，例如fd，ripgrep，tree-sitter等。
+
+------
+<p id="3"></p> 
 
 ### vm和vfox对比
 
@@ -58,45 +69,6 @@
 | **vscode** | ✅︎ | ❌︎ |
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
-
-------
-
-<p id="3"></p>
-
-### vm都支持些什么语言和工具?
-
-- **编程语言**
-  - **java**(jdk, maven, gradle)
-  - **kotlin**
-  - **scala**(coursier, scala)
-  - **go**
-  - **python**(miniconda, python)
-  - **php**(php8.0+ only)
-  - **javascript/typescript**(node, bun, deno)
-  - **dart**(flutter, dart)
-  - **julia**
-  - **.net**(dotnet-sdk, c#)
-  - **c/c++**(cygwin-installer, msys2-installer)
-  - **rust**(rustup-init, rust)
-  - **vlang**(v, v-analyzer)
-  - **zig**(zig, zls)
-  - **typst**(typst, typst-lsp, typst-preview)
-  - **gleam**
-- **编程工具**
-  - **commandline-tools**(for android, latest version only)
-  - **git**(for windows only)
-  - **lazygit**(depends on git)
-  - **protoc**(protobuf)
-  - **gsudo**(for windows only)
-  - **vscode**(latest version only)
-  - **neovim**
-  - **agg**
-  - **fd**
-  - **fzf**
-  - **ripgrep**
-  - **tree-sitter**
-  - **vhs**
-  - **glow**
 
 ------
 

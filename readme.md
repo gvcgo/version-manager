@@ -6,8 +6,8 @@
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
 * [version-manager(vm)](#1)
-* [vm vs vfox](#2)
-* [What's supported?](#3)
+* [features](#2)
+* [vm vs vfox](#3)
 * [Installation/Update](#4)
 * [How to set a proxy?](#5)
 * [Subcommands](#6)
@@ -24,9 +24,19 @@
 Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. However, never of these can manage multiple programming languages. **gvc** does the job, but it adopts a lot of other features. Most importantly, **gvc** provides free VPNs/Proxies, which makes its promotion become impossible in China. So, **vfox** is born. Indeed, **vfox** implies some promising features by introducing lua runtime as plugins just like neovim. Actually, **vfox** is not as perfect as what it promises. Therefore, **vm** comes.
 
 ------
-<p id="2"></p> 
 
-### vm Vs vfox
+<p id="2"></p>
+
+### features
+
+- Installs and uninstalls versions of sdk.
+- Swithes between versions of sdk.
+- Handles envs.
+
+------
+<p id="3"></p> 
+
+### vm versus vfox
 
 | sdk | vm | vfox |
 |-------|-------|-------|
@@ -59,44 +69,6 @@ Maybe you've already heard of **sdkman**, **gvm**, **pyenv**, **phpenv**, etc. H
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
 
-------
-
-<p id="3"></p>
-
-### What's supported?
-
-- **programming languages**
-  - **java**(jdk, maven, gradle)
-  - **kotlin**
-  - **scala**(coursier, scala)
-  - **go**
-  - **python**(miniconda, python)
-  - **php**(php8.0+ only)
-  - **javascript/typescript**(node, bun, deno)
-  - **dart**(flutter, dart)
-  - **julia**
-  - **.net**(dotnet-sdk, c#)
-  - **c/c++**(cygwin-installer, msys2-installer)
-  - **rust**(rustup-init, rust)
-  - **vlang**(v, v-analyzer)
-  - **zig**(zig, zls)
-  - **typst**(typst, typst-lsp, typst-preview)
-  - **gleam**
-- **tools**
-  - **commandline-tools**(for android, latest version only)
-  - **git**(for windows only)
-  - **lazygit**(depends on git)
-  - **protoc**(protobuf)
-  - **gsudo**(for windows only)
-  - **vscode**(latest version only)
-  - **neovim**
-  - **agg**
-  - **fd**
-  - **fzf**
-  - **ripgrep**
-  - **tree-sitter**
-  - **vhs**
-  - **glow**
 
 ------
 
