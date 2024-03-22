@@ -32,7 +32,7 @@
 - 安装和卸载某个版本的sdk
 - 在不同版本的sdk之间切换
 - 管理环境变量
-- 对neovim和vscode用户友好，可以一键安装neovim和vscode。同时，neovim中一些明星插件的安装也可以一键完成安装，例如fd，ripgrep，tree-sitter等。
+- 对neovim和vscode用户友好，可以一键安装neovim和vscode。同时，neovim中一些明星插件的安装也可以一键完成，例如fd，ripgrep，tree-sitter等。
 
 ------
 <p id="3"></p> 
@@ -118,7 +118,7 @@ vm use -mirror-in-china go@1.22.1
 
 | 子命令 | 参数 | 功能 |
 |-------|-------|-------|
-| **list** | - | 显示支持的sdk列表, 按k下翻列表，按j上反列表，按q退出列表 |
+| **list** | - | 显示支持的sdk列表(列表操作：j/k翻动列表，q退出) |
 | **search** | sdk-name | 显示该sdk支持的版本列表 |
 | **use** | sdk-name@version | 安装/切换sdk到指定版本 |
 | **local** | sdk-name | 显示sdk在本地已安装的版本 |
