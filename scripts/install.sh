@@ -45,7 +45,6 @@ main() {
     local os_arch="$(uname -m)"
     local version="v0.1.1"
     local download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
-    
     local osType="linux"
     if [ "$os_type" = "Darwin" ]; then
         osType="darwin"
@@ -68,8 +67,8 @@ main() {
 
     curl -o "$filename" "$url"
 
-    ehco "Installing..."
-    
+    echo "Installing..."
+
     if [ -s "./$filename" ]; then
         unzip "./$filename"
         chmod +x "./vm"
