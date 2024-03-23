@@ -5,6 +5,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
 
@@ -41,6 +42,9 @@ func (s *Searcher) Search(appName string) {
 		gprint.PrintWarning("No versions found!")
 		return
 	}
+
+	// Sort versions.
+	utils.SortVersions(vl)
 
 	columns := []gtable.Column{
 		{Title: fmt.Sprintf("%v available versions", appName), Width: 150},
