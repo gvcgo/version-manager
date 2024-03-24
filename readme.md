@@ -18,6 +18,7 @@
 * [Subcommands](#6)
 * [Related dirs](#7)
 * [For Windows](#8)
+* [Contributors](#9)
 
 ------
 <p id="1"></p>  
@@ -175,6 +176,9 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 ### For Windows
 
 **Note**: If you are using vm on Windows11, you need to enable the **Developer Mode** as vm requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurs, you can try vm with **Admin Privilege**. To get **envs** take effect for windows, you may need to close the current powershell terminal and open a new one.
+
+------
+<p id="9"></p>  
 
 ### Contributors
 > Thanks to following people who contributed to this project.
