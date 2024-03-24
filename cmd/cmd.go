@@ -174,7 +174,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"L"},
 		GroupID: GroupID,
 		Short:   "Shows installed versions for an app.",
-		Long:    "Example: vm l go.",
+		Long:    "Example: vm L go.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				cmd.Help()
