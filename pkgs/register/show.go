@@ -17,6 +17,11 @@ func ShowAppList() {
 
 	utils.SortVersions(appList)
 
+	al := []string{}
+	for i := len(appList) - 1; i >= 0; i-- {
+		al = append(al, appList[i])
+	}
+
 	columns := []gtable.Column{
 		{Title: "AppName", Width: 50},
 		{Title: "Homepage", Width: 150},
@@ -24,7 +29,7 @@ func ShowAppList() {
 
 	rows := []gtable.Row{}
 
-	for _, appName := range appList {
+	for _, appName := range al {
 		ver := VersionKeeper[appName]
 		rows = append(rows, gtable.Row{
 			gprint.CyanStr(appName),
