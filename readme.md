@@ -19,6 +19,7 @@
 * [Related dirs](#7)
 * [For Windows](#8)
 * [Contributors](#9)
+* [Supplementary](#10)
 
 ------
 <p id="1"></p>  
@@ -35,9 +36,12 @@ Maybe you've already heard of **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv*
 
 ### features
 
-- Installs and uninstalls versions of sdk.
+- Installs or uninstalls versions of sdk.
 - Swithes between versions of sdk.
 - Handles envs.
+- Friendly to VSCoders or Neovimers.
+- No plugins needed.
+- More stable.
 
 ------
 <p id="3"></p> 
@@ -185,3 +189,9 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <a href="https://github.com/gvcgo/version-manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
+
+------
+<p id="10"></p> 
+
+### Supplementary
+**vm** is created to be a cross-platform command line tool. It will not try to include everything like asdf-vm(based on shell script, only support unix-like system) did. Because that will greatly increase the complexity and also reduce the possibility of cross-platform. And most of the time, programming languages and tools that we usually use have been covered by **vm**. **vm** will not try to include sdks that need to be compiled under a certain platform. Because each developer's development environment is different, it is impossible to ensure the completion of a compilation. So **vm** will only use pre-compiled binaries for installations. If you have any sdks or tools to recommand for version management, please raise an issue in [Issues](https://github.com/gvcgo/version-manager/issues).

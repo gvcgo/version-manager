@@ -19,6 +19,7 @@
 * [相关目录说明](#7)
 * [Win用户须知](#8)
 * [贡献者](#9)
+* [说明](#10)
 
 ------
 <p id="1"></p>  
@@ -33,12 +34,14 @@
 
 <p id="2"></p>
 
-### 功能介绍
+### 功能特点
 
-- 安装和卸载某个版本的sdk
+- 安装或卸载某个版本的sdk
 - 在不同版本的sdk之间切换
 - 管理环境变量
 - 对neovim和vscode用户友好，可以一键安装neovim和vscode。同时，neovim中一些明星插件的安装也可以一键完成，例如fd，ripgrep，tree-sitter等。
+- 无需任何插件
+- 相比其他版本管理器来说要更稳定
 
 ------
 <p id="3"></p> 
@@ -185,3 +188,9 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <a href="https://github.com/gvcgo/version-manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
+
+------
+<p id="10"></p> 
+
+### 说明
+**vm**是一个跨平台的命令行工具。它不会像asdf-vm(基于shell脚本，仅支持unix-like系统)那样做到什么都试图包含，因为那样会大大增加复杂性，也降低跨了平台的可能。而且大多数情况下，我们常用的语言和工具基本已经包含在**vm**中了。**vm**不会试图去包含那些在某个平台下需要自行编译的sdk，因为每个开发者的开发环境都不一样，无法保证编译一定能通过。所以**vm**仅仅会使用pre-compiled binary来安装应用。如果你有什么需要进行版本管理的sdk或者工具推荐，请在[Issues](https://github.com/gvcgo/version-manager/issues)中提出，**vm**开发团队会评估后决定是否加入。
