@@ -3,21 +3,19 @@ package register
 import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
-	"github.com/gvcgo/version-manager/pkgs/versions"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 )
 
 /*
 Shows supported app list.
 */
 func ShowAppList() {
-
 	appList := []string{}
 	for k := range VersionKeeper {
 		appList = append(appList, k)
 	}
-	al := versions.SortStringList(appList)
-	// content := strings.Join(al, "\n")
-	// tui.ShowAsPortView("supported apps", content)
+
+	utils.SortVersions(appList)
 
 	columns := []gtable.Column{
 		{Title: "AppName", Width: 50},
@@ -26,7 +24,7 @@ func ShowAppList() {
 
 	rows := []gtable.Row{}
 
-	for _, appName := range al {
+	for _, appName := range appList {
 		ver := VersionKeeper[appName]
 		rows = append(rows, gtable.Row{
 			gprint.CyanStr(appName),

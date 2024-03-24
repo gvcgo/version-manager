@@ -1,36 +1,67 @@
 package utils
 
 import (
-	"errors"
+	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/gogf/gf/v2/util/gutil"
+)
+
+/*
+Version Sorter
+*/
+
+var (
+	versionRegexp = regexp.MustCompile(`\d+(.\d+){0,2}`)
+	betaRegexp    = regexp.MustCompile(`beta\.*\d+`)
+	rcRegexp      = regexp.MustCompile(`rc\.*\d+`)
+	numRegexp     = regexp.MustCompile(`\d+`)
 )
 
 // Version represents a version number.
 type Version struct {
-	Major, Minor, Patch int
+	Major int
+	Minor int
+	Patch int
+	Beta  int
+	RC    int
 }
 
 // ParseVersion parses a version string into a Version struct.
-func ParseVersion(version string) (Version, error) {
-	parts := strings.Split(version, ".")
-	if len(parts) != 3 {
-		return Version{}, errors.New("invalid version format")
+func ParseVersion(version string) (v Version, err error) {
+	version = strings.ToLower(version)
+	vstr := versionRegexp.FindString(version)
+	bstr := betaRegexp.FindString(version)
+	rstr := rcRegexp.FindString(version)
+
+	v = Version{}
+	if vstr == "" {
+		return v, fmt.Errorf("can not parse: %s", version)
 	}
-	major, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return Version{}, err
+	parts := strings.Split(vstr, ".")
+
+	for i, part := range parts {
+		switch i {
+		case 0:
+			v.Major, _ = strconv.Atoi(part)
+		case 1:
+			v.Minor, _ = strconv.Atoi(part)
+		case 2:
+			v.Patch, _ = strconv.Atoi(part)
+		default:
+		}
 	}
-	minor, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return Version{}, err
+
+	if bstr != "" {
+		v.Beta, _ = strconv.Atoi(numRegexp.FindString(bstr))
 	}
-	patch, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return Version{}, err
+	if rstr != "" {
+		v.RC, _ = strconv.Atoi(numRegexp.FindString(rstr))
 	}
-	return Version{Major: major, Minor: minor, Patch: patch}, nil
+	return
 }
 
 // SortVersions sorts a slice of version strings in descending order.
@@ -38,18 +69,27 @@ func SortVersions(versions []string) {
 	sort.Slice(versions, func(i, j int) bool {
 		v1, err := ParseVersion(versions[i])
 		if err != nil {
-			return false
+			return gutil.ComparatorString(versions[i], versions[j]) >= 0
 		}
 		v2, err := ParseVersion(versions[j])
 		if err != nil {
-			return false
+			return gutil.ComparatorString(versions[i], versions[j]) >= 0
 		}
 		if v1.Major != v2.Major {
 			return v1.Major > v2.Major
 		}
+
 		if v1.Minor != v2.Minor {
 			return v1.Minor > v2.Minor
 		}
-		return v1.Patch > v2.Patch
+
+		if v1.Patch != v2.Patch {
+			return v1.Patch > v2.Patch
+		}
+
+		if v1.Beta != v2.Beta {
+			return v1.Beta > v2.Beta
+		}
+		return v1.RC > v2.RC
 	})
 }

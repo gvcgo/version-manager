@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 )
 
 const (
@@ -106,24 +106,13 @@ func (v *VersionInfo) GetVersions() map[string]VersionList {
 	return v.CurrentList
 }
 
-func (v *VersionInfo) sortByVersion() bool {
-	l := []string{
-		"go",
-	}
-	return strings.Contains(strings.Join(l, ""), v.AppName)
-}
-
 func (v *VersionInfo) GetSortedVersionList() (r []string) {
 	v.GetVersions()
 	for vName := range v.CurrentList {
 		r = append(r, vName)
 	}
 	if len(r) > 1 {
-		if !v.sortByVersion() {
-			r = SortStringListDesc(r)
-		} else {
-			r = SortVersion(r)
-		}
+		utils.SortVersions(r)
 	}
 	return
 }
