@@ -181,7 +181,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <p id="9"></p>  
 
 ### Contributors
-> Thanks to following people who contributed to this project.
+> Thanks to following people who have contributed to this project.
 <a href="https://github.com/gvcgo/version-manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
