@@ -10,17 +10,17 @@
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
-* [version-manager(vm)](#1)
-* [features](#2)
-* [vm vs vfox](#3)
-* [Installation/Update](#4)
-* [How to set a proxy?](#5)
-* [Subcommands](#6)
-* [Related dirs](#7)
-* [For Windows](#8)
-* [Contributors](#9)
-* [Supplementary](#10)
-* [Todo-List](#11)
+- [version-manager(vm)](#version-managervm)
+- [features](#features)
+- [vm versus vfox](#vm-versus-vfox)
+- [Installation/Update](#installationupdate)
+- [How to set a proxy?](#how-to-set-a-proxy)
+- [Subcommands](#subcommands)
+- [Related dirs](#related-dirs)
+- [For Windows](#for-windows)
+- [Contributors](#contributors)
+- [Supplementary](#supplementary)
+- [Todo-List](#todo-list)
 
 ------
 <p id="1"></p>  
@@ -139,6 +139,8 @@ vm use -mirror-in-china go@1.22.1
 | **set-proxy** | http or socks5( scheme://host:port ) | Sets a local proxy for vm. |
 | **install-self** | - | Installs vm. |
 | **version** | - | Shows version info of vm. |
+| **completion** | - | Generate the autocompletion script for  for the specified shell.(bash, zsh, fish, or powershell) |
+
 ------
 
 **demo for MacOS**

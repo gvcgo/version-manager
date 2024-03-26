@@ -10,17 +10,17 @@
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
-* [vm简介](#1)
-* [功能介绍](#2)
-* [vm和vfox对比](#3)
-* [一键安装或更新](#4)
-* [如何设置代理?](#5)
-* [子命令介绍](#6)
-* [相关目录说明](#7)
-* [Win用户须知](#8)
-* [贡献者](#9)
-* [说明](#10)
-* [Todo-List](#11)
+- [vm简介](#vm简介)
+- [功能特点](#功能特点)
+- [vm和vfox对比](#vm和vfox对比)
+- [一键安装/更新vm](#一键安装更新vm)
+- [如何设置代理?](#如何设置代理)
+- [子命令介绍](#子命令介绍)
+- [相关目录](#相关目录)
+- [Windows用户须知](#windows用户须知)
+- [贡献者](#贡献者)
+- [说明](#说明)
+- [Todo-List](#todo-list)
 
 ------
 <p id="1"></p>  
@@ -138,6 +138,8 @@ vm use -mirror-in-china go@1.22.1
 | **set-proxy** | http or socks5( scheme://host:port ) | 设置本地代理，可用于任何网站的下载加速 |
 | **install-self** | - | 安装vm到$HOME/.vm，用户一般无需关心 |
 | **version** | - | 显示vm的版本信息 |
+| **completion** | - | 生成关于不同shell的自动补全(支持bash、zsh、fish、powershell) |
+
 ------
 
 **MacOS演示**
