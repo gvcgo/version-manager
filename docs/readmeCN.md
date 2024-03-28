@@ -79,6 +79,7 @@
 | **vscode** | ✅︎ | ❌︎ |
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
+| **kubectl** | ✅︎ | ❌︎ |
 
 ------
 

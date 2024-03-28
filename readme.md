@@ -79,7 +79,7 @@ Maybe you've already heard of **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv*
 | **vscode** | ✅︎ | ❌︎ |
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
-
+| **kubectl** | ✅︎ | ❌︎ |
 
 ------
 
