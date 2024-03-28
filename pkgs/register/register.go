@@ -435,6 +435,24 @@ var KotlinInstaller = &installer.Installer{
 	HomePage:           "https://kotlinlang.org/",
 }
 
+var KubectlInstaller = &installer.Installer{
+	AppName:        "kubectl",
+	Version:        "1.29.3",
+	IsZipFile:      false,
+	BinaryRenameTo: "kubectl",
+	FlagFileGetter: func() []string {
+		r := []string{"kubectl"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"kubectl.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	ForceReDownload:    true,
+	HomePage:           "https://kubernetes.io/docs/tasks/tools/",
+}
+
 var LazyGitInstaller = &installer.Installer{
 	AppName:   "lazygit",
 	Version:   "0.40.2",
@@ -1134,6 +1152,7 @@ func init() {
 	VersionKeeper["jdk"] = JdkInstaller
 	VersionKeeper["julia"] = JuliaInstaller
 	VersionKeeper["kotlin"] = KotlinInstaller
+	VersionKeeper["kubectl"] = KubectlInstaller
 	VersionKeeper["lazygit"] = LazyGitInstaller
 	VersionKeeper["maven"] = MavenInstaller
 	VersionKeeper["miniconda"] = MinicondaInstaller
