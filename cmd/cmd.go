@@ -286,6 +286,24 @@ func (c *Cli) initiate() {
 		},
 	})
 
+	envHandler := &cobra.Command{
+		Use:     "env",
+		Aliases: []string{"e"},
+		GroupID: GroupID,
+		Short:   "Handles env manually.",
+		Long:    "Example: vm e <-r>",
+		Run: func(cmd *cobra.Command, args []string) {
+			enableRemove, _ := cmd.Flags().GetBool("remove")
+			if enableRemove {
+				envs.RemoveEnvManually()
+			} else {
+				envs.AddEnvManually()
+			}
+		},
+	}
+	envHandler.Flags().BoolP("remove", "r", false, "<false>(by default): adds env; <true>: removes env.")
+	c.rootCmd.AddCommand(envHandler)
+
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "version",
 		Aliases: []string{"v"},
