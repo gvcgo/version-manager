@@ -137,6 +137,7 @@ vm use -mirror-in-china go@1.22.1
 | **clear-cache** | sdk-name | Clears the cached files for a sdk. |
 | **set-reverse-proxy** | https://gvc.1710717.xyz/proxy/ | Sets a reverse-proxy for vm. |
 | **set-proxy** | http or socks5( scheme://host:port ) | Sets a local proxy for vm. |
+| **env** | --remove=false/true | Sets env manually. |
 | **install-self** | - | Installs vm. |
 | **version** | - | Shows version info of vm. |
 | **completion** | - | Generate the autocompletion script for  for the specified shell.(bash, zsh, fish, or powershell) |

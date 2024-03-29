@@ -137,6 +137,7 @@ vm use -mirror-in-china go@1.22.1
 | **clear-cache** | sdk-name | 清除本地已缓存的压缩文件 |
 | **set-reverse-proxy** | https://gvc.1710717.xyz/proxy/ | 设置反向代理，用于github下载加速 |
 | **set-proxy** | http or socks5( scheme://host:port ) | 设置本地代理，可用于任何网站的下载加速 |
+| **env** | --remove=false/true | 手动设置环境变量，比编辑shell配置文件或者打开windows环境变量管理更方便 |
 | **install-self** | - | 安装vm到$HOME/.vm，用户一般无需关心 |
 | **version** | - | 显示vm的版本信息 |
 | **completion** | - | 生成关于不同shell的自动补全(支持bash、zsh、fish、powershell) |

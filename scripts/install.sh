@@ -52,7 +52,7 @@ main() {
 
     local osArch="amd64"
 
-    if  [ "$os_arch" = "arm64" ] && [ "$os_type" = "aarch64" ]; then
+    if  [ "$os_arch" = "arm64" ] || [ "$os_type" = "aarch64" ]; then
         osArch="arm64"
     fi
 
