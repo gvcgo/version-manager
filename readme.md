@@ -43,6 +43,7 @@ Maybe you've already heard of **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv*
 - Friendly to VSCoders or Neovimers.
 - No plugins needed.
 - More stable.
+- Download files blazingly fast with multi-threads. See with command **vm use -h**.
 
 ------
 <p id="3"></p> 

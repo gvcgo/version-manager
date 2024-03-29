@@ -43,6 +43,7 @@
 - 对neovim和vscode用户友好，可以一键安装neovim和vscode。同时，neovim中一些明星插件的安装也可以一键完成，例如fd，ripgrep，tree-sitter等。
 - 无需任何插件
 - 相比其他版本管理器来说要更稳定
+- 支持多线程下载，速度飞快，可使用**vm use -h**命令查看用法
 
 ------
 <p id="3"></p> 
