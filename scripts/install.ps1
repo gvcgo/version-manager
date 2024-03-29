@@ -28,7 +28,7 @@ if ( "$sysType" -match "x64-based" )
     $arch="amd64"
 }
 
-$version="v0.1.1"
+$version="v0.1.2"
 
 $filename="vm_windows-" + $arch + ".zip"
 $download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"

@@ -22,7 +22,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 say() {
-    printf 'rustup: %s\n' "$1"
+    printf 'vm: %s\n' "$1"
 }
 
 err() {
@@ -43,7 +43,7 @@ need_cmd() {
 main() {
     local os_type="$(uname -s)"
     local os_arch="$(uname -m)"
-    local version="v0.1.1"
+    local version="v0.1.2"
     local download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
     local osType="linux"
     if [ "$os_type" = "Darwin" ]; then
