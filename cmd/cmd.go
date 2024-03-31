@@ -258,7 +258,7 @@ func (c *Cli) initiate() {
 				return
 			}
 			// Sets app installation Dir.
-			fmt.Println(gprint.CyanStr(`Enter App Installation Dir["$Home/.vm/" by default]:`))
+			fmt.Println(gprint.CyanStr(`Enter the SDK installation directory for vm["$Home/.vm/" by default]:`))
 			var appDir string
 			fmt.Scanln(&appDir)
 			if appDir == "" {
