@@ -33,7 +33,8 @@ func addEnv(key, value string) {
 }
 
 /*
-Pty or ConPty.
+pty for Unix.
+conpty for Windows.
 */
 type PtyTerminal struct {
 	Terminal terminal.Terminal
@@ -65,9 +66,16 @@ func (p *PtyTerminal) Run() {
 	terminal.SetTerminalEnvs(os.Environ())
 
 	if p.Terminal != nil {
-		if err := p.Terminal.Record(command, os.Stdout); err != nil {
+		if err := p.Terminal.Record(command, &NilWriter{}); err != nil {
 			gprint.PrintError("open pty failed: %+v", err)
 			return
 		}
 	}
+}
+
+type NilWriter struct{}
+
+func (nw *NilWriter) Write(p []byte) (n int, err error) {
+	// doing nothing.
+	return len(p), nil
 }
