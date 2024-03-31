@@ -105,6 +105,7 @@ func NewCondaInstaller() *CondaInstaller {
 			fmt.Sprintf("python=%s", c.Version),
 		)
 		if err == nil {
+			// TODO: extract a method for $PATH
 			symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)

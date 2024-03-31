@@ -93,6 +93,7 @@ func NewInstaller(appName, version string) (i *Installer) {
 	}
 	return
 }
+
 func (i *Installer) SetVersion(version string) {
 	if !i.StoreMultiVersions && version != "all" {
 		// the latest version only.
@@ -392,6 +393,7 @@ func (i *Installer) CreateBinarySymbol() {
 		return
 	}
 	// Adds binary dir to $PATH env directly.
+	// TODO: extract a method for $PATH
 	if i.AddBinDirToPath {
 		pathValue := i.preparePathValue(currentPath)
 		if pathValue != "" {
