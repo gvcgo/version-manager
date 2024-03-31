@@ -29,8 +29,8 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
-	"github.com/gvcgo/version-manager/pkgs/envs"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )

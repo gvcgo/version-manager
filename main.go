@@ -22,15 +22,14 @@
 package main
 
 import (
+	"fmt"
 	"os"
-
-	"github.com/gvcgo/version-manager/pkgs/conf"
-	"github.com/gvcgo/version-manager/pkgs/register"
 )
 
 func main() {
-	os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
-	register.RunInstaller(register.VersionKeeper["python"])
+	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
+	// register.RunInstaller(register.VersionKeeper["python"])
+	fmt.Println(os.Environ())
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)
 	// l, _ := os.Readlink(filepath.Join(conf.GetVMVersionsDir("python"), "python"))
