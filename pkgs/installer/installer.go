@@ -28,11 +28,13 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/archiver"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/envs"
+	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
@@ -187,7 +189,10 @@ func (i *Installer) Download() (zipFilePath string) {
 	// if already installed, switch to the specified version.
 	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
 	if ok, _ := gutils.PathIsExist(versionPath); ok {
+		i.NewPty(versionPath) // for session scope only.
+
 		i.CreateVersionSymbol()
+		i.CreateBinarySymbol()
 		gprint.PrintSuccess("Switched to %s", i.Version)
 		os.Exit(0)
 	}
@@ -387,13 +392,58 @@ func (i *Installer) createSymbolicOrNot(fileName string) bool {
 	return false
 }
 
+// Uses a version only in current session.
+func (i *Installer) NewPty(installDir string) {
+	PathDirs := []string{}
+	if i.AddBinDirToPath {
+		PathDirs = append(PathDirs, i.preparePathValue(installDir))
+	} else if i.BinDirGetter != nil && len(i.BinDirGetter(i.Version)) > 0 {
+		for _, bDir := range i.BinDirGetter(i.Version) {
+			if len(bDir) == 0 {
+				PathDirs = append(PathDirs, installDir)
+			} else {
+				d := filepath.Join(installDir, filepath.Join(bDir...))
+				ok := false
+				if dList, err := os.ReadDir(d); err == nil {
+				INNER:
+					for _, dd := range dList {
+						if !dd.IsDir() && i.createSymbolicOrNot(dd.Name()) {
+							ok = true
+							break INNER
+						}
+					}
+				}
+				if ok {
+					PathDirs = append(PathDirs, d)
+				}
+			}
+		}
+	} else {
+		PathDirs = append(PathDirs, installDir)
+	}
+
+	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
+		t := terminal.NewPtyTerminal()
+		for _, pStr := range PathDirs {
+			t.AddEnv("PATH", pStr)
+		}
+		for _, env := range i.EnvGetter(i.AppName, i.Version) {
+			t.AddEnv(env.Name, env.Value)
+		}
+		t.Run()
+	}
+}
+
 func (i *Installer) CreateBinarySymbol() {
+	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
+	i.NewPty(versionPath) // only for session scope.
+
 	currentPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
 	if ok, _ := gutils.PathIsExist(currentPath); !ok {
 		return
 	}
+
 	// Adds binary dir to $PATH env directly.
-	// TODO: extract a method for $PATH
 	if i.AddBinDirToPath {
 		pathValue := i.preparePathValue(currentPath)
 		if pathValue != "" {

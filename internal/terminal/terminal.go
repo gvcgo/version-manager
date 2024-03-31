@@ -70,7 +70,10 @@ func (p *PtyTerminal) Run() {
 			gprint.PrintError("open pty failed: %+v", err)
 			return
 		}
+	} else {
+		gprint.PrintError("no pty found")
 	}
+	os.Exit(0)
 }
 
 type NilWriter struct{}

@@ -103,6 +103,11 @@ func (c *Cli) initiate() {
 		Run: func(cmd *cobra.Command, args []string) {
 			mirrorInChina, _ := cmd.Flags().GetBool("mirror_in_china")
 			rds, _ := cmd.Flags().GetBool("rustup-default-stable")
+
+			// uses a version for current session only.
+			sessionOnly, _ := cmd.Flags().GetBool("session-only")
+			os.Setenv(conf.VMOnlyInCurrentSessionEnvName, gconv.String(sessionOnly))
+
 			if rds {
 				// only for rustup default.
 				if mirrorInChina {
@@ -142,6 +147,7 @@ func (c *Cli) initiate() {
 	useCmd.Flags().IntP("threads", "t", 1, "Number of threads to use for downloading.")
 	useCmd.Flags().BoolP("mirror_in_china", "c", false, "Downlowd from mirror sites in China.")
 	useCmd.Flags().BoolP("rustup-default-stable", "r", false, "Set rustup default stable.")
+	useCmd.Flags().BoolP("session-only", "s", false, "Use a version only for the current terminal session.")
 	c.rootCmd.AddCommand(useCmd)
 
 	c.rootCmd.AddCommand(&cobra.Command{

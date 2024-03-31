@@ -22,6 +22,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gvcgo/version-manager/internal/terminal"
 )
 
@@ -32,6 +34,7 @@ func main() {
 	pt := terminal.NewPtyTerminal()
 	pt.AddEnv("Hello", "test-test-test")
 	pt.Run()
+	fmt.Println("----hello")
 
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)

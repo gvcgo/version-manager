@@ -27,9 +27,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/envs"
+	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
@@ -91,7 +93,8 @@ func NewCoursierInstaller() *CoursierInstaller {
 			fmt.Sprintf("scala:%s", c.Version),
 		)
 		if err == nil {
-			// TODO: extract a method for $PATH
+			c.NewPty(installDir) // for session scope only.
+
 			symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)
@@ -148,12 +151,23 @@ func (c *CoursierInstaller) SearchVersion() {
 	}
 }
 
+// Uses a version only in current session.
+func (c *CoursierInstaller) NewPty(installDir string) {
+	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
+		t := terminal.NewPtyTerminal()
+		t.AddEnv("PATH", installDir)
+		t.Run()
+	}
+}
+
 func (c *CoursierInstaller) Download() (zipFilePath string) {
 	c.SearchVersion()
 	if c.V != nil {
 		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
 		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
 		if ok, _ := gutils.PathIsExist(installDir); ok {
+			c.NewPty(installDir) // for session scope only.
+
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)
 			gprint.PrintSuccess("Switched to %s", c.Version)

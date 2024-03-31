@@ -28,11 +28,12 @@ export VM_REVERSE_PROXY_URL="https://gvc.1710717.xyz/proxy/"
 export VM_APP_INSTALL_DIR="~/.vm/"
 */
 const (
-	VMProxyEnvName            string = "VM_PROXY_URI"
-	VMReverseProxyEnvName     string = "VM_REVERSE_PROXY_URL"
-	VMWorkDirEnvName          string = "VM_APP_INSTALL_DIR"
-	VMDownloadThreadsEnvName  string = "VM_DOWNLOAD_THREADS"
-	VMUseMirrorInChinaEnvName string = "VM_USE_MIRROR_IN_CHINA"
+	VMProxyEnvName                string = "VM_PROXY_URI"
+	VMReverseProxyEnvName         string = "VM_REVERSE_PROXY_URL"
+	VMWorkDirEnvName              string = "VM_APP_INSTALL_DIR"
+	VMDownloadThreadsEnvName      string = "VM_DOWNLOAD_THREADS"
+	VMUseMirrorInChinaEnvName     string = "VM_USE_MIRROR_IN_CHINA"
+	VMOnlyInCurrentSessionEnvName string = "VM_ONLY_IN_CURRENT_SESSION" // uses a version only in current session.
 )
 
 type Config struct {
@@ -152,7 +153,6 @@ func GetZipFileDir(appName string) string {
 	d := filepath.Join(GetVersionManagerWorkDir(), "cache", appName)
 	os.MkdirAll(d, os.ModePerm)
 	return d
-
 }
 
 // Temp dir.
