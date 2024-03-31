@@ -5,6 +5,9 @@ package winpty
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"syscall"
+	"unicode/utf16"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -204,4 +207,34 @@ func SetRawMode() (inHandle, outHandle windows.Handle) {
 	inHandle, _ = setRawModOnStdin()
 	outHandle, _ = setRawModOnStdout()
 	return
+}
+
+// CreateEnvBlock converts an array of environment strings into
+// the representation required by CreateProcess: a sequence of NUL
+// terminated strings followed by a nil.
+// Last bytes are two UCS-2 NULs, or four NUL bytes.
+// If any string contains a NUL, it returns (nil, EINVAL).
+func CreateEnvBlock(envv []string) ([]uint16, error) {
+	if len(envv) == 0 {
+		return utf16.Encode([]rune("\x00\x00")), nil
+	}
+	var length int
+
+	for _, s := range envv {
+		if strings.IndexByte(s, 0) != -1 {
+			return nil, syscall.EINVAL
+		}
+		length += len(s) + 1
+	}
+	length += 1
+
+	b := make([]uint16, 0, length)
+	for _, s := range envv {
+		for _, c := range s {
+			b = utf16.AppendRune(b, c)
+		}
+		b = utf16.AppendRune(b, 0)
+	}
+	b = utf16.AppendRune(b, 0)
+	return b, nil
 }

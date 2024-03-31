@@ -5,8 +5,10 @@ package winpty
 import (
 	"context"
 	"fmt"
+	"os"
 	"unsafe"
 
+	"github.com/gvcgo/version-manager/interal/common"
 	"golang.org/x/sys/windows"
 )
 
@@ -92,6 +94,15 @@ func CreateConsoleProcessAttachedToPTY(hpc windows.Handle, commandLine string) (
 	}
 	var pi windows.ProcessInformation
 
+	// prepare envblock
+	envList := os.Environ()
+	envList = append(envList, common.EnvsToAppend...)
+	var envBlock []uint16
+	envBlock, err = CreateEnvBlock(envList)
+	if err != nil {
+		return nil, err
+	}
+
 	err = windows.CreateProcess(
 		nil, // use this if no args
 		cmdLine,
@@ -99,7 +110,7 @@ func CreateConsoleProcessAttachedToPTY(hpc windows.Handle, commandLine string) (
 		nil,
 		false, // inheritHandle
 		windows.EXTENDED_STARTUPINFO_PRESENT,
-		nil,
+		&envBlock[0],
 		nil,
 		&siEx.startupInfo,
 		&pi)
