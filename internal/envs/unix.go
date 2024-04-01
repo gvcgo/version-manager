@@ -45,10 +45,11 @@ func (em *EnvManager) SetPath() {
 Add shell file to shell confs.
 */
 const shellContent string = `# vm_envs start
-if [ -z %s ]; then
+if [ -z $%s ]; then
     %s
 fi
-# vm_envs end`
+# vm_envs end
+`
 
 func (em *EnvManager) addShellFileToShellConfig() {
 	shellConfFile := utils.GetShellConfigFilePath()
@@ -70,7 +71,7 @@ func (em *EnvManager) addShellFileToShellConfig() {
 		if data == "" {
 			data = envStr
 		} else if !strings.Contains(data, envStr) {
-			data = data + "\n" + envStr
+			data = data + "\n\n" + envStr
 		}
 		os.WriteFile(shellConfFile, []byte(data), os.ModePerm)
 	}

@@ -343,6 +343,8 @@ func (i *Installer) Copy() {
 
 func (i *Installer) CreateVersionSymbol() {
 	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
+	i.NewPty(versionPath) // only for session scope.
+
 	symbolPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
 
 	if ok, _ := gutils.PathIsExist(versionPath); ok {
@@ -352,6 +354,18 @@ func (i *Installer) CreateVersionSymbol() {
 		}
 		// create symbolic
 		utils.SymbolicLink(versionPath, symbolPath)
+	}
+
+	// Adds binary dir to $PATH env directly.
+	// Or symbolics for binaries will be created.
+	if i.AddBinDirToPath {
+		pathValue := i.preparePathValue(symbolPath)
+		if pathValue != "" {
+			em := envs.NewEnvManager()
+			defer em.CloseKey()
+			em.AddToPath(pathValue)
+		}
+		return // Do not create symbolics in .vm/bin any more.
 	}
 }
 
@@ -427,8 +441,10 @@ func (i *Installer) NewPty(installDir string) {
 		for _, pStr := range PathDirs {
 			t.AddEnv("PATH", pStr)
 		}
-		for _, env := range i.EnvGetter(i.AppName, i.Version) {
-			t.AddEnv(env.Name, env.Value)
+		if i.EnvGetter != nil {
+			for _, env := range i.EnvGetter(i.AppName, i.Version) {
+				t.AddEnv(env.Name, env.Value)
+			}
 		}
 		t.Run()
 	}
@@ -441,17 +457,6 @@ func (i *Installer) CreateBinarySymbol() {
 	currentPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName)
 	if ok, _ := gutils.PathIsExist(currentPath); !ok {
 		return
-	}
-
-	// Adds binary dir to $PATH env directly.
-	if i.AddBinDirToPath {
-		pathValue := i.preparePathValue(currentPath)
-		if pathValue != "" {
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
-			em.AddToPath(pathValue)
-		}
-		return // Do not create symbolics in .vm/bin any more.
 	}
 
 	// Or creates symbolics in .vm/bin/
