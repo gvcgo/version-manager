@@ -104,6 +104,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.g
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
 
+- 手动安装(当你的系统下载脚本出现问题时，可以选择手动安装)
+```text
+1. 从release页面下载对应的版本；
+2. 解压，打开终端或者Powershell，执行命令"vm is"，即可安装。
+```
+
 ------
 
 <p id="5"></p> 

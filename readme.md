@@ -99,6 +99,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.g
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
 
+- Manual installation
+```text
+1. Download zip file from release.
+2. Unzip it, run command "vm is".
+```
+
 ------
 
 <p id="5"></p> 
