@@ -86,7 +86,7 @@ func (p *PtyTerminal) Run() {
 	}
 	p.modifyPath()
 
-	// Disable reading vm_env.sh for pseudo-shell.
+	// Disable reading vm_env.sh for the new pseudo-shell.
 	if runtime.GOOS != gutils.Windows {
 		os.Setenv(conf.VMDiableEnvName, "111")
 	}

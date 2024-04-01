@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/gogf/gf/v2 v2.6.1
-	github.com/gvcgo/asciinema v0.3.6
+	github.com/gvcgo/asciinema v0.3.8
 	github.com/gvcgo/goutils v0.8.9
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/sys v0.16.0
