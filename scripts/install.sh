@@ -43,7 +43,9 @@ need_cmd() {
 main() {
     local os_type="$(uname -s)"
     local os_arch="$(uname -m)"
-    local version="v0.1.2"
+
+    local version="v0.1.3"
+    
     local download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
     local osType="linux"
     if [ "$os_type" = "Darwin" ]; then

@@ -39,6 +39,7 @@ Maybe you've already heard of **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv*
 
 - Installs or uninstalls versions of sdk.
 - Swithes between versions of sdk.
+- Using a version only in terminal session scope is supported. See with command **vm use -h**.
 - Handles envs.
 - Friendly to VSCoders or Neovimers.
 - No plugins needed.

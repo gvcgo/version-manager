@@ -39,6 +39,7 @@
 
 - 安装或卸载某个版本的sdk；
 - 在不同版本的sdk之间切换；
+- 支持仅在某个终端会话(即所谓的session scope)中使用某版本。可使用**vm use -h**命令查看如何使用。此功能基于pty和conpty，无需额外脚本。
 - 一键管理环境变量；
 - 对neovim和vscode用户友好，可以一键安装neovim和vscode。同时，neovim中一些明星插件的安装也可以一键完成，例如fd，ripgrep，tree-sitter等；
 - 相比其他版本管理器来说要更稳定；
