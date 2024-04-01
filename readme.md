@@ -42,10 +42,10 @@ Maybe you've already heard of **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv*
 - Using a version only in terminal session scope is supported. See with command **vm use -h**.
 - Handles envs.
 - Friendly to VSCoders or Neovimers.
+- Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vm use -h**.
+- Auto-completions for shells. See with command **vm completion -h**.
 - No plugins needed.
 - More stable.
-- Download files blazingly fast🚀🚀🚀 with multi-threads. See with command **vm use -h**.
-- Auto-completions for shells. See with command **vm completion -h**.
 
 ------
 <p id="3"></p> 
