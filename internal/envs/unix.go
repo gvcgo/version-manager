@@ -41,6 +41,15 @@ func (em *EnvManager) SetPath() {
 	em.addShellFileToShellConfig()
 }
 
+/*
+Add shell file to shell confs.
+*/
+const shellContent string = `# vm_envs start
+if [ -z %s ]; then
+    %s
+fi
+# vm_envs end`
+
 func (em *EnvManager) addShellFileToShellConfig() {
 	shellConfFile := utils.GetShellConfigFilePath()
 	if shellConfFile != "" {
@@ -52,6 +61,12 @@ func (em *EnvManager) addShellFileToShellConfig() {
 		shellFile := filepath.Join(conf.GetVersionManagerWorkDir(), ShellFileName)
 
 		envStr := fmt.Sprintf(`. %s`, shellFile)
+
+		if strings.Contains(data, envStr) && !strings.Contains(data, "# vm_envs start") {
+			data = strings.TrimSpace(strings.ReplaceAll(data, envStr, ""))
+		}
+
+		envStr = fmt.Sprintf(shellContent, conf.VMDiableEnvName, envStr)
 		if data == "" {
 			data = envStr
 		} else if !strings.Contains(data, envStr) {

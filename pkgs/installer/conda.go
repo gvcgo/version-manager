@@ -169,7 +169,7 @@ func (c *CondaInstaller) SearchVersion() {
 // Uses a version only in current session.
 func (c *CondaInstaller) NewPTY(installDir string) {
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
-		t := terminal.NewPtyTerminal()
+		t := terminal.NewPtyTerminal(c.AppName)
 		t.AddEnv("PATH", filepath.Join(installDir, "bin"))
 		t.Run()
 	}

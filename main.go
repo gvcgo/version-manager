@@ -22,19 +22,27 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/gvcgo/version-manager/internal/terminal"
+	"os"
+	"os/exec"
 )
 
 func main() {
 	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
 	// register.RunInstaller(register.VersionKeeper["python"])
 	// fmt.Println(os.Environ())
-	pt := terminal.NewPtyTerminal()
-	pt.AddEnv("Hello", "test-test-test")
-	pt.Run()
-	fmt.Println("----hello")
+	// pt := terminal.NewPtyTerminal("go")
+	// pt.AddEnv("Hello", "test-test-test")
+	// pt.Run()
+	// fmt.Println("----hello")
+
+	c := exec.Command(`sh`, `/Volumes/data/projects/go/src/gvcgo_org/version-manager/test.sh`)
+	pStr := os.Getenv("PATH")
+	os.Setenv("PATH", "/test/test-test/:"+pStr)
+
+	c.Env = os.Environ()
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Run()
 
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)

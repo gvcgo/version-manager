@@ -154,7 +154,7 @@ func (c *CoursierInstaller) SearchVersion() {
 // Uses a version only in current session.
 func (c *CoursierInstaller) NewPty(installDir string) {
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
-		t := terminal.NewPtyTerminal()
+		t := terminal.NewPtyTerminal(c.AppName)
 		t.AddEnv("PATH", installDir)
 		t.Run()
 	}
