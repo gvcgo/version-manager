@@ -23,10 +23,12 @@ $sysType=systeminfo | find "System Type"
 
 Write-Host "$sysType"
 
-if ( "$sysType" -match "x64-based" )
-{
-    $arch="amd64"
-}
+# if ( "$sysType" -match "x64-based" )
+# {
+#     $arch="amd64"
+# }
+
+$arch="amd64"
 
 $version="v0.1.3"
 
