@@ -198,7 +198,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 
 ### For Windows
 
-**Note**: If you are using vm on Windows11, you need to enable the **Developer Mode** as vm requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurs, you can try vm with **Admin Privilege**. To get **envs** take effect for windows, you may need to close the current powershell terminal and open a new one. Note that extFAT and FAT32 are not supported.
+**Note**: If you are using vm on Windows11, you need to enable the **Developer Mode** as vm requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurrs, you can try vm with **Admin Privilege**. To get **envs** take effect for windows, you may need to close the current powershell terminal and open a new one. Note that extFAT and FAT32 are not supported.
 
 ------
 <p id="9"></p>  
