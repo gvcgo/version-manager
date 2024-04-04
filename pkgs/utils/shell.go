@@ -71,3 +71,11 @@ func UnzipForWindows(zipFilePath, dstDir string) error {
 		dstDir)
 	return err
 }
+
+func IsHyperVEnabledForWindows() bool {
+	if runtime.GOOS != gutils.Windows {
+		return false
+	}
+	_, err := gutils.ExecuteSysCommand(true, "", "get-vm")
+	return err == nil
+}

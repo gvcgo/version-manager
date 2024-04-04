@@ -35,6 +35,7 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/register"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -247,6 +248,11 @@ func (c *Cli) initiate() {
 			vmBinName := "vm"
 			if runtime.GOOS == gutils.Windows {
 				vmBinName = "vm.exe"
+				if utils.IsHyperVEnabledForWindows() {
+					// If Hyper-V is enabled for windows, then command name "vm" is taken by Hyper-V.
+					// In order to avoid shadowing Hyper-V, rename vm.exe to vmr.exe.
+					vmBinName = "vmr.exe"
+				}
 			}
 			binPath := filepath.Join(conf.GetManagerDir(), vmBinName)
 			if ok, _ := gutils.PathIsExist(binPath); ok {
