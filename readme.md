@@ -29,7 +29,7 @@
 
 **vm** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
 
-Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, never of these can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems. Therefore, **vm** comes.
+Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems. Therefore, **vm** comes.
 
 ------
 
@@ -204,7 +204,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <p id="9"></p>  
 
 ### Contributors
-> Thanks to following people who have contributed to this project.
+> Thanks to the following people who have contributed to this project.
 <a href="https://github.com/gvcgo/version-manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
@@ -213,7 +213,9 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <p id="10"></p> 
 
 ### Supplementary
-**vm** is created to be a cross-platform command line tool. It will not try to include everything like asdf-vm(based on shell script, only support unix-like system) did. Because that will greatly increase the complexity and also reduce the possibility of cross-platform. And most of the time, programming languages and tools that we usually use have been covered by **vm**. **vm** will not try to include sdks that need to be compiled under a certain platform. Because each developer's development environment is different, it is impossible to ensure the completion of a compilation. So **vm** will only use pre-compiled binaries for installations. If you have any sdks or tools to recommand for version management, please raise an issue in [Issues](https://github.com/gvcgo/version-manager/issues).
+**vm** is created to be a cross-platform command line tool. **We will not try to include everything just like asdf-vm or its imitator vfox did**, as that will greatly increase the complexity and also reduce the possibility of cross-platform. And most of the time, frequently used SDKs and tools have already been covered by **vm**. **vm** will not try to include SDKs that need to be compiled under a certain platform. Because each developer's development environment is different, it is impossible to ensure the completion of a compilation. So **vm** will only use pre-built binaries for installations. If you have any SDKs or tools to recommand for version management, please raise an issue in [Issues](https://github.com/gvcgo/version-manager/issues).
+
+So, **vm** is going to keep as light, stable, and user-friendly as possible.
 
 ------
 <p id="11"></p> 
