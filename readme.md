@@ -58,7 +58,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **maven** | ✅︎ | ✅︎ |
 | **gradle** | ✅︎ | ✅︎ |
 | **kotlin** | ✅︎ | ✅︎ |
-| **scala** | ✅︎ | ❌︎ |
+| **scala** | ✅︎ | ✅︎ |
 | **python** | ✅︎ | ✅︎ |
 | **miniconda** | ✅︎ | ❌︎ |
 | **go** | ✅︎ | ✅︎ |
@@ -68,14 +68,17 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **flutter(dart)** | ✅︎ | ✅︎ |
 | **.net** | ✅︎ | ✅︎ |
 | **zig** | ✅︎ | ✅︎ |
-| **php** | ✅︎ | ❌︎ |
+| **zls** | ✅︎ | ❌︎ |
+| **php** | ✅︎ | ✅︎ |
 | **rust** | ✅︎ | ❌︎ |
 | **cmdline-tool(android)** | ✅︎ | ❌︎ |
 | **vlang** | ✅︎ | ❌︎ |
-| **cygwin** | ✅︎ | ❌︎ |
-| **msys2** | ✅︎ | ❌︎ |
+| **v-analyzer** | ✅︎ | ❌︎ |
+| **cygwin-installer** | ✅︎ | ❌︎ |
+| **msys2-installer** | ✅︎ | ❌︎ |
 | **julia** | ✅︎ | ❌︎ |
 | **typst** | ✅︎ | ❌︎ |
+| **typst-lsp** | ✅︎ | ❌︎ |
 | **gleam** | ✅︎ | ❌︎ |
 | **git-for-windows** | ✅︎ | ❌︎ |
 | **neovim** | ✅︎ | ❌︎ |
@@ -83,6 +86,8 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
 | **kubectl** | ✅︎ | ❌︎ |
+| **erlang** | ❌︎ | ✅︎ |
+| **elixir** | ❌︎ | ✅︎ |
 
 ------
 
