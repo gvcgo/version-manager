@@ -853,7 +853,9 @@ var ZigInstaller = &installer.Installer{
 	HomePage:           "https://ziglang.org/",
 }
 
-var PythonInstaller = installer.NewCondaInstaller()
+var PythonInstaller = installer.NewCondaInstaller(installer.CondaPython)
+
+var PyPyInstaller = installer.NewCondaInstaller(installer.CondaPyPy)
 
 /*
 Windows only.
@@ -1162,6 +1164,7 @@ func init() {
 	VersionKeeper["php"] = PHPInstaller
 	VersionKeeper["protobuf"] = ProtobufInstaller
 	VersionKeeper["python"] = PythonInstaller
+	VersionKeeper["pypy"] = PyPyInstaller
 	VersionKeeper["ripgrep"] = RipgrepInstaller
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller

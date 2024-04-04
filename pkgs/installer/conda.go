@@ -43,6 +43,13 @@ func IsMinicondaInstalled() bool {
 	return err == nil
 }
 
+type CondaInstallerType string
+
+const (
+	CondaPython CondaInstallerType = "python"
+	CondaPyPy   CondaInstallerType = "pypy"
+)
+
 /*
 Use miniconda as installer.
 */
@@ -56,86 +63,157 @@ type CondaInstaller struct {
 	HomePage  string
 }
 
-func NewCondaInstaller() *CondaInstaller {
+func NewCondaInstaller(t CondaInstallerType) *CondaInstaller {
+	appName := "python"
+	homePage := "https://anaconda.org/conda-forge/python/files"
+	defaultVersion := "3.12.0"
+	if t == CondaPyPy {
+		appName = "pypy"
+		homePage = "https://anaconda.org/conda-forge/pypy/files"
+		defaultVersion = "3.9"
+	}
 	c := &CondaInstaller{
-		AppName:  "python",
-		Version:  "3.12.0",
+		AppName:  appName,
+		Version:  defaultVersion,
 		Searcher: NewSearcher(),
-		HomePage: "https://anaconda.org/conda-forge/python/files",
+		HomePage: homePage,
 	}
-	c.Install = func(appName, version, zipFilePath string) {
-		if c.V == nil {
-			c.SearchVersion()
-		}
-		if c.V == nil {
-			gprint.PrintError("Can't find version: %s", c.Version)
-			return
-		}
-		if !IsMinicondaInstalled() {
-			gprint.PrintWarning("No conda is installed. Please install miniconda first.")
-			os.Exit(1)
-		}
-
-		if conf.UseMirrorSiteInChina() {
-			/*
-				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/main/
-				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
-				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/
-				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/
-				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/
-				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/
-				conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/
-			*/
-			channelList := []string{
-				"https://mirrors.ustc.edu.cn/anaconda/pkgs/main/",
-				"https://mirrors.ustc.edu.cn/anaconda/pkgs/free/",
-				"https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/",
-				"https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/",
-				"https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/",
-				"https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/",
-				"https://mirrors.ustc.edu.cn/anaconda/cloud/",
-			}
-			for _, c := range channelList {
-				gutils.ExecuteSysCommand(false, "", "conda", "config", "--add", "channels", c)
-			}
-		}
-		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
-		_, err := gutils.ExecuteSysCommand(
-			false, "",
-			"conda", "create",
-			fmt.Sprintf("--prefix=%s", installDir),
-			fmt.Sprintf("python=%s", c.Version),
-		)
-		if err == nil {
-			c.NewPTY(installDir) // for session scope only.
-
-			symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
-			os.RemoveAll(symbolicPath)
-			utils.SymbolicLink(installDir, symbolicPath)
-			binPath := filepath.Join(symbolicPath, "bin")
-			if runtime.GOOS == gutils.Windows {
-				binPath = symbolicPath
-			}
-			if ok, _ := gutils.PathIsExist(binPath); ok {
-				em := envs.NewEnvManager()
-				defer em.CloseKey()
-				em.AddToPath(binPath)
-			}
-		}
-	}
-
-	c.UnInstall = func(appName, version string) {
-		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
-		slink, _ := os.Readlink(symbolicPath)
-		if filepath.Base(slink) == version {
-			gprint.PrintWarning("Can not remove a version currently in use: %s", version)
-			return
-		}
-
-		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), version)
-		os.RemoveAll(installDir)
+	c.Install = c.InstallPython
+	c.UnInstall = c.UnInstallPython
+	if t == CondaPyPy {
+		c.Install = c.InstallPyPy
+		c.UnInstall = c.UnInstallPyPy
 	}
 	return c
+}
+
+func (c *CondaInstaller) InstallPython(appName, version, zipFilePath string) {
+	if c.V == nil {
+		c.SearchVersion()
+	}
+	if c.V == nil {
+		gprint.PrintError("Can't find version: %s", c.Version)
+		return
+	}
+	if !IsMinicondaInstalled() {
+		gprint.PrintWarning("No conda is installed. Please install miniconda first.")
+		os.Exit(1)
+	}
+
+	c.useMirrorInChina()
+
+	installDir := c.getInstallDir()
+	_, err := gutils.ExecuteSysCommand(
+		false, "",
+		"conda", "create",
+		fmt.Sprintf("--prefix=%s", installDir),
+		fmt.Sprintf("python=%s", c.Version),
+	)
+	if err == nil {
+		c.NewPTY(installDir) // for session scope only.
+
+		symbolicPath := c.getSymbolicPath()
+		os.RemoveAll(symbolicPath)
+		utils.SymbolicLink(installDir, symbolicPath)
+		binPath := filepath.Join(symbolicPath, "bin")
+		if runtime.GOOS == gutils.Windows {
+			binPath = symbolicPath
+		}
+		if ok, _ := gutils.PathIsExist(binPath); ok {
+			em := envs.NewEnvManager()
+			defer em.CloseKey()
+			em.AddToPath(binPath)
+		}
+	}
+}
+
+func (c *CondaInstaller) UnInstallPython(appName, version string) {
+	slink, _ := os.Readlink(c.getSymbolicPath())
+	if filepath.Base(slink) == version {
+		gprint.PrintWarning("Can not remove a version currently in use: %s", version)
+		return
+	}
+	os.RemoveAll(c.getInstallDir())
+}
+
+func (c *CondaInstaller) InstallPyPy(appName, version, zipFilePath string) {
+	if c.V == nil {
+		c.SearchVersion()
+	}
+	if c.V == nil {
+		gprint.PrintError("Can't find version: %s", c.Version)
+		return
+	}
+	if !IsMinicondaInstalled() {
+		gprint.PrintWarning("No conda is installed. Please install miniconda first.")
+		os.Exit(1)
+	}
+
+	c.useMirrorInChina()
+
+	installDir := c.getInstallDir()
+
+	// conda create --prefix=~/.vm/versions/pypy_versions -c conda-forge pypy python=3.8
+	_, err := gutils.ExecuteSysCommand(
+		false, "",
+		"conda", "create",
+		fmt.Sprintf("--prefix=%s", installDir),
+		"-c", "conda-forge", "pypy",
+		fmt.Sprintf("python=%s", c.Version),
+	)
+
+	if err == nil {
+		c.NewPTY(installDir) // for session scope only.
+
+		symbolicPath := c.getSymbolicPath()
+		os.RemoveAll(symbolicPath)
+		utils.SymbolicLink(installDir, symbolicPath)
+		binPath := filepath.Join(symbolicPath, "bin")
+		if runtime.GOOS == gutils.Windows {
+			binPath = symbolicPath
+		}
+		if ok, _ := gutils.PathIsExist(binPath); ok {
+			em := envs.NewEnvManager()
+			defer em.CloseKey()
+			em.AddToPath(binPath)
+		}
+	}
+}
+
+func (c *CondaInstaller) UnInstallPyPy(appName, version string) {
+	slink, _ := os.Readlink(c.getSymbolicPath())
+	if filepath.Base(slink) == version {
+		gprint.PrintWarning("Can not remove a version currently in use: %s", version)
+		return
+	}
+
+	os.RemoveAll(c.getInstallDir())
+}
+
+func (c *CondaInstaller) useMirrorInChina() {
+	if conf.UseMirrorSiteInChina() {
+		/*
+			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/main/
+			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
+			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/
+			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/
+			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/
+			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/
+			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/
+		*/
+		channelList := []string{
+			"https://mirrors.ustc.edu.cn/anaconda/pkgs/main/",
+			"https://mirrors.ustc.edu.cn/anaconda/pkgs/free/",
+			"https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/",
+			"https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/",
+			"https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/",
+			"https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/",
+			"https://mirrors.ustc.edu.cn/anaconda/cloud/",
+		}
+		for _, c := range channelList {
+			gutils.ExecuteSysCommand(false, "", "conda", "config", "--add", "channels", c)
+		}
+	}
 }
 
 func (c *CondaInstaller) SetVersion(version string) {
@@ -166,6 +244,19 @@ func (c *CondaInstaller) SearchVersion() {
 	}
 }
 
+func (c *CondaInstaller) getSymbolicPath() string {
+	pseudoAppName := "python"
+	return filepath.Join(conf.GetVMVersionsDir(pseudoAppName), pseudoAppName)
+}
+
+func (c *CondaInstaller) getInstallDir() string {
+	pseudoAppName := "python"
+	if c.AppName == "pypy" {
+		return filepath.Join(conf.GetVMVersionsDir(pseudoAppName), fmt.Sprintf("pypy%s", c.Version))
+	}
+	return filepath.Join(conf.GetVMVersionsDir(pseudoAppName), c.Version)
+}
+
 // Uses a version only in current session.
 func (c *CondaInstaller) NewPTY(installDir string) {
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
@@ -178,8 +269,8 @@ func (c *CondaInstaller) NewPTY(installDir string) {
 func (c *CondaInstaller) Download() (zipFilePath string) {
 	c.SearchVersion()
 	if c.V != nil {
-		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
-		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
+		symbolicPath := c.getSymbolicPath()
+		installDir := c.getInstallDir()
 		if ok, _ := gutils.PathIsExist(installDir); ok {
 			c.NewPTY(installDir) // for session scope only.
 			os.RemoveAll(symbolicPath)
@@ -230,8 +321,8 @@ func (c *CondaInstaller) DeleteAll() {
 	if c.AppName == "" {
 		return
 	}
-	vDir := conf.GetVMVersionsDir(c.AppName)
-	symbolicPath := filepath.Join(vDir, c.AppName)
+	vDir := conf.GetVMVersionsDir("python")
+	symbolicPath := c.getSymbolicPath()
 	binPath := filepath.Join(symbolicPath, "bin")
 	if runtime.GOOS == gutils.Windows {
 		binPath = symbolicPath
