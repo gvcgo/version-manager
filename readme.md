@@ -60,6 +60,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **kotlin** | ✅︎ | ✅︎ |
 | **scala** | ✅︎ | ✅︎ |
 | **python** | ✅︎ | ✅︎ |
+| **pypy** | ✅︎ | ❌︎ |
 | **miniconda** | ✅︎ | ❌︎ |
 | **go** | ✅︎ | ✅︎ |
 | **node** | ✅︎ | ✅︎ |

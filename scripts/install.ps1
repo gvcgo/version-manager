@@ -30,7 +30,7 @@ Write-Host "$sysType"
 
 $arch="amd64"
 
-$version="v0.1.3"
+$version="v0.1.4"
 
 $filename="vm_windows-" + $arch + ".zip"
 $download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
