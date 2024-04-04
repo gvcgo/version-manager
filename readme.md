@@ -86,8 +86,8 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
 | **kubectl** | ✅︎ | ❌︎ |
-| **erlang** | ❌︎ | ✅︎ |
-| **elixir** | ❌︎ | ✅︎ |
+| **erlang(need compilation)** | ❌︎ | ✅︎ |
+| **elixir(need compilation)** | ❌︎ | ✅︎ |
 
 ------
 

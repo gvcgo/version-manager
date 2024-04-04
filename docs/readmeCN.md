@@ -89,8 +89,8 @@
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
 | **kubectl** | ✅︎ | ❌︎ |
-| **erlang** | ❌︎ | ✅︎ |
-| **elixir** | ❌︎ | ✅︎ |
+| **erlang(需要编译)** | ❌︎ | ✅︎ |
+| **elixir(需要编译)** | ❌︎ | ✅︎ |
 
 ------
 
@@ -215,7 +215,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <p id="10"></p> 
 
 ### 说明
-**vm**是一个跨平台的命令行工具。它不会像asdf-vm(基于shell脚本，仅支持unix-like系统)那样做到什么都试图包含，因为那样会大大增加复杂性，也降低跨了平台的可能。而且大多数情况下，我们常用的语言和工具基本已经包含在**vm**中了。**vm**不会试图去包含那些在某个平台下需要自行编译的sdk，因为每个开发者的开发环境都不一样，无法保证编译一定能通过。所以**vm**仅仅会使用pre-compiled binary来安装应用。如果你有什么需要进行版本管理的sdk或者工具推荐，请在[Issues](https://github.com/gvcgo/version-manager/issues)中提出，**vm**开发团队会评估后决定是否加入。
+**vm**是一个跨平台的命令行工具。它不会像asdf-vm(基于shell脚本，仅支持unix-like系统)那样做到什么都试图包含，因为那样会大大增加复杂性，也降低跨了平台的可能。而且大多数情况下，我们常用的语言和工具基本已经包含在**vm**中了。**vm**不会试图去包含那些在某个平台下需要自行编译的sdk，因为每个开发者的开发环境都不一样，各种so，clib版本都无法统一，**vm**开发者无法测试到所有系统环境，故无法保证编译一定能通过。所以**vm**仅仅会使用独立性较强的pre-built binary来安装应用。如果你有什么需要进行版本管理的sdk或者工具推荐，请在[Issues](https://github.com/gvcgo/version-manager/issues)中提出，**vm**开发团队会评估后决定是否加入。
 
 ------
 <p id="11"></p> 
