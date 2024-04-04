@@ -29,7 +29,7 @@
 
 **vm** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
 
-Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems. Therefore, **vm** comes.
+Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems, and makes things look complicated. Therefore, **vm** comes.
 
 ------
 
@@ -215,7 +215,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 ### Supplementary
 **vm** is created to be a cross-platform command line tool. **We will not try to include everything just like asdf-vm or its imitator vfox did**, as that will greatly increase the complexity and also reduce the possibility of cross-platform. And most of the time, frequently used SDKs and tools have already been covered by **vm**. **vm** will not try to include SDKs that need to be compiled under a certain platform. Because each developer's development environment is different, it is impossible to ensure the completion of a compilation. So **vm** will only use pre-built binaries for installations. If you have any SDKs or tools to recommand for version management, please raise an issue in [Issues](https://github.com/gvcgo/version-manager/issues).
 
-So, **vm** is going to keep as light, stable, and user-friendly as possible.
+So, **vm** is going to keep as lightweight, stable, and user-friendly as possible.
 
 ------
 <p id="11"></p> 
