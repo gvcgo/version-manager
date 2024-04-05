@@ -10,6 +10,7 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 )
 
 func init() {
@@ -166,7 +167,9 @@ func GetVMTempDir() string {
 // versions dir.
 func GetVMVersionsDir(appName string) string {
 	dirName := fmt.Sprintf("%s_versions", appName)
-	d := filepath.Join(GetVersionManagerWorkDir(), "versions", dirName)
+	versionsDir := filepath.Join(GetVersionManagerWorkDir(), "versions")
+	utils.ClearEmptyDirs(versionsDir) // remove empty dirs left behind.
+	d := filepath.Join(versionsDir, dirName)
 	os.MkdirAll(d, os.ModePerm)
 	return d
 }
