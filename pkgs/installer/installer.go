@@ -365,7 +365,7 @@ func (i *Installer) CreateVersionSymbol() {
 			defer em.CloseKey()
 			em.AddToPath(pathValue)
 		}
-		return // Do not create symbolics in .vm/bin any more.
+		return
 	}
 }
 
@@ -451,6 +451,11 @@ func (i *Installer) NewPty(installDir string) {
 }
 
 func (i *Installer) CreateBinarySymbol() {
+	if i.AddBinDirToPath {
+		// BinDirs are added to $PATH
+		// Do not create symbolics in .vm/bin any more.
+		return
+	}
 	versionPath := filepath.Join(conf.GetVMVersionsDir(i.AppName), i.Version)
 	i.NewPty(versionPath) // only for session scope.
 
