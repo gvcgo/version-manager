@@ -62,6 +62,7 @@
 | **gradle** | ✅︎ | ✅︎ |
 | **kotlin** | ✅︎ | ✅︎ |
 | **scala** | ✅︎ | ✅︎ |
+| **groovy** | ✅︎ | ✅︎ |
 | **python** | ✅︎ | ✅︎ |
 | **pypy** | ✅︎ | ❌︎ |
 | **miniconda** | ✅︎ | ❌︎ |
@@ -83,6 +84,7 @@
 | **julia** | ✅︎ | ❌︎ |
 | **typst** | ✅︎ | ❌︎ |
 | **typst-lsp** | ✅︎ | ❌︎ |
+| **typst-preview** | ✅︎ | ❌︎ |
 | **gleam** | ✅︎ | ❌︎ |
 | **git-for-windows** | ✅︎ | ❌︎ |
 | **neovim** | ✅︎ | ❌︎ |

@@ -59,6 +59,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **gradle** | ✅︎ | ✅︎ |
 | **kotlin** | ✅︎ | ✅︎ |
 | **scala** | ✅︎ | ✅︎ |
+| **groovy** | ✅︎ | ✅︎ |
 | **python** | ✅︎ | ✅︎ |
 | **pypy** | ✅︎ | ❌︎ |
 | **miniconda** | ✅︎ | ❌︎ |
@@ -80,6 +81,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **julia** | ✅︎ | ❌︎ |
 | **typst** | ✅︎ | ❌︎ |
 | **typst-lsp** | ✅︎ | ❌︎ |
+| **typst-preview** | ✅︎ | ❌︎ |
 | **gleam** | ✅︎ | ❌︎ |
 | **git-for-windows** | ✅︎ | ❌︎ |
 | **neovim** | ✅︎ | ❌︎ |
