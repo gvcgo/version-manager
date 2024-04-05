@@ -34,6 +34,7 @@ func ToDarwinX64(archType, osType string) string {
 
 var ArchHandlerList = map[string]func(archType, osType string) string{
 	"gradle":     ToAnyArch,
+	"groovy":     ToAnyArch,
 	"gsudo":      ToAnyArch,
 	"maven":      ToAnyArch,
 	"neovim":     ToUniverseForMac,
@@ -66,6 +67,7 @@ func ToUnixOs(archType, osType string) string {
 
 var OsHandlerList = map[string]func(archType, osType string) string{
 	"gradle": ToAnyOs,
+	"groovy": ToAnyOs,
 	"gsudo":  ToWindowsOnly,
 	"maven":  ToAnyOs,
 	"python": ToAnyOs,

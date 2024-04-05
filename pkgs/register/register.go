@@ -342,6 +342,24 @@ var GradleInstaller = &installer.Installer{
 	HomePage:           "https://gradle.org/",
 }
 
+var GroovyInstaller = &installer.Installer{
+	AppName:   "groovy",
+	Version:   "4.0.9",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"bin"}
+	},
+	BinDirGetter: func(version string) [][]string {
+		return [][]string{
+			{"bin"},
+		}
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	AddBinDirToPath:    true,
+	HomePage:           "https://www.groovy-lang.org/",
+}
+
 var JdkInstaller = &installer.Installer{
 	AppName: "jdk",
 	Version: "21.0.2_13",
@@ -1151,6 +1169,7 @@ func init() {
 	VersionKeeper["glow"] = GlowInstaller
 	VersionKeeper["go"] = GoInstaller
 	VersionKeeper["gradle"] = GradleInstaller
+	VersionKeeper["groovy"] = GroovyInstaller
 	VersionKeeper["jdk"] = JdkInstaller
 	VersionKeeper["julia"] = JuliaInstaller
 	VersionKeeper["kotlin"] = KotlinInstaller
