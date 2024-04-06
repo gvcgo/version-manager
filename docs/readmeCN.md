@@ -94,6 +94,7 @@
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
 | **kubectl** | ✅︎ | ❌︎ |
+| **acast(asciinema)** | ✅︎ | ❌︎ |
 | **erlang(需要编译)** | ❌︎ | ✅︎ |
 | **elixir(需要编译)** | ❌︎ | ✅︎ |
 

@@ -91,6 +91,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
 | **kubectl** | ✅︎ | ❌︎ |
+| **acast(asciinema)** | ✅︎ | ❌︎ |
 | **erlang(need compilation)** | ❌︎ | ✅︎ |
 | **elixir(need compilation)** | ❌︎ | ✅︎ |
 

@@ -77,6 +77,29 @@ var AggInstaller = &installer.Installer{
 	HomePage:           "https://github.com/asciinema/agg",
 }
 
+var AsciinemaInstaller = &installer.Installer{
+	AppName:   "asciinema",
+	Version:   "0.3.9",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		r := []string{"acast"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"acast.exe"}
+		}
+		return r
+	},
+	BinListGetter: func() []string {
+		r := []string{"acast"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"acast.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://github.com/gvcgo/asciinema",
+}
+
 var BunInstaller = &installer.Installer{
 	AppName:   "bun",
 	Version:   "1.0.9",
@@ -1154,6 +1177,7 @@ var VSCodeInstaller = &installer.Installer{
 
 func init() {
 	VersionKeeper["agg"] = AggInstaller
+	VersionKeeper["asciinema"] = AsciinemaInstaller
 	VersionKeeper["bun"] = BunInstaller
 	VersionKeeper["cmdtools"] = SDKManagerInstaller
 	VersionKeeper["coursier"] = CoursierInstaller

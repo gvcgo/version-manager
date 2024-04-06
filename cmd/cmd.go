@@ -330,8 +330,8 @@ func (c *Cli) initiate() {
 	})
 }
 
-func (that *Cli) Run() {
-	if err := that.rootCmd.Execute(); err != nil {
+func (c *Cli) Run() {
+	if err := c.rootCmd.Execute(); err != nil {
 		gprint.PrintError("%+v", err)
 	}
 }
