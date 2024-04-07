@@ -1,6 +1,11 @@
 package register
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/atotto/clipboard"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
 	"github.com/gvcgo/version-manager/pkgs/utils"
@@ -46,4 +51,15 @@ func ShowAppList() {
 	)
 	t.CopySelectedRow(true)
 	t.Run()
+
+	if appName, err := clipboard.ReadAll(); err == nil && appName != "" {
+		// generate use command to clipboard.
+		binPath, _ := os.Executable()
+		binName := filepath.Base(binPath)
+		if binName != "" {
+			cmdStr := fmt.Sprintf("%s search %s", binName, appName)
+			clipboard.WriteAll(cmdStr)
+			gprint.PrintInfo("Now you can use 'ctrl+v' or 'cmd+v' to search the available versions of the sdk you've just selected.")
+		}
+	}
 }
