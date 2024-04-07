@@ -3,6 +3,7 @@ module github.com/gvcgo/version-manager
 go 1.22.0
 
 require (
+	github.com/atotto/clipboard v0.1.4
 	github.com/gogf/gf/v2 v2.6.1
 	github.com/gvcgo/asciinema v0.3.8
 	github.com/gvcgo/goutils v0.9.3
@@ -13,7 +14,6 @@ require (
 require (
 	github.com/alexmullins/zip v0.0.0-20180717182244-4affb64b04d0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.4.2 // indirect

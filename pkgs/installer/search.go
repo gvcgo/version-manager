@@ -2,7 +2,10 @@ package installer
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
+	"github.com/atotto/clipboard"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
 	"github.com/gvcgo/version-manager/pkgs/utils"
@@ -67,4 +70,14 @@ func (s *Searcher) Search(appName string) {
 	)
 	t.CopySelectedRow(true)
 	t.Run()
+
+	if version, err := clipboard.ReadAll(); err == nil && version != "" {
+		// generate use command to clipboard.
+		binPath, _ := os.Executable()
+		binName := filepath.Base(binPath)
+		if binName != "" {
+			cmdStr := fmt.Sprintf("%s use %s@%s", binName, appName, version)
+			clipboard.WriteAll(cmdStr)
+		}
+	}
 }
