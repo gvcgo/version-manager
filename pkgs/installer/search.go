@@ -47,14 +47,14 @@ func (s *Searcher) Search(appName string) {
 	utils.SortVersions(vl)
 
 	columns := []gtable.Column{
-		{Title: fmt.Sprintf("%v available versions", appName), Width: 150},
+		{Title: gprint.CyanStr(fmt.Sprintf("%v available versions", appName)), Width: 150},
 	}
 
 	rows := []gtable.Row{}
 
 	for _, verName := range vl {
 		rows = append(rows, gtable.Row{
-			gprint.CyanStr(verName),
+			verName,
 		})
 	}
 
@@ -65,5 +65,6 @@ func (s *Searcher) Search(appName string) {
 		gtable.WithHeight(25),
 		gtable.WithWidth(100),
 	)
+	t.CopySelectedRow(true)
 	t.Run()
 }

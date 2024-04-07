@@ -32,7 +32,7 @@ func ShowAppList() {
 	for _, appName := range al {
 		ver := VersionKeeper[appName]
 		rows = append(rows, gtable.Row{
-			gprint.CyanStr(appName),
+			appName,
 			gprint.GreenStr(ver.GetHomepage()),
 		})
 	}
@@ -44,5 +44,6 @@ func ShowAppList() {
 		gtable.WithHeight(15),
 		gtable.WithWidth(150),
 	)
+	t.CopySelectedRow(true)
 	t.Run()
 }
