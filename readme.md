@@ -46,6 +46,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 - Friendly to VSCoders or Neovimers.
 - Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vm use -h**.
 - Auto-completions for shells. See with command **vm completion -h**.
+- Copy selected item to clipboard automatically when browersing a list.
 - No plugins needed.
 - More stable.
 
