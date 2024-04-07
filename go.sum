@@ -24,6 +24,8 @@ github.com/alexmullins/zip v0.0.0-20180717182244-4affb64b04d0/go.mod h1:FDIQmoMN
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
+github.com/atotto/clipboard v0.1.4 h1:EH0zSVneZPSuFR11BlR9YppQTVDbh5+16AmcJi4g1z4=
+github.com/atotto/clipboard v0.1.4/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/bodgit/plumbing v1.3.0 h1:pf9Itz1JOQgn7vEOE7v7nlEfBykYqvUYioC61TwWCFU=
@@ -112,8 +114,8 @@ github.com/grokify/html-strip-tags-go v0.0.1 h1:0fThFwLbW7P/kOiTBs03FsJSV9RM2M/Q
 github.com/grokify/html-strip-tags-go v0.0.1/go.mod h1:2Su6romC5/1VXOQMaWL2yb618ARB8iVo6/DR99A6d78=
 github.com/gvcgo/asciinema v0.3.8 h1:HA0Odg8+D2N1v9IE2dnag7QjqzOaaEdIU0aGE/o/s7E=
 github.com/gvcgo/asciinema v0.3.8/go.mod h1:+3oi0sw+Q7f38IHkvtcBEfvs+o3F5UahROZ6qWEUr08=
-github.com/gvcgo/goutils v0.8.9 h1:TFcpa847q3JO6ZtU/X+QCdULCV5uhj3k5IGd6Jkj/r8=
-github.com/gvcgo/goutils v0.8.9/go.mod h1:g/gPJxbpSiLK0q8a1qpkaf6ec3LOcxb7jj1ekDsKqzY=
+github.com/gvcgo/goutils v0.9.1 h1:Q1s38RTFK848SIR6QnoRFvBvpDp4+dcWiXSEgc8vjZ8=
+github.com/gvcgo/goutils v0.9.1/go.mod h1:AUhYA26K6QTHliefGZxyBOZ5spE4WvwRJPYJtwkOz9k=
 github.com/gvcgo/xtractr v0.0.3 h1:EtuXR2pTL1zNRShY6PcgtKHVA0264Tiyk6qMYz4dJzY=
 github.com/gvcgo/xtractr v0.0.3/go.mod h1:ZmFrtV/BMsuPXeePoDwGBS/2WVDQpdQzuTf6T7o5KmQ=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
