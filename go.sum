@@ -114,8 +114,8 @@ github.com/grokify/html-strip-tags-go v0.0.1 h1:0fThFwLbW7P/kOiTBs03FsJSV9RM2M/Q
 github.com/grokify/html-strip-tags-go v0.0.1/go.mod h1:2Su6romC5/1VXOQMaWL2yb618ARB8iVo6/DR99A6d78=
 github.com/gvcgo/asciinema v0.3.8 h1:HA0Odg8+D2N1v9IE2dnag7QjqzOaaEdIU0aGE/o/s7E=
 github.com/gvcgo/asciinema v0.3.8/go.mod h1:+3oi0sw+Q7f38IHkvtcBEfvs+o3F5UahROZ6qWEUr08=
-github.com/gvcgo/goutils v0.9.3 h1:5+0cyngUcvjFXVwtywAouG/rvRQNbKujt0mqT0+b6s8=
-github.com/gvcgo/goutils v0.9.3/go.mod h1:AUhYA26K6QTHliefGZxyBOZ5spE4WvwRJPYJtwkOz9k=
+github.com/gvcgo/goutils v0.9.4 h1:Hrsj2kcj/bULAKEII6tYOorrk+X1/Icgcf6l3kETi+M=
+github.com/gvcgo/goutils v0.9.4/go.mod h1:AUhYA26K6QTHliefGZxyBOZ5spE4WvwRJPYJtwkOz9k=
 github.com/gvcgo/xtractr v0.0.3 h1:EtuXR2pTL1zNRShY6PcgtKHVA0264Tiyk6qMYz4dJzY=
 github.com/gvcgo/xtractr v0.0.3/go.mod h1:ZmFrtV/BMsuPXeePoDwGBS/2WVDQpdQzuTf6T7o5KmQ=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
