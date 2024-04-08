@@ -1005,6 +1005,7 @@ var SDKManagerInstaller = &installer.Installer{
 	Install: func(appName, version, zipFileName string) {
 		tmpDir := conf.GetVMTempDir()
 		if ok, _ := gutils.PathIsExist(tmpDir); ok {
+			// Must be in cmdline-tools/latest/...
 			dstDir := filepath.Join(installer.GetAndroidHomeDir(), "cmdline-tools", "latest")
 			finder := installer.NewFinder("bin", "lib")
 			finder.Find(tmpDir)
@@ -1203,6 +1204,7 @@ func init() {
 	VersionKeeper["agg"] = AggInstaller
 	VersionKeeper["asciinema"] = AsciinemaInstaller
 	VersionKeeper["bun"] = BunInstaller
+	VersionKeeper["cmdline-tools"] = SDKManagerInstaller
 	VersionKeeper["coursier"] = CoursierInstaller
 	VersionKeeper["cygwin"] = CygwinInstaller
 	VersionKeeper["deno"] = DenoInstaller
@@ -1235,7 +1237,6 @@ func init() {
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
 	VersionKeeper["scala"] = ScalaInstaller
-	VersionKeeper["cmdline-tools"] = SDKManagerInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst-preview"] = TypstPreviewInstaller
