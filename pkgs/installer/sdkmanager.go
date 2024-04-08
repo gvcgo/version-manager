@@ -21,7 +21,16 @@
 
 package installer
 
-import "github.com/gvcgo/version-manager/pkgs/versions"
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/envs"
+	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/versions"
+)
 
 /*
 Installs android sdk using sdkmanager.
@@ -41,6 +50,34 @@ https://developer.android.google.cn/ndk?hl=en
 https://developer.android.google.cn/reference/tools/gradle-api/8.5/com/android/build/api/variant/Sources?hl=en
 8. extras
 */
+
+func GetAndroidHomeDir() string {
+	return filepath.Join(conf.GetVMVersionsDir("sdkmanager"), "android_home")
+}
+
+func SetAndroidSDKEnvs() {
+	// ANDROID_HOME
+	androidHomeDir := GetAndroidHomeDir()
+	// ANDROID_AVD_HOME
+	avdHomeDir := filepath.Join(androidHomeDir, "avd")
+
+	if os.Getenv("ANDROID_HOME") == "" {
+		os.Setenv("ANDROID_HOME", androidHomeDir)
+		em := envs.NewEnvManager()
+		defer em.CloseKey()
+		em.Set("ANDROID_HOME", androidHomeDir)
+		os.MkdirAll(androidHomeDir, os.ModePerm)
+	}
+
+	if os.Getenv("ANDROID_AVD_HOME") == "" {
+		os.Setenv("ANDROID_AVD_HOME", avdHomeDir)
+		em := envs.NewEnvManager()
+		defer em.CloseKey()
+		em.Set("ANDROID_AVD_HOME", avdHomeDir)
+		os.MkdirAll(avdHomeDir, os.ModePerm)
+	}
+}
+
 type AndroidSDKInstaller struct {
 	AppName   string
 	Version   string
@@ -61,6 +98,19 @@ func NewAndroidSDKInstaller() (a *AndroidSDKInstaller) {
 }
 
 func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
+	SetAndroidSDKEnvs()
+	if !IsAndroidSDKManagerInstalled() {
+		gprint.PrintWarning("Please install sdkmanager first!")
+		os.Exit(1)
+	}
+	if appName != "" && version != "" {
+		uHome, _ := os.UserHomeDir()
+		_, err := gutils.ExecuteSysCommand(false, uHome, "sdkmanager", version)
+		if err != nil {
+			gprint.PrintError("Install %s failed", version)
+			os.Exit(1)
+		}
+	}
 }
 
 func (a *AndroidSDKInstaller) UnInstallSDK(appName, version string) {
