@@ -82,7 +82,7 @@ type Installer struct {
 	StoreMultiVersions bool                                          // installs only the latest version if false
 	ForceReDownload    bool                                          // force to redownload the cached zip file
 	AddBinDirToPath    bool                                          // uses $PATH instead of creating symbolics
-	NoDownload         bool                                          // diable download
+	NoDownload         bool                                          // disable download
 	HomePage           string                                        // home page of the app
 }
 

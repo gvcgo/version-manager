@@ -74,14 +74,24 @@ func (s *Searcher) init(appName string) {
 // Gets version list.
 func (s *Searcher) GetVersions(appName string) map[string]versions.VersionList {
 	if s.VersionInfo == nil {
-		s.init(appName)
+		switch appName {
+		case "cmdline-tools":
+			s.init("sdkmanager")
+		default:
+			s.init(appName)
+		}
 	}
 	return s.VersionInfo.GetVersions()
 }
 
 // Shows version list.
 func (s *Searcher) Search(appName string) {
-	s.init(appName)
+	if appName == "cmdline-tools" {
+		s.init("sdkmanager")
+	} else {
+		s.init(appName)
+	}
+
 	vl := s.VersionInfo.GetSortedVersionList()
 	if len(vl) == 0 {
 		gprint.PrintWarning("No versions found!")
@@ -111,6 +121,8 @@ func IsAppNameSupportedBySDKManager(appName string) bool {
 	case "cmdline-tools":
 		r = true
 	case "build-tools":
+		r = true
+	case "platform-tools":
 		r = true
 	case "platforms":
 		r = true

@@ -999,19 +999,42 @@ var RustupInstaller = &installer.Installer{
 }
 
 var SDKManagerInstaller = &installer.Installer{
-	AppName:   "sdkmanager", // commandline-tools
+	AppName:   "cmdline-tools", // cmdline-tools
 	Version:   "latest",
 	IsZipFile: true,
-	FlagFileGetter: func() []string {
-		return []string{"bin", "lib"}
-	},
-	BinDirGetter: func(version string) [][]string {
-		return [][]string{
-			{"bin"},
+	Install: func(appName, version, zipFileName string) {
+		tmpDir := conf.GetVMTempDir()
+		if ok, _ := gutils.PathIsExist(tmpDir); ok {
+			dstDir := filepath.Join(installer.GetAndroidHomeDir(), "cmdline-tools", "latest")
+			finder := installer.NewFinder("bin", "lib")
+			finder.Find(tmpDir)
+			err := gutils.CopyDirectory(finder.Home, dstDir, true)
+			if err != nil {
+				gprint.PrintError("Copy file failed: %+v", err)
+				os.RemoveAll(tmpDir)
+				os.Exit(1)
+			}
+
+			binDir := filepath.Join(dstDir, "bin")
+			em := envs.NewEnvManager()
+			defer em.CloseKey()
+			em.AddToPath(binDir)
+			em.Set("ADROID_HOME", installer.GetAndroidHomeDir())
 		}
+		os.RemoveAll(tmpDir)
 	},
-	AddBinDirToPath: true,
-	HomePage:        "https://developer.android.google.cn/tools/releases/cmdline-tools",
+	UnInstall: func(appName, version string) {
+		cmdlineToolsDir := filepath.Join(installer.GetAndroidHomeDir(), "cmdline-tools")
+		os.RemoveAll(cmdlineToolsDir)
+
+		binDir := filepath.Join(cmdlineToolsDir, "latest", "bin")
+		em := envs.NewEnvManager()
+		defer em.CloseKey()
+		em.DeleteFromPath(binDir)
+		em.UnSet("ANDROID_HOME")
+	},
+	StoreMultiVersions: false,
+	HomePage:           "https://developer.android.google.cn/tools/releases/cmdline-tools",
 }
 
 /*
@@ -1212,7 +1235,7 @@ func init() {
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
 	VersionKeeper["scala"] = ScalaInstaller
-	VersionKeeper["sdkmanager"] = SDKManagerInstaller
+	VersionKeeper["cmdline-tools"] = SDKManagerInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst-preview"] = TypstPreviewInstaller

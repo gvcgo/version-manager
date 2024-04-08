@@ -52,7 +52,7 @@ https://developer.android.google.cn/reference/tools/gradle-api/8.5/com/android/b
 */
 
 func GetAndroidHomeDir() string {
-	return filepath.Join(conf.GetVMVersionsDir("sdkmanager"), "android_home")
+	return conf.GetVMVersionsDir("sdkmanager")
 }
 
 func SetAndroidSDKEnvs() {
@@ -103,7 +103,11 @@ func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
 		gprint.PrintWarning("Please install sdkmanager first!")
 		os.Exit(1)
 	}
-	if appName != "" && version != "" {
+	if !IsAppNameSupportedBySDKManager(appName) {
+		gprint.PrintError("unsupported sdk for android sdkmanager.")
+		os.Exit(1)
+	}
+	if version != "" {
 		uHome, _ := os.UserHomeDir()
 		_, err := gutils.ExecuteSysCommand(false, uHome, "sdkmanager", version)
 		if err != nil {
@@ -114,4 +118,24 @@ func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
 }
 
 func (a *AndroidSDKInstaller) UnInstallSDK(appName, version string) {
+	if !IsAndroidSDKManagerInstalled() {
+		gprint.PrintWarning("Please install sdkmanager first!")
+		os.Exit(1)
+	}
+	if !IsAppNameSupportedBySDKManager(appName) {
+		gprint.PrintError("unsupported sdk for android sdkmanager.")
+		os.Exit(1)
+	}
+	if version != "" {
+		uHome, _ := os.UserHomeDir()
+		_, err := gutils.ExecuteSysCommand(false, uHome, "sdkmanager", "--uninstall", version)
+		if err != nil {
+			gprint.PrintError("Install %s failed", version)
+			os.Exit(1)
+		}
+	}
+}
+
+func (a *AndroidSDKInstaller) SetVersion(version string) {
+	a.Version = version
 }
