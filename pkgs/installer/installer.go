@@ -588,10 +588,10 @@ func (i *Installer) UnInstallApp() {
 	if i.AppName == "" {
 		return
 	}
-	if i.Version == "all" {
-		i.DeleteAll()
-	} else if !i.StoreMultiVersions && i.UnInstall != nil {
+	if !i.StoreMultiVersions && i.UnInstall != nil {
 		i.UnInstall(i.AppName, i.Version)
+	} else if i.Version == "all" {
+		i.DeleteAll()
 	} else {
 		i.DeleteVersion()
 	}
