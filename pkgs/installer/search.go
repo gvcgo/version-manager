@@ -81,14 +81,7 @@ func (s *Searcher) GetVersions(appName string) map[string]versions.VersionList {
 
 // Shows version list.
 func (s *Searcher) Search(appName string) {
-	if s.VersionInfo == nil {
-		s.init(appName)
-	}
-	if appName == "cmdtools" {
-		s.init("sdkmanager")
-	} else {
-		s.init(appName)
-	}
+	s.init(appName)
 	vl := s.VersionInfo.GetSortedVersionList()
 	if len(vl) == 0 {
 		gprint.PrintWarning("No versions found!")
@@ -115,6 +108,8 @@ func IsAndroidSDKManagerInstalled() (ok bool) {
 func IsAppNameSupportedBySDKManager(appName string) bool {
 	r := false
 	switch appName {
+	case "cmdline-tools":
+		r = true
 	case "build-tools":
 		r = true
 	case "platforms":
@@ -122,6 +117,12 @@ func IsAppNameSupportedBySDKManager(appName string) bool {
 	case "system-images":
 		r = true
 	case "ndk":
+		r = true
+	case "add-ons":
+		r = true
+	case "extras":
+		r = true
+	case "sources":
 		r = true
 	default:
 	}

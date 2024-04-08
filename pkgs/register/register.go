@@ -1180,7 +1180,6 @@ func init() {
 	VersionKeeper["agg"] = AggInstaller
 	VersionKeeper["asciinema"] = AsciinemaInstaller
 	VersionKeeper["bun"] = BunInstaller
-	VersionKeeper["cmdtools"] = SDKManagerInstaller
 	VersionKeeper["coursier"] = CoursierInstaller
 	VersionKeeper["cygwin"] = CygwinInstaller
 	VersionKeeper["deno"] = DenoInstaller
@@ -1213,6 +1212,7 @@ func init() {
 	VersionKeeper["rust"] = RustInstaller
 	VersionKeeper["rustup"] = RustupInstaller
 	VersionKeeper["scala"] = ScalaInstaller
+	VersionKeeper["sdkmanager"] = SDKManagerInstaller
 	VersionKeeper["tree-sitter"] = TreesitterInstaller
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst-preview"] = TypstPreviewInstaller

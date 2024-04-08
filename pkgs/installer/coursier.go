@@ -66,7 +66,7 @@ func NewCoursierInstaller() *CoursierInstaller {
 	}
 	c.Install = func(appName, version, zipFilePath string) {
 		if c.V == nil {
-			c.SearchVersion()
+			c.GetVersion()
 		}
 		if c.V == nil {
 			gprint.PrintError("Can't find version: %s", c.Version)
@@ -122,7 +122,7 @@ func (c *CoursierInstaller) SetVersion(version string) {
 	c.Version = version
 }
 
-func (c *CoursierInstaller) SearchVersion() {
+func (c *CoursierInstaller) GetVersion() {
 	if c.Searcher == nil {
 		c.Searcher = NewSearcher()
 	}
@@ -161,7 +161,7 @@ func (c *CoursierInstaller) NewPty(installDir string) {
 }
 
 func (c *CoursierInstaller) Download() (zipFilePath string) {
-	c.SearchVersion()
+	c.GetVersion()
 	if c.V != nil {
 		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
 		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
