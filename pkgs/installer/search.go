@@ -18,7 +18,7 @@ import (
 
 func PrintVersions(appName string, versionList []string) {
 	columns := []gtable.Column{
-		{Title: gprint.CyanStr(fmt.Sprintf("%v available versions", appName)), Width: 150},
+		{Title: gprint.CyanStr(fmt.Sprintf("available %v versions", appName)), Width: 150},
 	}
 
 	rows := []gtable.Row{}
@@ -73,12 +73,17 @@ func (s *Searcher) init(appName string) {
 
 // Gets version list.
 func (s *Searcher) GetVersions(appName string) map[string]versions.VersionList {
-	s.init(appName)
+	if s.VersionInfo == nil {
+		s.init(appName)
+	}
 	return s.VersionInfo.GetVersions()
 }
 
 // Shows version list.
 func (s *Searcher) Search(appName string) {
+	if s.VersionInfo == nil {
+		s.init(appName)
+	}
 	if appName == "cmdtools" {
 		s.init("sdkmanager")
 	} else {

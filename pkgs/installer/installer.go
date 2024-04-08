@@ -681,3 +681,10 @@ func (i *Installer) ClearCache() {
 func (i *Installer) GetHomepage() string {
 	return i.HomePage
 }
+
+func (i *Installer) SearchVersions() {
+	if i.Searcher == nil {
+		i.Searcher = NewSearcher()
+	}
+	i.Searcher.Search(i.AppName)
+}

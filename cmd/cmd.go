@@ -33,7 +33,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
-	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/register"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/spf13/cobra"
@@ -80,8 +79,13 @@ func (c *Cli) initiate() {
 				cmd.Help()
 				return
 			}
-			sch := installer.NewSearcher()
-			sch.Search(args[0])
+
+			installer, ok := register.VersionKeeper[args[0]]
+			if ok {
+				installer.SearchVersions()
+			} else {
+				gprint.PrintWarning("unsupported sdk-name!")
+			}
 		},
 	})
 

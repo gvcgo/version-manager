@@ -340,3 +340,10 @@ func (c *CondaInstaller) ClearCache() {}
 func (c *CondaInstaller) GetHomepage() string {
 	return c.HomePage
 }
+
+func (c *CondaInstaller) SearchVersions() {
+	if c.Searcher == nil {
+		c.Searcher = NewSearcher()
+	}
+	c.Searcher.Search(c.AppName)
+}

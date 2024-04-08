@@ -231,3 +231,10 @@ func (c *CoursierInstaller) ClearCache() {}
 func (c *CoursierInstaller) GetHomepage() string {
 	return c.HomePage
 }
+
+func (c *CoursierInstaller) SearchVersions() {
+	if c.Searcher == nil {
+		c.Searcher = NewSearcher()
+	}
+	c.Searcher.Search(c.AppName)
+}

@@ -52,6 +52,7 @@ type VersionManager interface {
 	ClearCache()
 	GetHomepage() string
 	SetVersion(version string)
+	SearchVersions()
 }
 
 /*
