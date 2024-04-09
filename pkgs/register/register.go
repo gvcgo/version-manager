@@ -515,6 +515,7 @@ var LazyGitInstaller = &installer.Installer{
 	HomePage:           "https://github.com/jesseduffield/lazygit",
 }
 
+// TODO: env
 var MavenInstaller = &installer.Installer{
 	AppName:   "maven",
 	Version:   "3.9.6",
@@ -1038,6 +1039,12 @@ var SDKManagerInstaller = &installer.Installer{
 	HomePage:           "https://developer.android.google.cn/tools/releases/cmdline-tools",
 }
 
+var AndroidBuildToolsInstaller = &installer.AndroidSDKInstaller{
+	AppName:  "build-tools",
+	Version:  "latest",
+	HomePage: "https://developer.android.com/tools/releases/build-tools?hl=en",
+}
+
 /*
 customed installation.
 */
@@ -1203,6 +1210,7 @@ var VSCodeInstaller = &installer.Installer{
 func init() {
 	VersionKeeper["agg"] = AggInstaller
 	VersionKeeper["asciinema"] = AsciinemaInstaller
+	VersionKeeper["build-tools"] = AndroidBuildToolsInstaller
 	VersionKeeper["bun"] = BunInstaller
 	VersionKeeper["cmdline-tools"] = SDKManagerInstaller
 	VersionKeeper["coursier"] = CoursierInstaller

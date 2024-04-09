@@ -11,7 +11,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
@@ -44,7 +43,7 @@ func PrintVersions(appName string, versionList []string) {
 		binPath, _ := os.Executable()
 		binName := filepath.Base(binPath)
 		if binName != "" {
-			cmdStr := fmt.Sprintf("%s use %s@%s", binName, appName, version)
+			cmdStr := fmt.Sprintf(`%s use "%s@%s"`, binName, appName, version)
 			clipboard.WriteAll(cmdStr)
 			fmt.Println("")
 			gprint.PrintInfo("Now you can use 'ctrl+v' or 'cmd+v' to install the selected version.")
@@ -102,14 +101,10 @@ func (s *Searcher) Search(appName string) {
 	PrintVersions(appName, vl)
 }
 
-func GetAndroidSDKRoot() string {
-	return filepath.Join(conf.GetVMVersionsDir("sdkmanager"), "android")
-}
-
 // Checks if sdkmanager has been installed correctly.
 func IsAndroidSDKManagerInstalled() (ok bool) {
-	rootDir := GetAndroidSDKRoot()
-	_, err := gutils.ExecuteSysCommand(true, rootDir, "sdkmanager", fmt.Sprintf("--sdk_root=%s", rootDir), "--help")
+	uHome, _ := os.UserHomeDir()
+	_, err := gutils.ExecuteSysCommand(true, uHome, "sdkmanager", "--list")
 	if err != nil {
 		gprint.PrintError("%+v", err)
 	}
@@ -161,7 +156,7 @@ func NewSDKManagerSearcher() *SDKManagerSearcher {
 
 func (s *SDKManagerSearcher) getVersionString(installed bool) (r string) {
 	sep := "Available Packages:"
-	rootDir := GetAndroidSDKRoot()
+	rootDir := GetAndroidHomeDir()
 	buff, err := gutils.ExecuteSysCommand(true, rootDir, "sdkmanager", fmt.Sprintf("--sdk_root=%s", rootDir), "--list")
 	if err != nil {
 		gprint.PrintError("get versions failed: %+v", err)
@@ -174,6 +169,15 @@ func (s *SDKManagerSearcher) getVersionString(installed bool) (r string) {
 	return sList[1]
 }
 
+func (s *SDKManagerSearcher) getVersion(ss []string, appName string) (v string) {
+	for _, vv := range ss {
+		if strings.Contains(vv, appName) {
+			return strings.TrimSpace(vv)
+		}
+	}
+	return
+}
+
 func (s *SDKManagerSearcher) GetVersions(appName string) map[string]versions.VersionList {
 	if !IsAppNameSupportedBySDKManager(appName) {
 		gprint.PrintWarning("unspported sdk name: %s", appName)
@@ -182,7 +186,11 @@ func (s *SDKManagerSearcher) GetVersions(appName string) map[string]versions.Ver
 	for _, line := range strings.Split(s.getVersionString(false), "\n") {
 		ss := strings.Split(line, " ")
 		if strings.Contains(line, appName) {
-			s.currentList[ss[0]] = versions.VersionList{
+			vName := s.getVersion(ss, appName)
+			if vName == "" {
+				continue
+			}
+			s.currentList[vName] = versions.VersionList{
 				{
 					Arch: runtime.GOARCH,
 					Os:   runtime.GOOS,

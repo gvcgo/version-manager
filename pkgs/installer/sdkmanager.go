@@ -167,15 +167,42 @@ func (a *AndroidSDKInstaller) CreateBinarySymbol()      {}
 func (a *AndroidSDKInstaller) SetEnv() {}
 
 func (a *AndroidSDKInstaller) GetInstall() func(appName, version, zipFilePath string) {
+	if a.Install == nil {
+		a.Install = a.InstallSDK
+	}
 	return a.Install
 }
 
-func (a *AndroidSDKInstaller) InstallApp(zipFilePath string) {}
-func (a *AndroidSDKInstaller) UnInstallApp()                 {}
-func (a *AndroidSDKInstaller) DeleteVersion()                {}
-func (a *AndroidSDKInstaller) DeleteAll()                    {}
-func (a *AndroidSDKInstaller) ClearCache()                   {}
+func (a *AndroidSDKInstaller) InstallApp(zipFilePath string) {
+	if a.Install != nil {
+		a.Install(a.AppName, a.Version, zipFilePath)
+	}
+}
+
+func (a *AndroidSDKInstaller) UnInstallApp() {
+	if a.AppName == "" {
+		return
+	}
+	if a.Version == "all" {
+		a.DeleteAll()
+	} else {
+		if a.UnInstall != nil {
+			a.UnInstall(a.AppName, a.Version)
+		}
+	}
+}
+func (a *AndroidSDKInstaller) DeleteVersion() {}
+func (a *AndroidSDKInstaller) DeleteAll() {
+	// TODO: uninstall all
+}
+func (a *AndroidSDKInstaller) ClearCache() {}
 func (a *AndroidSDKInstaller) GetHomepage() string {
 	return a.HomePage
 }
-func (a *AndroidSDKInstaller) SearchVersions() {}
+
+func (a *AndroidSDKInstaller) SearchVersions() {
+	if a.Searcher == nil {
+		a.Searcher = NewSDKManagerSearcher()
+	}
+	a.Searcher.Search(a.AppName)
+}
