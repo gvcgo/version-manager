@@ -47,6 +47,7 @@
 - 相比其他版本管理器来说要更稳定；
 - 支持多线程下载，速度飞快🚀🚀🚀，可使用**vm use -h**命令查看用法；
 - 在浏览版本列表时，自动根据已选择的版本生成相应的use命令，并加入到系统剪贴板，方便后续ctrl+v或者cmd+v使用；
+- 无需安装Android Studio，直接使用VSCode和Flutter进行安卓开发；
 - 无需任何插件，开箱即用；
 - 命令行自动补全；使用**vm completion -h**查看；
 
@@ -80,6 +81,7 @@
 | **php** | ✅︎ | ✅︎ |
 | **rust** | ✅︎ | ❌︎ |
 | **cmdline-tool(android)** | ✅︎ | ❌︎ |
+| **android SDKs** | ✅︎ | ❌︎ |
 | **vlang** | ✅︎ | ❌︎ |
 | **v-analyzer** | ✅︎ | ❌︎ |
 | **cygwin-installer** | ✅︎ | ❌︎ |

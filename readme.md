@@ -47,6 +47,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 - Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vm use -h**.
 - Auto-completions for shells. See with command **vm completion -h**.
 - Generates command **"use sdk-name@version"** automatically using selected item from version list, and add the command to clipboard for later usage.
+- Android development with Flutter and VSCode. No Android Studio is needed.
 - No plugins needed.
 - More stable.
 
@@ -77,6 +78,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **php** | ✅︎ | ✅︎ |
 | **rust** | ✅︎ | ❌︎ |
 | **cmdline-tool(android)** | ✅︎ | ❌︎ |
+| **android SDKs** | ✅︎ | ❌︎ |
 | **vlang** | ✅︎ | ❌︎ |
 | **v-analyzer** | ✅︎ | ❌︎ |
 | **cygwin-installer** | ✅︎ | ❌︎ |
