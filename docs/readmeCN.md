@@ -12,7 +12,7 @@
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
-- [vm简介](#vm简介)
+- [vmr简介](#vmr简介)
 - [功能特点](#功能特点)
 - [vm和vfox支持列表对比](#vm和vfox支持列表对比)
 - [一键安装/更新vm](#一键安装更新vm)
@@ -27,11 +27,11 @@
 ------
 <p id="1"></p>  
 
-### vm简介
+### vmr简介
 
-**vm** 是一个简单，跨平台，并且经过良好测试的版本管理工具。它完全是为了通用目的而创建的。无需插件，开箱即用。
+**vmr** 是一个简单，跨平台，并且经过良好测试的版本管理工具。它完全是为了通用目的而创建的。无需插件，开箱即用。
 
-可能你已经听说过**fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv** 等工具。然而，这些工具都不能管理多种编程语言，甚至有些看起来会比较复杂。而**vm**支持了国内程序员常用的几乎所有编程语言，并且支持了vlang、zig、typst等新兴的有一定潜力的语言，它隔离并缓存了爬虫部分的结果，而不是让爬虫变成lua插件，所以**vm**能让用户体验更流畅和稳定。此外，**vm**还支持了反向代理或者本地代理设置，多线程下载等，大大提高国内用户的下载体验。因此，不管你是老鸟还是菜鸟，**vm**都能给你带来相当的便利。你不用再手动去找任何资源，就能轻松安装管理各种sdk版本，尝试新的语言，新的特性。最后，**vm**将这些sdk或工具集中管理，对于有**洁癖**的人来说，也是福音。
+可能你已经听说过**fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv** 等工具。然而，这些工具都不能管理多种编程语言，甚至有些看起来会比较复杂。而**vmr**支持了国内程序员常用的几乎所有编程语言，并且支持了vlang、zig、typst等新兴的有一定潜力的语言，它隔离并缓存了爬虫部分的结果，而不是让爬虫变成lua插件，所以**vmr**能让用户体验更流畅和稳定。此外，**vmr**还支持了反向代理或者本地代理设置，多线程下载等，大大提高国内用户的下载体验。因此，不管你是老鸟还是菜鸟，**vmr**都能给你带来相当的便利。你不用再手动去找任何资源，就能轻松安装管理各种sdk版本，尝试新的语言，新的特性。最后，**vmr**将这些sdk或工具集中管理，对于有**洁癖**的人来说，也是福音。
 
 ------
 
@@ -41,18 +41,18 @@
 
 - 安装或卸载某个版本的sdk；
 - 在不同版本的sdk之间切换；
-- 支持session模式，即在某个终端会话临时激活并使用某个版本。可使用**vm use -h**命令查看如何使用。默认global模式，即全局生效；
+- 支持session模式，即在某个终端会话临时激活并使用某个版本。可使用**vmr use -h**命令查看如何使用。默认global模式，即全局生效；
 - 一键管理环境变量；
 - 对neovim和vscode用户友好，可以一键安装neovim和vscode。同时，neovim中一些明星插件的安装也可以一键完成，例如fd，ripgrep，tree-sitter，fzf等；
 - 相比其他版本管理器来说要更稳定；
-- 支持多线程下载，速度飞快🚀🚀🚀，可使用**vm use -h**命令查看用法；
+- 支持多线程下载，速度飞快🚀🚀🚀，可使用**vmr use -h**命令查看用法；
 - 在浏览版本列表时，自动根据已选择的版本生成相应的use命令，并加入到系统剪贴板，方便后续ctrl+v或者cmd+v使用；
 - 无需安装Android Studio，直接使用VSCode和Flutter进行安卓开发；
 - 无需任何插件，开箱即用；
-- 命令行自动补全；使用**vm completion -h**查看；
+- 命令行自动补全；使用**vmr completion -h**查看；
 
 **session模式**解释：
-基于pty和conpty虚拟终端实现，即可以在虚拟终端中激活某个特定sdk版本，具体命令示例：**vm use -s go@1.22.1**。当退出虚拟终端时，原来的sdk版本不受影响。对于希望临时使用某个版本的情况，相对方便，省去一次切换。
+基于pty和conpty虚拟终端实现，即可以在虚拟终端中激活某个特定sdk版本，具体命令示例：**vmr use -s go@1.22.1**。当退出虚拟终端时，原来的sdk版本不受影响。对于希望临时使用某个版本的情况，相对方便，省去一次切换。
 
 ------
 <p id="3"></p> 
@@ -119,7 +119,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 - 手动安装(当你的系统下载脚本出现问题时，可以选择手动安装)
 ```text
 1. 从release页面下载对应的版本；
-2. 解压，打开终端或者Powershell，执行命令"vm is"，即可安装。
+2. 解压，打开终端或者Powershell，执行命令"vmr is"，即可安装。
 ```
 
 ------
@@ -132,19 +132,19 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 - **设置代理**
 ```bash
-vm set-proxy <http://localhost:port or socks5://localhost:port>
+vmr set-proxy <http://localhost:port or socks5://localhost:port>
 ```
 
 - **设置免费的反向代理**
 
 ```bash
 # reverse proxy <https://gvc.1710717.xyz/proxy/> is available for free.
-vm set-reverse-proxy https://gvc.1710717.xyz/proxy/
+vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
 ```
 
 - **使用国内镜像资源网站进行下载，对于部分有国内镜像的应用有效**.
 ```bash
-vm use -mirror-in-china go@1.22.1
+vmr use -mirror-in-china go@1.22.1
 ```
 
 ------
@@ -209,7 +209,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 
 ### Windows用户须知
 
-**注意**: 如果你正在使用Win11，那么你需要开启**开发者模式**，因为vm在创建链接符号时需要相关权限。如果你正在使用Win10，遇到创建链接符号失败的错误时，建议使用管理员权限打开powershell后再重试。在Win下，通过**vm**安装应用成功之后，如果在当前powershell窗口中找不到该命令，可以关闭当前powershell窗口，再打开一个新的，此时环境变量就生效了，就可以找到相关命令了，这是Win的特性，暂时修正不了。此外，还需注意的是，extFAT和FAT32格式的磁盘不支持创建链接符号，因此，在Windows下务必请使用NTFS格式的磁盘。另外需要注意的是，**如果在Windows下，如果开启了Hyper-V，那么vm会与系统自带的vm命令冲突，影响到系统自带的vm命令，这种情况下，vm安装时会进行判断，如果Hyper-V已开启，则vm.exe会被重命名为vmr.exe，用户直接使用vmr命令即可**。
+**注意**: 如果你正在使用Win11，那么你需要开启**开发者模式**，因为vm在创建链接符号时需要相关权限。如果你正在使用Win10，遇到创建链接符号失败的错误时，建议使用管理员权限打开powershell后再重试。在Win下，通过**vmr**安装应用成功之后，如果在当前powershell窗口中找不到该命令，可以关闭当前powershell窗口，再打开一个新的，此时环境变量就生效了，就可以找到相关命令了，这是Win的特性，暂时修正不了。此外，还需注意的是，extFAT和FAT32格式的磁盘不支持创建链接符号，因此，在Windows下务必请使用NTFS格式的磁盘。
 
 ------
 <p id="9"></p>  
@@ -224,9 +224,9 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <p id="10"></p> 
 
 ### 说明
-**vm**是一个跨平台的命令行工具。它不会像asdf-vm以及asdf-vm的模仿者vfox那样做到什么都试图包含，因为那样会大大增加复杂性，也降低跨了平台的可能。而且大多数情况下，我们常用的语言和工具基本已经包含在**vm**中了。**vm**也不会试图去包含那些在某个平台下需要自行编译的sdk，因为每个开发者的开发环境都不一样，各种so，clib版本都无法统一，**vm**开发者无法测试到所有系统环境，故无法保证编译一定能通过。所以**vm**仅仅会使用独立性较强的pre-built binary来安装应用。如果你有什么需要进行版本管理的sdk或者工具推荐，请在[Issues](https://github.com/gvcgo/version-manager/issues)中提出，**vm**开发团队会评估后决定是否加入。
+**vmr**是一个跨平台的命令行工具。它不会像asdf-vm以及asdf-vm的模仿者vfox那样做到什么都试图包含，因为那样会大大增加复杂性，也降低跨了平台的可能。而且大多数情况下，我们常用的语言和工具基本已经包含在**vmr**中了。**vmr**也不会试图去包含那些在某个平台下需要自行编译的sdk，因为每个开发者的开发环境都不一样，各种so，clib版本都无法统一，**vmr**开发者无法测试到所有系统环境，故无法保证编译一定能通过。所以**vmr**仅仅会使用独立性较强的pre-built binary来安装应用。如果你有什么需要进行版本管理的sdk或者工具推荐，请在[Issues](https://github.com/gvcgo/version-manager/issues)中提出，**vmr**开发团队会评估后决定是否加入。
 
-所以，**vm**的宗旨就是尽量保持**轻量、稳定和对用户友好**。
+所以，**vmr**的宗旨就是尽量保持**轻量、稳定和对用户友好**。
 
 ------
 <p id="11"></p> 

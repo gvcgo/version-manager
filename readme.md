@@ -12,7 +12,7 @@
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
-- [version-manager(vm)](#version-managervm)
+- [version-manager(vmr)](#version-managervmr)
 - [features](#features)
 - [vm versus vfox](#vm-versus-vfox)
 - [Installation/Update](#installationupdate)
@@ -27,11 +27,11 @@
 ------
 <p id="1"></p>  
 
-### version-manager(vm)
+### version-manager(vmr)
 
-**vm** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
+**vmr** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
 
-Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems, and makes things look complicated. Therefore, **vm** comes.
+Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems, and makes things look complicated. Therefore, **vmr** comes.
 
 ------
 
@@ -41,12 +41,12 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 
 - Installs or uninstalls versions of sdk.
 - Swithes between versions of sdk.
-- Using a version only in current terminal session is supported. See with command **vm use -h**.
+- Using a version only in current terminal session is supported. See with command **vmr use -h**.
 - Handles envs.
 - Friendly to VSCoders or Neovimers.
-- Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vm use -h**.
-- Auto-completions for shells. See with command **vm completion -h**.
-- Generates command **"use sdk-name@version"** automatically using selected item from version list, and add the command to clipboard for later usage.
+- Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vmr use -h**.
+- Auto-completions for shells. See with command **vmr completion -h**.
+- Generates command **"vmr use sdk-name@version"** automatically using selected item from version list, and add the command to clipboard for later usage.
 - Android development with Flutter and VSCode. No Android Studio is needed.
 - No plugins needed.
 - More stable.
@@ -116,7 +116,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 - Manual installation
 ```text
 1. Download zip file from release.
-2. Unzip it, run command "vm is".
+2. Unzip it, run command "vmr is".
 ```
 
 ------
@@ -129,19 +129,19 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 - **proxy**
 ```bash
-vm set-proxy <http://localhost:port or socks5://localhost:port>
+vmr set-proxy <http://localhost:port or socks5://localhost:port>
 ```
 
 - **reverse-proxy**
 
 ```bash
 # reverse proxy <https://gvc.1710717.xyz/proxy/> is available for free.
-vm set-reverse-proxy https://gvc.1710717.xyz/proxy/
+vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
 ```
 
 - **enable downloading from mirror sites in China**.
 ```bash
-vm use -mirror-in-china go@1.22.1
+vmr use -mirror-in-china go@1.22.1
 ```
 
 ------
@@ -206,7 +206,7 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 
 ### For Windows
 
-**Note**: If you are using vm on Windows11, you need to enable the **Developer Mode** as vm requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurrs, you can try vm with **Admin Privilege**. To get **envs** take effect for windows, you may need to close the current powershell terminal and open a new one. Note that extFAT and FAT32 are not supported.
+**Note**: If you are using **vmr** on Windows11, you need to enable the **Developer Mode** as **vmr** requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurrs, you can try **vmr** with **Admin Privilege**. To get **envs** take effect for windows, you may need to close the current powershell terminal and open a new one. Note that extFAT and FAT32 are not supported.
 
 ------
 <p id="9"></p>  
@@ -221,9 +221,9 @@ Enter App Installation Dir["$Home/.vm/" by default]:
 <p id="10"></p> 
 
 ### Supplementary
-**vm** is created to be a cross-platform command line tool. **We will not try to include everything just like asdf-vm or its imitator vfox did**, as that will greatly increase the complexity and also reduce the possibility of cross-platform. And most of the time, frequently used SDKs and tools have already been covered by **vm**. **vm** will not try to include SDKs that need to be compiled under a certain platform. Because each developer's development environment is different, it is impossible to ensure the completion of a compilation. So **vm** will only use pre-built binaries for installations. If you have any SDKs or tools to recommand for version management, please raise an issue in [Issues](https://github.com/gvcgo/version-manager/issues).
+**vmr** is created to be a cross-platform command line tool. **We will not try to include everything just like asdf-vm or its imitator vfox did**, as that will greatly increase the complexity and also reduce the possibility of cross-platform. And most of the time, frequently used SDKs and tools have already been covered by **vmr**. **vmr** will not try to include SDKs that need to be compiled under a certain platform. Because each developer's development environment is different, it is impossible to ensure the completion of a compilation. So **vmr** will only use pre-built binaries for installations. If you have any SDKs or tools to recommand for version management, please raise an issue in [Issues](https://github.com/gvcgo/version-manager/issues).
 
-So, **vm** is going to keep as lightweight, stable, and user-friendly as possible.
+So, **vmr** is going to keep as **lightweight, stable, and user-friendly** as possible.
 
 ------
 <p id="11"></p> 
