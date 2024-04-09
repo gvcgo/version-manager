@@ -24,6 +24,7 @@ package installer
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -86,6 +87,7 @@ type AndroidSDKInstaller struct {
 	Install   func(appName, version, zipFilePath string)
 	UnInstall func(appName, version string)
 	HomePage  string
+	EnvGetter func(appName, version string) []Env
 }
 
 func NewAndroidSDKInstaller() (a *AndroidSDKInstaller) {
@@ -130,6 +132,19 @@ func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
 			gprint.PrintError("Install %s failed", version)
 			os.Exit(1)
 		}
+
+		if a.EnvGetter != nil {
+			envList := a.EnvGetter(a.AppName, a.Version)
+			for _, e := range envList {
+				em := envs.NewEnvManager()
+				defer em.CloseKey()
+				if strings.ToLower(e.Name) == "path" {
+					em.AddToPath(e.Value)
+				} else {
+					em.Set(e.Name, e.Value)
+				}
+			}
+		}
 	}
 }
 
@@ -149,7 +164,23 @@ func (a *AndroidSDKInstaller) UnInstallSDK(appName, version string) {
 			gprint.PrintError("Install %s failed", version)
 			os.Exit(1)
 		}
+		if a.EnvGetter != nil {
+			envList := a.EnvGetter(a.AppName, a.Version)
+			for _, e := range envList {
+				em := envs.NewEnvManager()
+				defer em.CloseKey()
+				if strings.ToLower(e.Name) == "path" {
+					em.DeleteFromPath(e.Value)
+				} else {
+					em.UnSet(e.Name)
+				}
+			}
+		}
 	}
+}
+
+func (a *AndroidSDKInstaller) FixAppName() {
+	a.AppName = FixAndroidSDKNames(a.AppName)
 }
 
 func (a *AndroidSDKInstaller) SetVersion(version string) {
@@ -164,7 +195,8 @@ func (a *AndroidSDKInstaller) Copy()                    {}
 func (a *AndroidSDKInstaller) CreateVersionSymbol()     {}
 func (a *AndroidSDKInstaller) CreateBinarySymbol()      {}
 
-func (a *AndroidSDKInstaller) SetEnv() {}
+func (a *AndroidSDKInstaller) SetEnv() {
+}
 
 func (a *AndroidSDKInstaller) GetInstall() func(appName, version, zipFilePath string) {
 	if a.Install == nil {
@@ -180,22 +212,16 @@ func (a *AndroidSDKInstaller) InstallApp(zipFilePath string) {
 }
 
 func (a *AndroidSDKInstaller) UnInstallApp() {
-	if a.AppName == "" {
-		return
-	}
 	if a.Version == "all" {
-		a.DeleteAll()
-	} else {
-		if a.UnInstall != nil {
-			a.UnInstall(a.AppName, a.Version)
-		}
+		// uninstallation for all versions is not supported.
+		gprint.PrintWarning("Unsupported version name.")
+		os.Exit(1)
 	}
+	a.UnInstallSDK(a.AppName, a.Version)
 }
 func (a *AndroidSDKInstaller) DeleteVersion() {}
-func (a *AndroidSDKInstaller) DeleteAll() {
-	// TODO: uninstall all
-}
-func (a *AndroidSDKInstaller) ClearCache() {}
+func (a *AndroidSDKInstaller) DeleteAll()     {}
+func (a *AndroidSDKInstaller) ClearCache()    {}
 func (a *AndroidSDKInstaller) GetHomepage() string {
 	return a.HomePage
 }

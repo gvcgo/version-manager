@@ -53,6 +53,7 @@ type VersionManager interface {
 	GetHomepage() string
 	SetVersion(version string)
 	SearchVersions()
+	FixAppName()
 }
 
 /*
@@ -1000,7 +1001,7 @@ var RustupInstaller = &installer.Installer{
 }
 
 var SDKManagerInstaller = &installer.Installer{
-	AppName:   "cmdline-tools", // cmdline-tools
+	AppName:   "android-cmdline-tools", // cmdline-tools
 	Version:   "latest",
 	IsZipFile: true,
 	Install: func(appName, version, zipFileName string) {
@@ -1040,9 +1041,61 @@ var SDKManagerInstaller = &installer.Installer{
 }
 
 var AndroidBuildToolsInstaller = &installer.AndroidSDKInstaller{
-	AppName:  "build-tools",
+	AppName:  "android-build-tools",
 	Version:  "latest",
 	HomePage: "https://developer.android.com/tools/releases/build-tools?hl=en",
+	EnvGetter: func(appName, version string) []installer.Env {
+		r := []installer.Env{}
+		sList := strings.Split(version, ";")
+		if len(sList) == 2 {
+			binDir := filepath.Join(installer.GetAndroidHomeDir(), "build-tools", sList[1])
+			if ok, _ := gutils.PathIsExist(binDir); ok {
+				r = append(r, installer.Env{
+					Name:  "PATH",
+					Value: binDir,
+				})
+			}
+		}
+		return r
+	},
+}
+
+var AndroidPlatformsInstaller = &installer.AndroidSDKInstaller{
+	AppName:  "android-platforms",
+	Version:  "latest",
+	HomePage: "https://developer.android.com/studio",
+	EnvGetter: func(appName, version string) []installer.Env {
+		r := []installer.Env{}
+		platformToolsDir := filepath.Join(installer.GetAndroidHomeDir(), "platform-tools")
+		if ok, _ := gutils.PathIsExist(platformToolsDir); ok {
+			r = append(r, installer.Env{
+				Name:  "PATH",
+				Value: platformToolsDir,
+			})
+		}
+		return r
+	},
+}
+
+var AndroidSystemImagesInstaller = &installer.AndroidSDKInstaller{
+	AppName:  "android-system-images",
+	Version:  "latest",
+	HomePage: "https://developer.android.google.cn/topic/generic-system-image/releases?hl=en",
+	EnvGetter: func(appName, version string) []installer.Env {
+		r := []installer.Env{}
+		emulatorDir := filepath.Join(installer.GetAndroidHomeDir(), "emulator")
+		if ok, _ := gutils.PathIsExist(emulatorDir); ok {
+			r = append(r, installer.Env{
+				Name:  "PATH",
+				Value: emulatorDir,
+			})
+
+			// utils.ExecuteSysCommand(false, "avdmanager", "create", "avd", "--name", avdName, "--package", systemImage)
+			gprint.PrintSuccess("If you wanna create an avd further, please use commad as below:")
+			fmt.Printf("avdmanager create avd --name <your-avd-name> --package %s\n", version)
+		}
+		return r
+	},
 }
 
 /*
@@ -1210,9 +1263,14 @@ var VSCodeInstaller = &installer.Installer{
 func init() {
 	VersionKeeper["agg"] = AggInstaller
 	VersionKeeper["asciinema"] = AsciinemaInstaller
-	VersionKeeper["build-tools"] = AndroidBuildToolsInstaller
 	VersionKeeper["bun"] = BunInstaller
-	VersionKeeper["cmdline-tools"] = SDKManagerInstaller
+
+	// Android SDKs
+	VersionKeeper["android-cmdline-tools"] = SDKManagerInstaller
+	VersionKeeper["android-build-tools"] = AndroidBuildToolsInstaller
+	VersionKeeper["android-platforms"] = AndroidPlatformsInstaller
+	VersionKeeper["android-system-images"] = AndroidSystemImagesInstaller
+
 	VersionKeeper["coursier"] = CoursierInstaller
 	VersionKeeper["cygwin"] = CygwinInstaller
 	VersionKeeper["deno"] = DenoInstaller
@@ -1258,6 +1316,7 @@ func init() {
 }
 
 func RunInstaller(manager VersionManager) {
+	manager.FixAppName()
 	zf := manager.Download()
 	manager.Unzip(zf)
 	if manager.GetInstall() != nil {
@@ -1272,9 +1331,11 @@ func RunInstaller(manager VersionManager) {
 }
 
 func RunUnInstaller(manager VersionManager) {
+	manager.FixAppName()
 	manager.UnInstallApp()
 }
 
 func RunClearCache(manager VersionManager) {
+	manager.FixAppName()
 	manager.ClearCache()
 }

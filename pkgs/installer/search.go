@@ -16,6 +16,10 @@ import (
 )
 
 func PrintVersions(appName string, versionList []string) {
+	if IsAppNameSupportedBySDKManager(appName) {
+		appName = fmt.Sprintf("android-%s", appName)
+	}
+
 	columns := []gtable.Column{
 		{Title: gprint.CyanStr(fmt.Sprintf("available %v versions", appName)), Width: 150},
 	}
@@ -135,6 +139,14 @@ func IsAppNameSupportedBySDKManager(appName string) bool {
 	default:
 	}
 	return r
+}
+
+func FixAndroidSDKNames(appName string) (sdkName string) {
+	sdkName = appName
+	if strings.HasPrefix(appName, "android-") {
+		sdkName = strings.TrimPrefix(appName, "android-")
+	}
+	return
 }
 
 /*

@@ -81,6 +81,7 @@ func (c *Cli) initiate() {
 			}
 
 			installer, ok := register.VersionKeeper[args[0]]
+			installer.FixAppName()
 			if ok {
 				installer.SearchVersions()
 			} else {

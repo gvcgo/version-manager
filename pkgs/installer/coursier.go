@@ -122,6 +122,8 @@ func (c *CoursierInstaller) SetVersion(version string) {
 	c.Version = version
 }
 
+func (c *CoursierInstaller) FixAppName() {}
+
 func (c *CoursierInstaller) GetVersion() {
 	if c.Searcher == nil {
 		c.Searcher = NewSearcher()

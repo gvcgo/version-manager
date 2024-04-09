@@ -105,6 +105,10 @@ func (i *Installer) SetVersion(version string) {
 	i.Version = version
 }
 
+func (i *Installer) FixAppName() {
+	i.AppName = FixAndroidSDKNames(i.AppName)
+}
+
 // Searches version files for an application.
 func (i *Installer) SearchVersion() {
 	if i.Searcher == nil {

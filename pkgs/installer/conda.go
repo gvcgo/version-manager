@@ -220,6 +220,8 @@ func (c *CondaInstaller) SetVersion(version string) {
 	c.Version = version
 }
 
+func (c *CondaInstaller) FixAppName() {}
+
 func (c *CondaInstaller) SearchVersion() {
 	if c.Searcher == nil {
 		c.Searcher = NewSearcher()
