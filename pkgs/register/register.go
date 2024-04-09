@@ -538,6 +538,14 @@ var MavenInstaller = &installer.Installer{
 		}
 		return installer.DefaultDecorator(dUrl, ft)
 	},
+	EnvGetter: func(appName, version string) []installer.Env {
+		return []installer.Env{
+			{
+				Name:  "MAVEN_HOME",
+				Value: filepath.Join(conf.GetVMVersionsDir(appName), appName),
+			},
+		}
+	},
 	StoreMultiVersions: true,
 	HomePage:           "https://maven.apache.org/",
 }
