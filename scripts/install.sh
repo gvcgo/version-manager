@@ -44,7 +44,7 @@ main() {
     local os_type="$(uname -s)"
     local os_arch="$(uname -m)"
 
-    local version="v0.1.4"
+    local version="v0.1.5"
     
     local download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
     local osType="linux"
@@ -58,7 +58,7 @@ main() {
         osArch="arm64"
     fi
 
-    local filename="vm_$osType-$osArch.zip"
+    local filename="vmr_$osType-$osArch.zip"
     local url="$download_url$version/$filename"
     echo "$url"
     need_cmd "curl"
@@ -73,12 +73,12 @@ main() {
 
     if [ -s "./$filename" ]; then
         unzip "./$filename"
-        chmod +x "./vm"
-        if [ -s "./vm" ]; then
-            ./vm i
+        chmod +x "./vmr"
+        if [ -s "./vmr" ]; then
+            ./vmr i
         fi
         rm -rf "./$filename"
-        rm -rf "./vm"
+        rm -rf "./vmr"
     fi
 }
 

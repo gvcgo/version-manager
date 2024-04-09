@@ -20,8 +20,10 @@
 # Go workspace file
 go.work
 
-cmd/vm/vm
-cmd/vm/vm.exe
+cmd/vmr/vmr
+cmd/vmr/vmr.exe
+cmd/vmr/vm
+cmd/vmr/vm.exe
 
 build_win.sh
 .DS_Store

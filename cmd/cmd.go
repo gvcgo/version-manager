@@ -34,7 +34,6 @@ import (
 	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/register"
-	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -250,16 +249,15 @@ func (c *Cli) initiate() {
 		GroupID: GroupID,
 		Short:   "Installs version manager.",
 		Run: func(cmd *cobra.Command, args []string) {
-			vmBinName := "vm"
+			vmBinName := "vmr"
+			oldBinName := "vm"
 			if runtime.GOOS == gutils.Windows {
-				vmBinName = "vm.exe"
-				if utils.IsHyperVEnabledForWindows() {
-					// If Hyper-V is enabled for windows, then command name "vm" is taken by Hyper-V.
-					// In order to avoid shadowing Hyper-V, rename vm.exe to vmr.exe.
-					vmBinName = "vmr.exe"
-				}
+				vmBinName = "vmr.exe"
+				oldBinName = "vm.exe"
 			}
 			binPath := filepath.Join(conf.GetManagerDir(), vmBinName)
+			oldBinPath := filepath.Join(conf.GetManagerDir(), oldBinName)
+			os.RemoveAll(oldBinPath)
 			if ok, _ := gutils.PathIsExist(binPath); ok {
 				os.RemoveAll(binPath)
 			}

@@ -30,9 +30,9 @@ Write-Host "$sysType"
 
 $arch="amd64"
 
-$version="v0.1.4"
+$version="v0.1.5"
 
-$filename="vm_windows-" + $arch + ".zip"
+$filename="vmr_windows-" + $arch + ".zip"
 $download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
 
 $url=$download_url + $version + "/" + $filename
@@ -45,11 +45,11 @@ $TRUE_FALSE=(Test-Path $filename)
 if ( $TRUE_FALSE -eq "True" )
 {
    Expand-Archive -Path $filename -DestinationPath .\
-    $TRUE_FALSE=(Test-Path "vm.exe")
+    $TRUE_FALSE=(Test-Path "vmr.exe")
     if ( $TRUE_FALSE -eq "True" )
     {
-        .\vm.exe i
-        remove-Item -Recurse -Force .\vm.exe
+        .\vmr.exe i
+        remove-Item -Recurse -Force .\vmr.exe
     }
     remove-Item -Recurse -Force $filename
 }

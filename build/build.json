@@ -9,8 +9,8 @@
     ],
     "build_args": [
         "-ldflags",
-        "-X main.GitTag=$(git describe --abbrev=0 --tags) -X main.GitHash=$(git show -s --format=%H)  -s -w",
-        "./cmd/vm/"
+        "-X main.GitTag=$(git describe --abbrev=0 --tags) -X main.GitHash=$(git show -s --format=%H)  -s -w -s -w",
+        "./cmd/vmr/"
     ],
     "compress": true
 }
