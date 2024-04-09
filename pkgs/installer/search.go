@@ -46,7 +46,8 @@ func PrintVersions(appName string, versionList []string) {
 		if binName != "" {
 			cmdStr := fmt.Sprintf("%s use %s@%s", binName, appName, version)
 			clipboard.WriteAll(cmdStr)
-			gprint.PrintInfo("Now you can use 'ctrl+v' or 'cmd+v' to install the version you've selected.")
+			fmt.Println("")
+			gprint.PrintInfo("Now you can use 'ctrl+v' or 'cmd+v' to install the selected version.")
 		}
 	}
 }

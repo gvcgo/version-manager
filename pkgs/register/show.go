@@ -59,7 +59,8 @@ func ShowAppList() {
 		if binName != "" {
 			cmdStr := fmt.Sprintf("%s search %s", binName, appName)
 			clipboard.WriteAll(cmdStr)
-			gprint.PrintInfo("Now you can use 'ctrl+v' or 'cmd+v' to search the available versions of the sdk you've just selected.")
+			fmt.Println("")
+			gprint.PrintInfo("Now you can use 'ctrl+v' or 'cmd+v' to search versions for the selected SDK.")
 		}
 	}
 }
