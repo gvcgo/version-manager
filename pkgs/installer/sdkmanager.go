@@ -97,6 +97,21 @@ func NewAndroidSDKInstaller() (a *AndroidSDKInstaller) {
 	return
 }
 
+func (a *AndroidSDKInstaller) InstallPlatformTools() {
+	platformToolsADB := filepath.Join(GetAndroidHomeDir(), "platform-tools", "adb")
+	if ok, _ := gutils.PathIsExist(platformToolsADB); ok {
+		// already installed.
+		return
+	}
+	uHome, _ := os.UserHomeDir()
+	gprint.PrintInfo("Installing platform-tools...")
+	_, err := gutils.ExecuteSysCommand(false, uHome, "sdkmanager", "platform-tools")
+	if err != nil {
+		gprint.PrintError("Install platform-tools failed: %+v", err)
+		os.Exit(1)
+	}
+}
+
 func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
 	SetAndroidSDKEnvs()
 	if !IsAndroidSDKManagerInstalled() {
@@ -107,6 +122,7 @@ func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
 		gprint.PrintError("unsupported sdk for android sdkmanager.")
 		os.Exit(1)
 	}
+	a.InstallPlatformTools()
 	if version != "" {
 		uHome, _ := os.UserHomeDir()
 		_, err := gutils.ExecuteSysCommand(false, uHome, "sdkmanager", version)
@@ -139,3 +155,27 @@ func (a *AndroidSDKInstaller) UnInstallSDK(appName, version string) {
 func (a *AndroidSDKInstaller) SetVersion(version string) {
 	a.Version = version
 }
+
+func (a *AndroidSDKInstaller) Download() string {
+	return ""
+}
+func (a *AndroidSDKInstaller) Unzip(zipFilePath string) {}
+func (a *AndroidSDKInstaller) Copy()                    {}
+func (a *AndroidSDKInstaller) CreateVersionSymbol()     {}
+func (a *AndroidSDKInstaller) CreateBinarySymbol()      {}
+
+func (a *AndroidSDKInstaller) SetEnv() {}
+
+func (a *AndroidSDKInstaller) GetInstall() func(appName, version, zipFilePath string) {
+	return a.Install
+}
+
+func (a *AndroidSDKInstaller) InstallApp(zipFilePath string) {}
+func (a *AndroidSDKInstaller) UnInstallApp()                 {}
+func (a *AndroidSDKInstaller) DeleteVersion()                {}
+func (a *AndroidSDKInstaller) DeleteAll()                    {}
+func (a *AndroidSDKInstaller) ClearCache()                   {}
+func (a *AndroidSDKInstaller) GetHomepage() string {
+	return a.HomePage
+}
+func (a *AndroidSDKInstaller) SearchVersions() {}

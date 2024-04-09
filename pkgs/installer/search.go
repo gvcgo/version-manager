@@ -159,21 +159,30 @@ func NewSDKManagerSearcher() *SDKManagerSearcher {
 	}
 }
 
-func (s *SDKManagerSearcher) GetVersions(appName string) map[string]versions.VersionList {
-	if !IsAppNameSupportedBySDKManager(appName) {
-		gprint.PrintWarning("unspported sdk name: %s", appName)
-		os.Exit(1)
-	}
+func (s *SDKManagerSearcher) getVersionString(installed bool) (r string) {
+	sep := "Available Packages:"
 	rootDir := GetAndroidSDKRoot()
 	buff, err := gutils.ExecuteSysCommand(true, rootDir, "sdkmanager", fmt.Sprintf("--sdk_root=%s", rootDir), "--list")
 	if err != nil {
 		gprint.PrintError("get versions failed: %+v", err)
 		os.Exit(1)
 	}
+	sList := strings.Split(buff.String(), sep)
+	if installed {
+		return sList[0]
+	}
+	return sList[1]
+}
 
-	for _, line := range strings.Split(buff.String(), "\n") {
+func (s *SDKManagerSearcher) GetVersions(appName string) map[string]versions.VersionList {
+	if !IsAppNameSupportedBySDKManager(appName) {
+		gprint.PrintWarning("unspported sdk name: %s", appName)
+		os.Exit(1)
+	}
+	for _, line := range strings.Split(s.getVersionString(false), "\n") {
+		ss := strings.Split(line, " ")
 		if strings.Contains(line, appName) {
-			s.currentList[line] = versions.VersionList{
+			s.currentList[ss[0]] = versions.VersionList{
 				{
 					Arch: runtime.GOARCH,
 					Os:   runtime.GOOS,
@@ -182,6 +191,13 @@ func (s *SDKManagerSearcher) GetVersions(appName string) map[string]versions.Ver
 		}
 	}
 	return s.currentList
+}
+
+func (s *SDKManagerSearcher) ShowInstalledPackages() {
+	r := s.getVersionString(true)
+	gprint.PrintInfo("Installed packages: ")
+	fmt.Println("")
+	fmt.Println(r)
 }
 
 // Shows version list.
