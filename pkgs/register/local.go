@@ -9,12 +9,36 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/installer"
 )
 
 /*
 Shows installed versions.
 */
+var AndroidSDKNames []string = []string{
+	"build-tools",
+	"platforms",
+	"platform-tools",
+	"system-images",
+	"ndks",
+	"add-ons",
+	"extras",
+}
+
+func ShowInstalledAndroidSDK(appName string) {
+	for _, name := range AndroidSDKNames {
+		if appName == name {
+			searcher := installer.NewSDKManagerSearcher()
+			searcher.ShowInstalledPackages()
+			os.Exit(0)
+		}
+	}
+}
+
 func ShowInstalled(appName string) {
+	// Try to show installed android SDKs.
+	ShowInstalledAndroidSDK(appName)
+
 	vDir := conf.GetVMVersionsDir(appName)
 	slink, _ := os.Readlink(filepath.Join(vDir, appName))
 	if ok, _ := gutils.PathIsExist(slink); !ok {

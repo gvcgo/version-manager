@@ -203,8 +203,6 @@ func (s *SDKManagerSearcher) GetVersions(appName string) map[string]versions.Ver
 
 func (s *SDKManagerSearcher) ShowInstalledPackages() {
 	r := s.getVersionString(true)
-	gprint.PrintInfo("Installed packages: ")
-	fmt.Println("")
 	fmt.Println(r)
 }
 
