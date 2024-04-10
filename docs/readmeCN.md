@@ -209,6 +209,8 @@ $HOME/.vm/
 
 **Windows**下的sudo命令：你可以使用**vmr**安装gsudo(**vmr search gsudo**查看版本)，gsudo是Windows下的一款类似sudo的提升权限的命令。
 
+**关于Windows下容易误报病毒**的情况，这是go编译之后的exe，在windows平台的一些通病，暂时没好的办法，只能手动下载安装，然后添加杀毒软件信任。具体的解释可以参考[v2ex帖子](https://v2ex.com/t/948678)。
+
 ------
 <p id="9"></p>  
 
