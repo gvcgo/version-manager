@@ -108,16 +108,18 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.sh | sh
 ```
 
-- for **Windows**(run the command below in powershell)
+- for **Windows**(run the command below in powershell) (See tips in **For Windows**)
 ```powershell
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
 
-- Manual installation
+- **Manual** installation
 ```text
 1. Download zip file from release.
 2. Unzip it, run command "vmr is".
 ```
+
+- **If you're a gopher, you can also complie the project by yourself. The main func is in ./cmd/vmr**
 
 ------
 
@@ -143,8 +145,6 @@ vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
 ```bash
 vmr use -mirror-in-china go@1.22.1
 ```
-
-- **If you're a gopher, you can also complie the project by yourself. The main func is in ./cmd/vmr**
 
 ------
 

@@ -124,6 +124,8 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 2. 解压，打开终端或者Powershell，执行命令"vmr is"，即可安装。
 ```
 
+- **如果你是go语言开发者的话，你也可以选择自行编译本项目。main函数在./cmd/vmr中。**
+
 ------
 
 <p id="5"></p> 
@@ -148,8 +150,6 @@ vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
 ```bash
 vmr use -mirror-in-china go@1.22.1
 ```
-
-- **如果你是go语言开发者的话，你也可以选择自行编译本项目。main函数在./cmd/vmr中。**
 
 ------
 
