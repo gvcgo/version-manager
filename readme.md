@@ -14,7 +14,7 @@
 
 - [version-manager(vmr)](#version-managervmr)
 - [features](#features)
-- [vm versus vfox](#vm-versus-vfox)
+- [vmr versus vfox](#vmr-versus-vfox)
 - [Installation/Update](#installationupdate)
 - [How to set a proxy?](#how-to-set-a-proxy)
 - [Subcommands](#subcommands)
@@ -54,9 +54,9 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 ------
 <p id="3"></p> 
 
-### vm versus vfox
+### vmr versus vfox
 
-| sdk | vm | vfox |
+| sdk | vmr | vfox |
 |-------|-------|-------|
 | **java(jdk)** | ✅︎ | ✅︎ |
 | **maven** | ✅︎ | ✅︎ |
@@ -195,7 +195,7 @@ $HOME/.vm/
 
 Specified during installation of **vm**.
 ```bash
-~ % ./vm install-self
+~ % ./vmr install-self
 Enter App Installation Dir["$Home/.vm/" by default]:
 /Users/moqsien/.vm
 ```
