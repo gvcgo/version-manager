@@ -189,19 +189,15 @@ vmr use -mirror-in-china go@1.22.1
 
 ### 相关目录
 
-- **vm安装目录**
+- **vmr安装目录**
 ```bash
 $HOME/.vm/
 ```
 
-- **通过vm安装的应用所在的目录**
+- **通过vmr安装的应用所在的目录**
 
-该目录在**vmr**安装过程中进行指定.例如，
-```bash
-~ % ./vmr install-self
-Enter App Installation Dir["$Home/.vm/" by default]:
-/Users/moqsien/.vm
-```
+该目录在**vmr**安装过程中进行指定，如果不指定，则与**vmr**安装目录相同.例如，
+![installation](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_install.png)
 
 ------
 

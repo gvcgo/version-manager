@@ -186,19 +186,15 @@ vmr use -mirror-in-china go@1.22.1
 
 ### Related dirs
 
-- **vm installation dir**
+- **vmr installation dir**
 ```bash
 $HOME/.vm/
 ```
 
 - **application installation dir**
 
-Specified during installation of **vm**.
-```bash
-~ % ./vmr install-self
-Enter App Installation Dir["$Home/.vm/" by default]:
-/Users/moqsien/.vm
-```
+Specified during installation of **vmr**. Use "$HOME/.vm" by default.
+![installation](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_install.png)
 
 ------
 
