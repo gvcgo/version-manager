@@ -32,11 +32,15 @@ func PrintVersions(appName string, versionList []string) {
 		})
 	}
 
+	height := 25
+	if len(rows) <= 5 {
+		height = 8
+	}
 	t := gtable.NewTable(
 		gtable.WithColumns(columns),
 		gtable.WithRows(rows),
 		gtable.WithFocused(true),
-		gtable.WithHeight(25),
+		gtable.WithHeight(height),
 		gtable.WithWidth(100),
 	)
 	t.CopySelectedRow(true)
@@ -48,9 +52,9 @@ func PrintVersions(appName string, versionList []string) {
 		binName := filepath.Base(binPath)
 		if binName != "" {
 			cmdStr := fmt.Sprintf(`%s use "%s@%s"`, binName, appName, version)
-			clipboard.WriteAll(cmdStr)
-			fmt.Println("")
-			gprint.PrintInfo("Now you can use 'ctrl+v' or 'cmd+v' to install the selected version.")
+			if err := clipboard.WriteAll(cmdStr); err == nil {
+				gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to install the selected version.")
+			}
 		}
 	}
 }
