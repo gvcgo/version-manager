@@ -30,6 +30,7 @@ import (
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gtea/input"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
@@ -273,9 +274,10 @@ func (c *Cli) initiate() {
 				return
 			}
 			// Sets app installation Dir.
-			fmt.Println(gprint.CyanStr(`Enter the SDK installation directory for vm["$Home/.vm/" by default]:`))
-			var appDir string
-			fmt.Scanln(&appDir)
+			fmt.Println(gprint.CyanStr(`Enter the SDK installation directory for vmr:`))
+			ipt := input.NewInput(input.WithPlaceholder("~/.vm/"), input.WithPrompt("SDK Installation Dir: "))
+			ipt.Run()
+			appDir := ipt.Value()
 			if appDir == "" {
 				appDir = conf.GetManagerDir()
 			}
