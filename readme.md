@@ -144,6 +144,8 @@ vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
 vmr use -mirror-in-china go@1.22.1
 ```
 
+- **If you're a gopher, you can also complie the project by yourself. The main func is in ./cmd/vmr**
+
 ------
 
 <p id="6"></p> 

@@ -147,6 +147,8 @@ vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
 vmr use -mirror-in-china go@1.22.1
 ```
 
+- **如果你是go语言开发者的话，你也可以选择自行编译本项目。main函数在./cmd/vmr中。**
+
 ------
 
 <p id="6"></p> 
