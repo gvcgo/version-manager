@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	GroupID string = "vm"
+	GroupID string = "vmr"
 )
 
 /*
@@ -56,7 +56,7 @@ func New(gitTag, gitHash string) (c *Cli) {
 	c = &Cli{
 		rootCmd: &cobra.Command{
 			Short: "version manager",
-			Long:  "vm <Command> <SubCommand> --flags args...",
+			Long:  "vmr <Command> <SubCommand> --flags args...",
 		},
 		groupID: GroupID,
 		gitTag:  gitTag,
@@ -73,7 +73,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"s"},
 		GroupID: GroupID,
 		Short:   "Shows the available versions of an application.",
-		Long:    "Example: vm search go.",
+		Long:    "Example: vmr search go.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				cmd.Help()
@@ -105,7 +105,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"u"},
 		GroupID: GroupID,
 		Short:   "Installs and switches to specified version.",
-		Long:    "Example: vm use go@1.22.1",
+		Long:    "Example: vmr use go@1.22.1",
 		Run: func(cmd *cobra.Command, args []string) {
 			mirrorInChina, _ := cmd.Flags().GetBool("mirror_in_china")
 			rds, _ := cmd.Flags().GetBool("rustup-default-stable")
@@ -161,7 +161,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"U"},
 		GroupID: GroupID,
 		Short:   "Uninstalls a version or an app.",
-		Long:    "Example: 1. vm U go@all; 2. vm U go@1.22.1",
+		Long:    "Example: 1. vmr U go@all; 2. vmr U go@1.22.1",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 || !strings.Contains(args[0], "@") {
 				cmd.Help()
@@ -186,7 +186,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"L"},
 		GroupID: GroupID,
 		Short:   "Shows installed versions for an app.",
-		Long:    "Example: vm L go.",
+		Long:    "Example: vmr L go.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				cmd.Help()
@@ -201,7 +201,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"sp"},
 		GroupID: GroupID,
 		Short:   "Sets proxy for version manager.",
-		Long:    "Example: vm sp http://127.0.0.1:2023",
+		Long:    "Example: vmr sp http://127.0.0.1:2023",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				cmd.Help()
@@ -217,7 +217,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"sr", "srp"},
 		GroupID: GroupID,
 		Short:   "Sets reverse proxy for version manager.",
-		Long:    "Example: vm sr https://gvc.1710717.xyz/proxy/",
+		Long:    "Example: vmr sr https://gvc.1710717.xyz/proxy/",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				cmd.Help()
@@ -275,7 +275,8 @@ func (c *Cli) initiate() {
 			}
 			// Sets app installation Dir.
 			fmt.Println(gprint.CyanStr(`Enter the SDK installation directory for vmr:`))
-			ipt := input.NewInput(input.WithPlaceholder("~/.vm/"), input.WithPrompt("SDK Installation Dir: "))
+			fmt.Println("")
+			ipt := input.NewInput(input.WithPlaceholder("$HOME/.vm/"), input.WithPrompt("SDK Installation Dir: "))
 			ipt.Run()
 			appDir := ipt.Value()
 			if appDir == "" {
@@ -290,7 +291,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"c", "cc"},
 		GroupID: GroupID,
 		Short:   "Clears cached zip files for an app.",
-		Long:    "Example: vm c go",
+		Long:    "Example: vmr c <sdk-name>",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				cmd.Help()
@@ -308,7 +309,7 @@ func (c *Cli) initiate() {
 		Aliases: []string{"e"},
 		GroupID: GroupID,
 		Short:   "Handles env manually.",
-		Long:    "Example: vm e <-r>",
+		Long:    "Example: vmr e <-r>",
 		Run: func(cmd *cobra.Command, args []string) {
 			enableRemove, _ := cmd.Flags().GetBool("remove")
 			if enableRemove {
