@@ -516,7 +516,6 @@ var LazyGitInstaller = &installer.Installer{
 	HomePage:           "https://github.com/jesseduffield/lazygit",
 }
 
-// TODO: env
 var MavenInstaller = &installer.Installer{
 	AppName:   "maven",
 	Version:   "3.9.6",
@@ -791,6 +790,29 @@ var TypstInstaller = &installer.Installer{
 	StoreMultiVersions: true,
 	ForceReDownload:    true,
 	HomePage:           "https://typst.app/",
+}
+
+var UPXInstaller = &installer.Installer{
+	AppName:   "upx",
+	Version:   "v4.2.3",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		r := []string{"upx"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"upx.exe"}
+		}
+		return r
+	},
+	BinListGetter: func() []string {
+		r := []string{"upx"}
+		if runtime.GOOS == gutils.Windows {
+			r = []string{"upx.exe"}
+		}
+		return r
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://github.com/upx/upx",
 }
 
 var VHSInstaller = &installer.Installer{
@@ -1315,6 +1337,7 @@ func init() {
 	VersionKeeper["typst-lsp"] = TypstLspInstaller
 	VersionKeeper["typst-preview"] = TypstPreviewInstaller
 	VersionKeeper["typst"] = TypstInstaller
+	VersionKeeper["upx"] = UPXInstaller
 	VersionKeeper["vhs"] = VHSInstaller
 	VersionKeeper["v-analyzer"] = VlangLspInstaller
 	VersionKeeper["v"] = VlangInstaller
