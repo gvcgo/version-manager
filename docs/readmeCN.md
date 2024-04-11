@@ -122,8 +122,10 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 - 手动安装(当你的系统下载脚本出现问题时，可以选择手动安装)
 ```text
 1. 从release页面下载对应的版本；
-2. 解压，打开终端或者Powershell，执行命令"vmr is"，即可安装。
+2. 解压，打开终端或者Powershell，执行命令"\your\full\path\vmr install-self"，即可安装，**注意，要使用解压后的完整路径**。
 ```
+
+**注意事项**：首次安装之后，如果当前命令行窗口找不到vmr命令，请使用source .zshrc或source .bashrc刷新环境变量。Windows用户无法刷新环境变量的，请关闭后另开一个新的Powershell。
 
 - **如果你是go语言开发者的话，你也可以选择自行编译本项目。main函数在./cmd/vmr中。**
 
@@ -211,8 +213,6 @@ $HOME/.vm/
 ### Windows用户须知
 
 **注意**: 如果你正在使用Win11，那么你需要开启**开发者模式**，因为**vmr**在创建链接符号时需要相关权限([Win11如何打开开发者模式](https://www.jb51.net/os/win11/818654.html))。如果你正在使用Win10，遇到创建链接符号失败的错误时，建议使用管理员权限打开powershell后再重试。在Win下，通过**vmr**安装应用成功之后，如果在当前powershell窗口中找不到该命令，可以关闭当前powershell窗口，再打开一个新的，此时环境变量就生效了，就可以找到相关命令了，这是Win的特性，暂时修正不了。此外，还需注意的是，extFAT和FAT32格式的磁盘不支持创建链接符号，因此，**在Windows下务必请使用NTFS格式的磁盘**。
-
-Win下刷新环境变量的命令为**refreshenv**，如果你安装了某个SDK，发现当前PowerShell窗口中没有该命令，可以刷新环境变量试试。
 
 **Windows**下的sudo命令：你可以使用**vmr**安装gsudo(**vmr search gsudo**查看版本)，gsudo是Windows下的一款类似sudo的提升权限的命令。
 

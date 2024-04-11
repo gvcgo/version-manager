@@ -259,10 +259,20 @@ func (c *Cli) initiate() {
 			binPath := filepath.Join(conf.GetManagerDir(), vmBinName)
 			oldBinPath := filepath.Join(conf.GetManagerDir(), oldBinName)
 			os.RemoveAll(oldBinPath)
+
+			currentBinPath, _ := os.Executable()
+			currentDir := filepath.Dir(currentBinPath)
+
+			if currentDir == conf.GetManagerDir() {
+				gprint.PrintWarning("vmr is already installed, please do not repeat the installation.")
+				os.Exit(0)
+			}
+
+			// If there is an old vmr, and the current one is not in $HOME/.vmr, then delete the old one first.
 			if ok, _ := gutils.PathIsExist(binPath); ok {
 				os.RemoveAll(binPath)
 			}
-			currentBinPath, _ := os.Executable()
+
 			if strings.HasSuffix(currentBinPath, vmBinName) {
 				gutils.CopyFile(currentBinPath, binPath)
 			}

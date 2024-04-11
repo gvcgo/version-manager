@@ -117,7 +117,7 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 - **Manual** installation
 ```text
 1. Download zip file from release.
-2. Unzip it, run command "vmr is".
+2. Unzip it, run command "your/full/path/to/vmr install-self".
 ```
 
 - **If you're a gopher, you can also complie the project by yourself. The main func is in ./cmd/vmr**
@@ -206,8 +206,6 @@ Specified during installation of **vmr**. Use "$HOME/.vm" by default.
 ### For Windows
 
 **Note**: If you are using **vmr** on Windows11, you need to enable the **Developer Mode** as **vmr** requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurrs, you can try **vmr** with **Admin Privilege**. To get **envs** take effect for windows, you may need to close the current powershell terminal and open a new one. Note that extFAT and FAT32 are not supported. 
-
-To refresh envs on Windows, you may need command **refreshenv**.
 
 **sudo command on Windows**: **gsudo**. You can use **vmr search gsudo** to see what's available.
 
