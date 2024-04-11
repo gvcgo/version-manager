@@ -99,6 +99,7 @@
 | **protobuf(protoc)** | ✅︎ | ❌︎ |
 | **lazygit** | ✅︎ | ❌︎ |
 | **kubectl** | ✅︎ | ❌︎ |
+| **upx** | ✅︎ | ❌︎ |
 | **acast(asciinema)** | ✅︎ | ❌︎ |
 | **erlang(需要编译)** | ❌︎ | ✅︎ |
 | **elixir(需要编译)** | ❌︎ | ✅︎ |
