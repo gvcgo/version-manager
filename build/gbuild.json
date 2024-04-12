@@ -7,10 +7,12 @@
         "windows/amd64",
         "windows/arm64"
     ],
+    "compress": true,
+    "upx": true,
     "build_args": [
         "-ldflags",
-        "-X main.GitTag=$(git describe --abbrev=0 --tags) -X main.GitHash=$(git show -s --format=%H)  -s -w -s -w",
+        "-X main.GitTag=$(git describe --abbrev=0 --tags) -X main.GitHash=$(git show -s --format=%H)  -s -w",
         "./cmd/vmr/"
     ],
-    "compress": true
+    "work_dir": "/Volumes/data/projects/go/src/gvcgo_org/version-manager"
 }
