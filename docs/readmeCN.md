@@ -1,16 +1,16 @@
 <p style="" align="center">
-  <!-- <img src="https://github.com/moqsien/img_repo/raw/main/vm_header_photo_2.png" alt="Logo" width="720" height="240"> -->
-  <img src="https://github.com/moqsien/img_repo/raw/main/vm_profile_image.png" alt="Logo" width="240" height="240">
+  <!-- <img src="https://github.com/moqsien/img_repo/raw/main/vm_header_photo_2.png" alt="logo" width="720" height="240"> -->
+  <img src="https://github.com/moqsien/img_repo/raw/main/vm_profile_image.png" alt="logo" width="240" height="240">
 </p>
 
-[![Go Report Card](https://img.shields.io/badge/go%20report-A+-brightgreen.svg?style=for-the-badge)](https://goreportcard.com/report/github.com/gvcgo/version-manager)
-[![GitHub License](https://img.shields.io/github/license/gvcgo/version-manager?style=for-the-badge)](LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/gvcgo/version-manager?display_name=tag&style=for-the-badge)](https://github.com/gvcgo/version-manager/releases)
-[![PRs Card](https://img.shields.io/badge/PRs-vm-cyan.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/pulls)
-[![Issues Card](https://img.shields.io/badge/Issues-vm-pink.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/issues)
-[![Versions Repo Card](https://img.shields.io/badge/Versions-repo-blue.svg?style=for-the-badge)](https://github.com/gvcgo/resources)
+[![go report card](https://img.shields.io/badge/go%20report-a+-brightgreen.svg?style=for-the-badge)](https://goreportcard.com/report/github.com/gvcgo/version-manager)
+[![github license](https://img.shields.io/github/license/gvcgo/version-manager?style=for-the-badge)](license)
+[![github release](https://img.shields.io/github/v/release/gvcgo/version-manager?display_name=tag&style=for-the-badge)](https://github.com/gvcgo/version-manager/releases)
+[![prs card](https://img.shields.io/badge/prs-vm-cyan.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/pulls)
+[![issues card](https://img.shields.io/badge/issues-vm-pink.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/issues)
+[![versions repo card](https://img.shields.io/badge/versions-repo-blue.svg?style=for-the-badge)](https://github.com/gvcgo/resources)
 
-[中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
+[中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmecn.md) | [en](https://github.com/gvcgo/version-manager)
 
 - [vmr简介](#vmr简介)
 - [功能特点](#功能特点)
@@ -19,10 +19,10 @@
 - [如何设置代理?](#如何设置代理)
 - [子命令介绍](#子命令介绍)
 - [相关目录](#相关目录)
-- [Windows用户须知](#windows用户须知)
+- [windows用户须知](#windows用户须知)
 - [贡献者](#贡献者)
 - [说明](#说明)
-- [Todo-List](#todo-list)
+- [todo-list](#todo-list)
 
 ------
 <p id="1"></p>  
@@ -47,14 +47,14 @@
 - 相比其他版本管理器来说要更稳定；
 - 支持多线程下载，速度飞快🚀🚀🚀，可使用**vmr use -h**命令查看用法；
 - 在浏览版本列表时，自动根据已选择的版本生成相应的use命令，并加入到系统剪贴板，方便后续ctrl+v或者cmd+v使用；
-- 无需安装Android Studio，直接使用VSCode和Flutter进行安卓开发；
+- 无需安装android studio，直接使用vscode和flutter进行安卓开发；
 - 无需任何插件，开箱即用；
 - 命令行自动补全；使用**vmr completion -h**查看；
 
 **session模式**解释：
 基于pty和conpty虚拟终端实现，即可以在虚拟终端中激活某个特定sdk版本，具体命令示例：**vmr use -s go@1.22.1**。当退出虚拟终端时，原来的sdk版本不受影响。对于希望临时使用某个版本的情况，相对方便，省去一次切换。
 
-🛎️🚨 **关于Windows下，会有误报病毒的情况**；查了一下相关资料，这是所有go程序在Windows下的通病，具体参考Windows用户须知。
+🛎️🚨 **关于windows下，会有误报病毒的情况**；查了一下相关资料，这是所有go程序在windows下的通病，具体参考windows用户须知。
 
 ------
 <p id="3"></p> 
@@ -83,7 +83,7 @@
 | **php** | ✅︎ | ✅︎ |
 | **rust** | ✅︎ | ❌︎ |
 | **cmdline-tool(android)** | ✅︎ | ❌︎ |
-| **android SDKs** | ✅︎ | ❌︎ |
+| **android sdks** | ✅︎ | ❌︎ |
 | **vlang** | ✅︎ | ❌︎ |
 | **v-analyzer** | ✅︎ | ❌︎ |
 | **cygwin-installer** | ✅︎ | ❌︎ |
@@ -109,25 +109,25 @@
 <p id="4"></p>  
 
 ### 一键安装/更新vm
-- for **MacOS/Linux**(复制下面的命令到terminal执行即可)
+- for **macos/linux**(复制下面的命令到terminal执行即可)
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.sh | sh
+curl --proto '=https' --tlsv1.2 -ssf https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.sh | sh
 ```
 
-- for **Windows**(复制下面的命令到powershell中执行即可)
+- for **windows**(复制下面的命令到powershell中执行即可)
 ```powershell
-powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
+powershell -nop -c "iex(new-object net.webclient).downloadstring('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
 
 - 手动安装(当你的系统下载脚本出现问题时，可以选择手动安装)
 ```text
 1. 从release页面下载对应的版本；
-2. 解压，打开终端或者Powershell，执行命令"\your\full\path\vmr install-self"，即可安装，**注意，要使用解压后的完整路径**。
+2. 解压，打开终端或者powershell，执行命令"\your\full\path\vmr install-self"，即可安装，**注意，要使用解压后的完整路径**。
 ```
 
-**注意事项**：首次安装之后，如果当前命令行窗口找不到vmr命令，请使用source .zshrc或source .bashrc刷新环境变量。Windows用户无法刷新环境变量的，请关闭后另开一个新的Powershell。
-
 - **如果你是go语言开发者的话，你也可以选择自行编译本项目。main函数在./cmd/vmr中。**
+
+**注意事项**：首次安装之后，如果当前命令行窗口找不到vmr命令，请使用source .zshrc或source .bashrc刷新环境变量。Windows用户无法刷新环境变量的，请关闭后另开一个新的Powershell。
 
 ------
 
@@ -171,22 +171,22 @@ vmr use -mirror-in-china go@1.22.1
 | **set-reverse-proxy** | https://gvc.1710717.xyz/proxy/ | 设置反向代理，用于github下载加速 |
 | **set-proxy** | http or socks5( scheme://host:port ) | 设置本地代理，可用于任何网站的下载加速 |
 | **env** | --remove=false/true | 手动设置环境变量，比编辑shell配置文件或者打开windows环境变量管理更方便 |
-| **install-self** | - | 安装vm到$HOME/.vm，用户一般无需关心 |
+| **install-self** | - | 安装vm到$home/.vm，用户一般无需关心 |
 | **version** | - | 显示vm的版本信息 |
 | **completion** | - | 生成关于不同shell的自动补全(支持bash、zsh、fish、powershell) |
 
 ------
 
-**MacOS演示**
+**macos演示**
 
 <!-- <a href="https://asciinema.org/a/647462" target="_blank"><img src="https://asciinema.org/a/647462.svg" /></a> -->
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm.gif)
 
-**Windows演示**
+**windows演示**
 
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm_win.gif)
 
-**Linux演示**
+**linux演示**
 
 ![demo](https://github.com/moqsien/img_repo/raw/main/vm_linux.gif)
 
@@ -198,7 +198,7 @@ vmr use -mirror-in-china go@1.22.1
 
 - **vmr安装目录**
 ```bash
-$HOME/.vm/
+$home/.vm/
 ```
 
 - **通过vmr安装的应用所在的目录**
@@ -210,13 +210,13 @@ $HOME/.vm/
 
 <p id="8"></p> 
 
-### Windows用户须知
+### windows用户须知
 
-**注意**: 如果你正在使用Win11，那么你需要开启**开发者模式**，因为**vmr**在创建链接符号时需要相关权限([Win11如何打开开发者模式](https://www.jb51.net/os/win11/818654.html))。如果你正在使用Win10，遇到创建链接符号失败的错误时，建议使用管理员权限打开powershell后再重试。在Win下，通过**vmr**安装应用成功之后，如果在当前powershell窗口中找不到该命令，可以关闭当前powershell窗口，再打开一个新的，此时环境变量就生效了，就可以找到相关命令了，这是Win的特性，暂时修正不了。此外，还需注意的是，extFAT和FAT32格式的磁盘不支持创建链接符号，因此，**在Windows下务必请使用NTFS格式的磁盘**。
+**注意**: 如果你正在使用win11，那么你需要开启**开发者模式**，因为**vmr**在创建链接符号时需要相关权限([win11如何打开开发者模式](https://www.jb51.net/os/win11/818654.html))。如果你正在使用win10，遇到创建链接符号失败的错误时，建议使用管理员权限打开powershell后再重试。在win下，通过**vmr**安装应用成功之后，如果在当前powershell窗口中找不到该命令，可以关闭当前powershell窗口，再打开一个新的，此时环境变量就生效了，就可以找到相关命令了，这是win的特性，暂时修正不了。此外，还需注意的是，extfat和fat32格式的磁盘不支持创建链接符号，因此，**在windows下务必请使用ntfs格式的磁盘**。
 
-**Windows**下的sudo命令：你可以使用**vmr**安装gsudo(**vmr search gsudo**查看版本)，gsudo是Windows下的一款类似sudo的提升权限的命令。
+**windows**下的sudo命令：你可以使用**vmr**安装gsudo(**vmr search gsudo**查看版本)，gsudo是windows下的一款类似sudo的提升权限的命令。
 
-**关于Windows下容易误报病毒**的情况，这是go编译之后的exe，在windows平台的一些通病，暂时没有好办法，先使用UPX进行了压缩，但不能保证一定不会误报。如果仍然误报，则只能手动下载安装，然后添加杀毒软件信任。具体的解释可以参考[v2ex帖子](https://v2ex.com/t/948678)以及[掘金帖子](https://juejin.cn/post/7027066330331217957)。
+**关于windows下容易误报病毒**的情况，这是go编译之后的exe，在windows平台的一些通病，暂时没有好办法，先使用upx进行了压缩，但不能保证一定不会误报。如果仍然误报，则只能手动下载安装，然后添加杀毒软件信任。具体的解释可以参考[v2ex帖子](https://v2ex.com/t/948678)以及[掘金帖子](https://juejin.cn/post/7027066330331217957)。
 
 ------
 <p id="9"></p>  
@@ -231,12 +231,12 @@ $HOME/.vm/
 <p id="10"></p> 
 
 ### 说明
-**vmr**是一个跨平台的命令行工具。它不会像asdf-vm以及asdf-vm的模仿者vfox那样做到什么都试图包含，因为那样会大大增加复杂性，也降低跨了平台的可能。而且大多数情况下，我们常用的语言和工具基本已经包含在**vmr**中了。**vmr**也不会试图去包含那些在某个平台下需要自行编译的sdk，因为每个开发者的开发环境都不一样，各种so，clib版本都无法统一，**vmr**开发者无法测试到所有系统环境，故无法保证编译一定能通过。所以**vmr**仅仅会使用独立性较强的pre-built binary来安装应用。如果你有什么需要进行版本管理的sdk或者工具推荐，请在[Issues](https://github.com/gvcgo/version-manager/issues)中提出，**vmr**开发团队会评估后决定是否加入。
+**vmr**是一个跨平台的命令行工具。它不会像asdf-vm以及asdf-vm的模仿者vfox那样做到什么都试图包含，因为那样会大大增加复杂性，也降低跨了平台的可能。而且大多数情况下，我们常用的语言和工具基本已经包含在**vmr**中了。**vmr**也不会试图去包含那些在某个平台下需要自行编译的sdk，因为每个开发者的开发环境都不一样，各种so，clib版本都无法统一，**vmr**开发者无法测试到所有系统环境，故无法保证编译一定能通过。所以**vmr**仅仅会使用独立性较强的pre-built binary来安装应用。如果你有什么需要进行版本管理的sdk或者工具推荐，请在[issues](https://github.com/gvcgo/version-manager/issues)中提出，**vmr**开发团队会评估后决定是否加入。
 
 所以，**vmr**的宗旨就是尽量保持**轻量、稳定和对用户友好**。
 
 ------
 <p id="11"></p> 
 
-### Todo-List
+### todo-list
 - [ ] 各种语言的包安装管理器国内加速资源一键配置

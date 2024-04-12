@@ -120,9 +120,9 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 2. Unzip it, run command "your/full/path/to/vmr install-self".
 ```
 
-**Note**: If you are installing **vmr** for the first time, please use **source .zshrc** or **source .bashrc** to refresh your envs. For windows users, just open a new powershell terminal, then **vmr** will be available.
-
 - **If you're a gopher, you can also complie the project by yourself. The main func is in ./cmd/vmr**
+
+**Note**: If you are installing **vmr** for the first time, please use **source .zshrc** or **source .bashrc** to refresh your envs. For windows users, just open a new powershell terminal, then **vmr** will be available.
 
 ------
 
