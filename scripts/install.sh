@@ -44,7 +44,7 @@ main() {
     local os_type="$(uname -s)"
     local os_arch="$(uname -m)"
 
-    local version="v0.1.5"
+    local version="v0.1.6"
     
     local download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
     local osType="linux"

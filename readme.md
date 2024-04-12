@@ -213,6 +213,11 @@ Specified during installation of **vmr**. Use "$HOME/.vm" by default.
 
 🛎️🚨 **Virus Positive?**: It's definitely a false positive. See [here](https://forum.golangbridge.org/t/my-compiled-exe-file-is-declared-as-a-virus/34038). If this occurrs, you can install **vmr** manually, and add **vmr** to be trusted.
 
+- **How can I add vmr to windows 'Virus & threat protection Exclusions?'**
+```text
+Windows Security>> Virus & threat protection>> Virus & threat protection settings>> Exclusions
+```
+
 ------
 <p id="9"></p>  
 

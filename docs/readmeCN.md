@@ -129,6 +129,11 @@ powershell -nop -c "iex(new-object net.webclient).downloadstring('https://gvc.17
 
 **注意事项**：首次安装之后，如果当前命令行窗口找不到vmr命令，请使用source .zshrc或source .bashrc刷新环境变量。Windows用户无法刷新环境变量的，请关闭后另开一个新的Powershell。
 
+- **怎样添加到Windows信任？**
+```text
+Windows Security>> Virus & threat protection>> Virus & threat protection settings>> Exclusions
+```
+
 ------
 
 <p id="5"></p> 
