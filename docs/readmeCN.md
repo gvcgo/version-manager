@@ -129,12 +129,6 @@ powershell -nop -c "iex(new-object net.webclient).downloadstring('https://gvc.17
 
 **注意事项**：首次安装之后，如果当前命令行窗口找不到vmr命令，请使用source .zshrc或source .bashrc刷新环境变量。Windows用户无法刷新环境变量的，请关闭后另开一个新的Powershell。
 
-- **怎样添加到Windows信任？**
-将$HOME、$HOME/.vm/以及你希望设置的SDK安装目录都加入Exclusions。
-```text
-Windows Security>> Virus & threat protection>> Virus & threat protection settings>> Exclusions
-```
-
 ------
 
 <p id="5"></p> 
@@ -223,6 +217,13 @@ $home/.vm/
 **windows**下的sudo命令：你可以使用**vmr**安装gsudo(**vmr search gsudo**查看版本)，gsudo是windows下的一款类似sudo的提升权限的命令。
 
 **关于windows下容易误报病毒**的情况，这是go编译之后的exe，在windows平台的一些通病，暂时没有好办法，先使用upx进行了压缩，但不能保证一定不会误报。如果仍然误报，则只能手动下载安装，然后添加杀毒软件信任。具体的解释可以参考[v2ex帖子](https://v2ex.com/t/948678)以及[掘金帖子](https://juejin.cn/post/7027066330331217957)。
+
+- **怎样将vmr添加到Windows信任？**
+
+将$HOME、$HOME\.vm\，以及你设置的SDK安装目录都加入Exclusions。
+```text
+Windows Security>> Virus & threat protection>> Virus & threat protection settings>> Exclusions
+```
 
 ------
 <p id="9"></p>  
