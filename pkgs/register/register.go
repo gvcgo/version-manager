@@ -99,6 +99,7 @@ var AsciinemaInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://github.com/gvcgo/asciinema",
 }
 
@@ -812,6 +813,7 @@ var UPXInstaller = &installer.Installer{
 	},
 	DUrlDecorator:      installer.DefaultDecorator,
 	StoreMultiVersions: true,
+	ForceReDownload:    true,
 	HomePage:           "https://github.com/upx/upx",
 }
 

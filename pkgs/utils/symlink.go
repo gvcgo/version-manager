@@ -21,6 +21,9 @@ func IsFile(path string) bool {
 }
 
 func SymbolicLink(oldname, newname string) error {
+	if ok, _ := gutils.PathIsExist(newname); ok {
+		os.RemoveAll(newname)
+	}
 	err := os.Symlink(oldname, newname)
 	if runtime.GOOS == gutils.Windows {
 		// Hardlink for windows files. Hardlink for windows in the same disk partion is supported.
