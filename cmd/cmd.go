@@ -81,8 +81,8 @@ func (c *Cli) initiate() {
 			}
 
 			installer, ok := register.VersionKeeper[args[0]]
-			installer.FixAppName()
 			if ok && installer != nil {
+				installer.FixAppName()
 				installer.SearchVersions()
 			} else {
 				gprint.PrintWarning("unsupported sdk-name!")
