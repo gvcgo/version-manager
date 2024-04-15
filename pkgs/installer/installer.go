@@ -504,12 +504,16 @@ func (i *Installer) createExtraSymbolic(dd fs.DirEntry, fPath string) {
 	if dd.Name() == "bun" {
 		extraSymbol := "bunx"
 		symPath := filepath.Join(conf.GetAppBinDir(), extraSymbol)
+		symPath2 := filepath.Join(filepath.Dir(fPath), extraSymbol)
 		utils.SymbolicLink(fPath, symPath)
+		utils.SymbolicLink(fPath, symPath2)
 		i.saveSymbolicInfo(extraSymbol)
 	} else if dd.Name() == "bun.exe" {
 		extraSymbol := "bunx.exe"
 		symPath := filepath.Join(conf.GetAppBinDir(), extraSymbol)
+		symPath2 := filepath.Join(filepath.Dir(fPath), extraSymbol)
 		utils.SymbolicLink(fPath, symPath)
+		utils.SymbolicLink(fPath, symPath2)
 		i.saveSymbolicInfo(extraSymbol)
 	}
 }
