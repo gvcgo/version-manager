@@ -157,6 +157,8 @@ func (c *Cli) initiate() {
 					// lock the sdk version for a project.
 					vlocker := locker.NewVLocker()
 					vlocker.Save(args[0])
+					// enable hook for command 'cd'.
+					locker.AddCdHook()
 				}
 			} else {
 				gprint.PrintError("Unsupported app: %s.", sList[0])
