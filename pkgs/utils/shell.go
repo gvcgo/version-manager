@@ -79,3 +79,10 @@ func IsHyperVEnabledForWindows() bool {
 	_, err := gutils.ExecuteSysCommand(true, "", "get-vm")
 	return err == nil
 }
+
+func GetPathEnvSeperator() string {
+	if runtime.GOOS == gutils.Windows {
+		return ";"
+	}
+	return ":"
+}

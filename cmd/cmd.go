@@ -24,18 +24,17 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/goutils/pkgs/gtea/input"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/locker"
 	"github.com/gvcgo/version-manager/pkgs/register"
+	"github.com/gvcgo/version-manager/pkgs/self"
+	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -131,6 +130,13 @@ func (c *Cli) initiate() {
 			if lockedVersion != "" && !toLock {
 				args = []string{lockedVersion}
 				sessionOnly = true
+				alreadyLockedVersions := os.Getenv(conf.VMLockedVersionsEnvName)
+				if strings.Contains(alreadyLockedVersions, lockedVersion) {
+					return
+				} else {
+					alreadyLockedVersions = alreadyLockedVersions + utils.GetPathEnvSeperator() + lockedVersion
+				}
+				os.Setenv(conf.VMLockedVersionsEnvName, alreadyLockedVersions)
 			}
 
 			// session only.
@@ -247,71 +253,13 @@ func (c *Cli) initiate() {
 		},
 	})
 
-	// c.rootCmd.AddCommand(&cobra.Command{
-	// 	Use:     "set-app-dir",
-	// 	Aliases: []string{"sd", "sad"},
-	// 	GroupID: GroupID,
-	// 	Short:   "Sets installation dir for apps.",
-	// 	Long:    "Example: vm sd <where-to-install-apps>.",
-	// 	Run: func(cmd *cobra.Command, args []string) {
-	// 		if len(args) == 0 {
-	// 			cmd.Help()
-	// 			return
-	// 		}
-	// 		appDir := args[0]
-	// 		conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
-	// 	},
-	// })
-
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "install-self",
 		Aliases: []string{"i", "is"},
 		GroupID: GroupID,
 		Short:   "Installs version manager.",
 		Run: func(cmd *cobra.Command, args []string) {
-			vmBinName := "vmr"
-			oldBinName := "vm"
-			if runtime.GOOS == gutils.Windows {
-				vmBinName = "vmr.exe"
-				oldBinName = "vm.exe"
-			}
-			binPath := filepath.Join(conf.GetManagerDir(), vmBinName)
-			oldBinPath := filepath.Join(conf.GetManagerDir(), oldBinName)
-			os.RemoveAll(oldBinPath)
-
-			currentBinPath, _ := os.Executable()
-			currentDir := filepath.Dir(currentBinPath)
-
-			if currentDir == conf.GetManagerDir() {
-				gprint.PrintWarning("vmr is already installed, please do not repeat the installation.")
-				os.Exit(0)
-			}
-
-			// If there is an old vmr, and the current one is not in $HOME/.vmr, then delete the old one first.
-			if ok, _ := gutils.PathIsExist(binPath); ok {
-				os.RemoveAll(binPath)
-			}
-
-			if strings.HasSuffix(currentBinPath, vmBinName) {
-				gutils.CopyFile(currentBinPath, binPath)
-			}
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
-			em.AddToPath(conf.GetManagerDir())
-
-			if ok, _ := gutils.PathIsExist(conf.GetConfPath()); ok {
-				return
-			}
-			// Sets app installation Dir.
-			fmt.Println(gprint.CyanStr(`Enter the SDK installation directory for vmr:`))
-			fmt.Println("")
-			ipt := input.NewInput(input.WithPlaceholder("$HOME/.vm/"), input.WithPrompt("SDK Installation Dir: "))
-			ipt.Run()
-			appDir := ipt.Value()
-			if appDir == "" {
-				appDir = conf.GetManagerDir()
-			}
-			conf.SaveConfigFile(&conf.Config{AppInstallationDir: appDir})
+			self.InstallVmr()
 		},
 	})
 

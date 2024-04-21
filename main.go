@@ -22,6 +22,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 )
@@ -35,14 +36,13 @@ func main() {
 	// pt.Run()
 	// fmt.Println("----hello")
 
-	c := exec.Command(`sh`, `/Volumes/data/projects/go/src/gvcgo_org/version-manager/test.sh`)
-	pStr := os.Getenv("PATH")
-	os.Setenv("PATH", "/test/test-test/:"+pStr)
+	c := exec.Command("zsh", `cd`, `~`)
 
 	c.Env = os.Environ()
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
-	c.Run()
+	err := c.Run()
+	fmt.Println(err)
 
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)
