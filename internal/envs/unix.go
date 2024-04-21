@@ -13,10 +13,6 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/utils"
 )
 
-const (
-	ShellFileName string = "vm_env.sh"
-)
-
 /*
 Unix/Linux envs manager.
 */

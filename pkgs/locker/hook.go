@@ -70,7 +70,7 @@ func CdHookForWindows() {
 func AddCdHook() {
 	if runtime.GOOS == gutils.Windows {
 		CdHookForWindows()
-		return
+	} else {
+		CdHookForUnix()
 	}
-	CdHookForUnix()
 }

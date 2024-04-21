@@ -7,6 +7,10 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 )
 
+const (
+	ShellFileName string = "vm_env.sh"
+)
+
 /*
 Adds env manually.
 */

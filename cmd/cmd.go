@@ -129,6 +129,9 @@ func (c *Cli) initiate() {
 				}
 			}
 
+			if toLock {
+				sessionOnly = true
+			}
 			// session only.
 			os.Setenv(conf.VMOnlyInCurrentSessionEnvName, gconv.String(sessionOnly))
 
@@ -151,8 +154,6 @@ func (c *Cli) initiate() {
 			}
 
 			if ins, ok := register.VersionKeeper[sList[0]]; ok {
-				ins.SetVersion(sList[1])
-				register.RunInstaller(ins)
 				if toLock {
 					// lock the sdk version for a project.
 					vlocker := locker.NewVLocker()
@@ -160,6 +161,8 @@ func (c *Cli) initiate() {
 					// enable hook for command 'cd'.
 					locker.AddCdHook()
 				}
+				ins.SetVersion(sList[1])
+				register.RunInstaller(ins)
 			} else {
 				gprint.PrintError("Unsupported app: %s.", sList[0])
 			}
