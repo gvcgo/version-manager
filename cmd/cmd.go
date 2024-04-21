@@ -34,6 +34,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/pkgs/locker"
 	"github.com/gvcgo/version-manager/pkgs/register"
 	"github.com/spf13/cobra"
 )
@@ -109,10 +110,9 @@ func (c *Cli) initiate() {
 		Run: func(cmd *cobra.Command, args []string) {
 			mirrorInChina, _ := cmd.Flags().GetBool("mirror_in_china")
 			rds, _ := cmd.Flags().GetBool("rustup-default-stable")
-
+			toLock, _ := cmd.Flags().GetBool("lock")
 			// uses a version for current session only.
 			sessionOnly, _ := cmd.Flags().GetBool("session-only")
-			os.Setenv(conf.VMOnlyInCurrentSessionEnvName, gconv.String(sessionOnly))
 
 			if rds {
 				// only for rustup default.
@@ -124,6 +124,18 @@ func (c *Cli) initiate() {
 					"rustup", "default", "stable")
 				return
 			}
+
+			vlocker := locker.NewVLocker()
+			lockedVersion := vlocker.Get()
+			// Uses the locked version.
+			if lockedVersion != "" && !toLock {
+				args = []string{lockedVersion}
+				sessionOnly = true
+			}
+
+			// session only.
+			os.Setenv(conf.VMOnlyInCurrentSessionEnvName, gconv.String(sessionOnly))
+
 			if len(args) == 0 || !strings.Contains(args[0], "@") {
 				cmd.Help()
 				return
@@ -145,15 +157,22 @@ func (c *Cli) initiate() {
 			if ins, ok := register.VersionKeeper[sList[0]]; ok {
 				ins.SetVersion(sList[1])
 				register.RunInstaller(ins)
+				if toLock {
+					// lock the sdk version for a project.
+					vlocker := locker.NewVLocker()
+					vlocker.Save(args[0])
+				}
 			} else {
 				gprint.PrintError("Unsupported app: %s.", sList[0])
 			}
 		},
 	}
+
+	useCmd.Flags().BoolP("lock", "l", false, "locks the sdk version for current project.")
 	useCmd.Flags().IntP("threads", "t", 1, "Number of threads to use for downloading.")
 	useCmd.Flags().BoolP("mirror_in_china", "c", false, "Downlowd from mirror sites in China.")
-	useCmd.Flags().BoolP("rustup-default-stable", "r", false, "Set rustup default stable.")
 	useCmd.Flags().BoolP("session-only", "s", false, "Use a version only for the current terminal session.")
+	useCmd.Flags().BoolP("rustup-default-stable", "r", false, "Set rustup default stable.")
 	c.rootCmd.AddCommand(useCmd)
 
 	c.rootCmd.AddCommand(&cobra.Command{
