@@ -28,13 +28,11 @@ import (
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/locker"
 	"github.com/gvcgo/version-manager/pkgs/register"
 	"github.com/gvcgo/version-manager/pkgs/self"
-	"github.com/gvcgo/version-manager/pkgs/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -108,35 +106,27 @@ func (c *Cli) initiate() {
 		Long:    "Example: vmr use go@1.22.1",
 		Run: func(cmd *cobra.Command, args []string) {
 			mirrorInChina, _ := cmd.Flags().GetBool("mirror_in_china")
-			rds, _ := cmd.Flags().GetBool("rustup-default-stable")
 			toLock, _ := cmd.Flags().GetBool("lock")
 			// uses a version for current session only.
 			sessionOnly, _ := cmd.Flags().GetBool("session-only")
-
-			if rds {
-				// only for rustup default.
-				if mirrorInChina {
-					os.Setenv("RUSTUP_DIST_SERVER", "https://mirrors.ustc.edu.cn/rust-static")
-					os.Setenv("RUSTUP_UPDATE_ROOT", "https://mirrors.ustc.edu.cn/rust-static/rustup")
-				}
-				gutils.ExecuteSysCommand(false, "",
-					"rustup", "default", "stable")
-				return
-			}
+			// enable locked version.
+			elv, _ := cmd.Flags().GetBool("enable-locked-version")
 
 			vlocker := locker.NewVLocker()
 			lockedVersion := vlocker.Get()
+			if elv && lockedVersion == "" {
+				return
+			}
 			// Uses the locked version.
 			if lockedVersion != "" && !toLock {
 				args = []string{lockedVersion}
 				sessionOnly = true
-				alreadyLockedVersions := os.Getenv(conf.VMLockedVersionsEnvName)
+				alreadyLockedVersions := os.Getenv(conf.VMLockedVersionEnvName)
 				if strings.Contains(alreadyLockedVersions, lockedVersion) {
 					return
 				} else {
-					alreadyLockedVersions = alreadyLockedVersions + utils.GetPathEnvSeperator() + lockedVersion
+					os.Setenv(conf.VMLockedVersionEnvName, lockedVersion)
 				}
-				os.Setenv(conf.VMLockedVersionsEnvName, alreadyLockedVersions)
 			}
 
 			// session only.
@@ -174,11 +164,11 @@ func (c *Cli) initiate() {
 		},
 	}
 
-	useCmd.Flags().BoolP("lock", "l", false, "locks the sdk version for current project.")
-	useCmd.Flags().IntP("threads", "t", 1, "Number of threads to use for downloading.")
-	useCmd.Flags().BoolP("mirror_in_china", "c", false, "Downlowd from mirror sites in China.")
-	useCmd.Flags().BoolP("session-only", "s", false, "Use a version only for the current terminal session.")
-	useCmd.Flags().BoolP("rustup-default-stable", "r", false, "Set rustup default stable.")
+	useCmd.Flags().BoolP("lock", "l", false, "To lock the sdk version for current project.")
+	useCmd.Flags().BoolP("enable-locked-version", "E", false, "To enable the locked version for current project.")
+	useCmd.Flags().IntP("threads", "t", 1, "Number of threads for downloading.")
+	useCmd.Flags().BoolP("mirror_in_china", "c", false, "To downlowd from mirror sites in China.")
+	useCmd.Flags().BoolP("session-only", "s", false, "To use a version only for the current terminal session.")
 	c.rootCmd.AddCommand(useCmd)
 
 	c.rootCmd.AddCommand(&cobra.Command{
