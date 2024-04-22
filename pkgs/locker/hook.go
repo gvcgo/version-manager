@@ -24,7 +24,7 @@ const ShellHook = `cdhook() {
     fi
 }
 
-alias cd='cdhook'`
+alias cdr='cdhook'`
 
 // for Powershell
 const PowershellHook = `function cdhook {
@@ -36,7 +36,7 @@ const PowershellHook = `function cdhook {
     }
 }
 
-Set-Alias cd cdhook`
+Set-Alias cdr cdhook`
 
 func CdHookForUnix() {
 	envFilePath := filepath.Join(conf.GetVersionManagerWorkDir(), envs.ShellFileName)
@@ -49,21 +49,39 @@ func CdHookForUnix() {
 }
 
 func CdHookForWindows() {
-	bf, _ := gutils.ExecuteSysCommand(true, "", "powershell", "echo", "$profile")
-	if bf != nil {
-		psConfPath := bf.String()
-		if psConfPath == "" {
-			return
-		}
-		if ok, _ := gutils.PathIsExist(psConfPath); !ok {
-			gutils.ExecuteSysCommand(false, "", "New-Item", "-Type", "file", "-Force", "$profile")
-		}
+	homeDir, _ := os.UserHomeDir()
+
+	psConfDir := filepath.Join(homeDir,
+		"Documents",
+		"WindowsPowerShell",
+	)
+	psConfName := "Microsoft.PowerShell_profile.ps1"
+
+	if ok, _ := gutils.PathIsExist(psConfDir); !ok {
+		os.MkdirAll(psConfDir, os.ModePerm)
+	}
+
+	psConfPath := filepath.Join(psConfDir, psConfName)
+
+	var content string
+	if ok, _ := gutils.PathIsExist(psConfPath); ok {
 		data, _ := os.ReadFile(psConfPath)
-		content := strings.TrimSpace(string(data))
-		if !strings.Contains(content, PowershellHook) {
-			content = fmt.Sprintf("%s\n%s", PowershellHook, content)
-		}
-		os.WriteFile(psConfPath, []byte(content), os.ModePerm)
+		content = strings.TrimSpace(string(data))
+	}
+
+	if strings.Contains(content, PowershellHook) {
+		return
+	}
+
+	if content != "" {
+		content = fmt.Sprintf("%s\n%s", PowershellHook, content)
+	} else {
+		content = PowershellHook
+	}
+
+	err := os.WriteFile(psConfPath, []byte(content), os.ModePerm)
+	if err != nil {
+		os.WriteFile("vmr_error.txt", []byte(err.Error()), os.ModePerm)
 	}
 }
 

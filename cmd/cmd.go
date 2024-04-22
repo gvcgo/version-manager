@@ -159,7 +159,6 @@ func (c *Cli) initiate() {
 					vlocker := locker.NewVLocker()
 					vlocker.Save(args[0])
 					// enable hook for command 'cd'.
-					locker.AddCdHook()
 				}
 				ins.SetVersion(sList[1])
 				register.RunInstaller(ins)
@@ -255,6 +254,7 @@ func (c *Cli) initiate() {
 		Short:   "Installs version manager.",
 		Run: func(cmd *cobra.Command, args []string) {
 			self.InstallVmr()
+			locker.AddCdHook()
 		},
 	})
 
