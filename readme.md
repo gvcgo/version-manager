@@ -52,6 +52,8 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 - No plugins needed.
 - More stable.
 
+**Note**: **cdr** is a hook for command **cd** from shell or powershell. It's registered by **vmr** automatically. When you're changing directories using **cdr**, the locked version of sdk will be detected.
+
 ------
 <p id="3"></p> 
 
