@@ -42,7 +42,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 - Installs or uninstalls versions of sdk.
 - Swithes between versions of sdk.
 - Using a version only in current terminal session is supported. See with command **vmr use -h**.
-- Lock sdk version for a project, and autoswithed sdk to locked version while using **cdr path-to-directory**.
+- Lock sdk version for a project with command like **vmr use -l go@1.22.2**, and autoswithed sdk to the locked version while using **cdr <path-to-your-project>**.
 - Handles envs.
 - Friendly to VSCoders or Neovimers.
 - Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vmr use -h**.
