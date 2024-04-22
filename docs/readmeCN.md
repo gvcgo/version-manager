@@ -129,6 +129,11 @@ powershell -nop -c "iex(new-object net.webclient).downloadstring('https://gvc.17
 
 - **如果你是go语言开发者的话，你也可以选择自行编译本项目。main函数在./cmd/vmr中。**
 
+- **一键更新功能**
+```bash
+vmr-update
+```
+
 **注意事项**：首次安装之后，如果当前命令行窗口找不到vmr命令，请使用source .zshrc或source .bashrc刷新环境变量。Windows用户无法刷新环境变量的，请关闭后另开一个新的Powershell。
 
 ------
@@ -154,11 +159,6 @@ vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
 - **使用国内镜像资源网站进行下载，对于部分有国内镜像的应用有效**.
 ```bash
 vmr use -mirror-in-china go@1.22.1
-```
-
-- **一键更新功能**
-```bash
-vmr-update
 ```
 
 ------

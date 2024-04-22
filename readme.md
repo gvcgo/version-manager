@@ -124,6 +124,12 @@ powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.17
 
 - **If you're a gopher, you can also complie the project by yourself. The main func is in ./cmd/vmr**
 
+- **update**
+
+```bash
+vmr-update
+```
+
 **Note**: If you are installing **vmr** for the first time, please use **source .zshrc** or **source .bashrc** to refresh your envs. For windows users, just open a new powershell terminal, then **vmr** will be available.
 
 ------
@@ -202,12 +208,6 @@ $HOME/.vm/
 
 Specified during installation of **vmr**. Use "$HOME/.vm" by default.
 ![installation](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_install.png)
-
-- **update**
-
-```bash
-vmr-update
-```
 
 ------
 
