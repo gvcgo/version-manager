@@ -42,6 +42,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 - Installs or uninstalls versions of sdk.
 - Swithes between versions of sdk.
 - Using a version only in current terminal session is supported. See with command **vmr use -h**.
+- Lock sdk version for a project, and autoswithed sdk version while **cd**.
 - Handles envs.
 - Friendly to VSCoders or Neovimers.
 - Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vmr use -h**.
@@ -84,6 +85,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **cygwin-installer** | ✅︎ | ❌︎ |
 | **msys2-installer** | ✅︎ | ❌︎ |
 | **julia** | ✅︎ | ❌︎ |
+| **odin** | ✅︎ | ❌︎ |
 | **typst** | ✅︎ | ❌︎ |
 | **typst-lsp** | ✅︎ | ❌︎ |
 | **typst-preview** | ✅︎ | ❌︎ |
@@ -200,6 +202,12 @@ $HOME/.vm/
 
 Specified during installation of **vmr**. Use "$HOME/.vm" by default.
 ![installation](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_install.png)
+
+- **update**
+
+```bash
+vmr-update
+```
 
 ------
 
