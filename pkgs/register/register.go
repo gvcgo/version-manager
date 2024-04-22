@@ -607,6 +607,25 @@ var NodejsInstaller = &installer.Installer{
 	HomePage:           "https://nodejs.org/en",
 }
 
+var OdinInstaller = &installer.Installer{
+	AppName:   "odin",
+	Version:   "dev-2024-04",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		return []string{"LICENSE", "base"}
+	},
+	BinListGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"odin.exe"}
+		}
+		return []string{"odin"}
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	AddBinDirToPath:    true,
+	StoreMultiVersions: true,
+	HomePage:           "https://odin-lang.org/",
+}
+
 var PHPInstaller = &installer.Installer{
 	AppName:   "php",
 	Version:   "php-8.3-latest",
@@ -1327,6 +1346,7 @@ func init() {
 	VersionKeeper["msys2"] = Msys2Installer
 	VersionKeeper["neovim"] = NeovimInstaller
 	VersionKeeper["nodejs"] = NodejsInstaller
+	VersionKeeper["odin"] = OdinInstaller
 	VersionKeeper["php"] = PHPInstaller
 	VersionKeeper["protobuf"] = ProtobufInstaller
 	VersionKeeper["python"] = PythonInstaller

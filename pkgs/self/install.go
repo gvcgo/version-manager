@@ -48,6 +48,8 @@ func InstallVmr() {
 	defer em.CloseKey()
 	em.AddToPath(conf.GetManagerDir())
 
+	SetUpdateScript()
+
 	if ok, _ := gutils.PathIsExist(conf.GetConfPath()); ok {
 		return
 	}

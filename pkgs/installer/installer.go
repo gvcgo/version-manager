@@ -265,6 +265,9 @@ func useArchiver(zipFilePath string) bool {
 	if strings.HasSuffix(zipFilePath, ".7z") {
 		return false
 	}
+	if strings.Contains(strings.ToLower(zipFilePath), "odin") {
+		return false
+	}
 	return true
 }
 
@@ -289,6 +292,15 @@ func (i *Installer) Unzip(zipFilePath string) {
 			_, err = arch.UnArchive()
 			if err != nil && runtime.GOOS == gutils.Windows && strings.HasSuffix(zipFilePath, ".zip") {
 				err = utils.UnzipForWindows(zipFilePath, tempDir)
+			}
+			// for odin.
+			tempDirList, _ := os.ReadDir(tempDir)
+			for _, d := range tempDirList {
+				dd := filepath.Join(tempDir, d.Name())
+				if !d.IsDir() && strings.HasSuffix(d.Name(), ".zip") {
+					aa, _ := archiver.NewArchiver(dd, tempDir, true)
+					aa.UnArchive()
+				}
 			}
 			handleUnzipFailedError(zipFilePath, err)
 			return
