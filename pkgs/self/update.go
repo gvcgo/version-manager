@@ -20,12 +20,12 @@ var (
 )
 
 func setUpdateForWindows() {
-	scriptPath := filepath.Join(conf.GetVersionManagerWorkDir(), fmt.Sprintf("%s.bat", updateScriptName))
+	scriptPath := filepath.Join(conf.GetManagerDir(), fmt.Sprintf("%s.bat", updateScriptName))
 	os.WriteFile(scriptPath, []byte(WinScript), os.ModePerm)
 }
 
 func setUpdateForUnix() {
-	scriptPath := filepath.Join(conf.GetVersionManagerWorkDir(), updateScriptName)
+	scriptPath := filepath.Join(conf.GetManagerDir(), updateScriptName)
 	os.WriteFile(scriptPath, []byte(UnixScript), os.ModePerm)
 }
 
