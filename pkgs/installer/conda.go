@@ -193,22 +193,17 @@ func (c *CondaInstaller) UnInstallPyPy(appName, version string) {
 func (c *CondaInstaller) useMirrorInChina() {
 	if conf.UseMirrorSiteInChina() {
 		/*
-			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/main/
-			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
-			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/
-			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/
-			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/
-			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/
-			conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/
+			conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+			conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+			conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/
+			conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/
+			conda config --set show_channel_urls yes
 		*/
 		channelList := []string{
-			"https://mirrors.ustc.edu.cn/anaconda/pkgs/main/",
-			"https://mirrors.ustc.edu.cn/anaconda/pkgs/free/",
-			"https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/",
-			"https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/",
-			"https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/",
-			"https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/",
-			"https://mirrors.ustc.edu.cn/anaconda/cloud/",
+			"https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/",
+			"https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/",
+			"https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/",
+			"https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/",
 		}
 		for _, c := range channelList {
 			gutils.ExecuteSysCommand(false, "", "conda", "config", "--add", "channels", c)
