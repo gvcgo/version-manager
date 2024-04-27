@@ -22,10 +22,12 @@
 package installer
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/envs"
@@ -151,6 +153,10 @@ func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
 func (a *AndroidSDKInstaller) UnInstallSDK(appName, version string) {
 	if !IsAndroidSDKManagerInstalled() {
 		gprint.PrintWarning("Please install sdkmanager first!")
+		cmdStr := fmt.Sprintf("%s search %s", "vmr", "android-cmdline-tools")
+		if err := clipboard.WriteAll(cmdStr); err == nil {
+			gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to search versions for android cmdline-tools.")
+		}
 		os.Exit(1)
 	}
 	if !IsAppNameSupportedBySDKManager(appName) {
