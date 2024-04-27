@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -74,6 +75,10 @@ func NewCoursierInstaller() *CoursierInstaller {
 		}
 		if !IsCoursierInstalled() {
 			gprint.PrintWarning("No coursier is installed. Please install coursier first.")
+			cmdStr := fmt.Sprintf("%s search %s", "vmr", "coursier")
+			if err := clipboard.WriteAll(cmdStr); err == nil {
+				gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to search versions for coursier.")
+			}
 			os.Exit(1)
 		}
 

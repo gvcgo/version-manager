@@ -28,6 +28,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -142,10 +143,14 @@ func (c *CondaInstaller) InstallPyPy(appName, version, zipFilePath string) {
 	}
 	if c.V == nil {
 		gprint.PrintError("Can't find version: %s", c.Version)
-		return
+		os.Exit(1)
 	}
 	if !IsMinicondaInstalled() {
 		gprint.PrintWarning("No conda is installed. Please install miniconda first.")
+		cmdStr := fmt.Sprintf("%s search %s", "vmr", "miniconda")
+		if err := clipboard.WriteAll(cmdStr); err == nil {
+			gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to search versions for miniconda.")
+		}
 		os.Exit(1)
 	}
 
