@@ -89,6 +89,8 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 | **cygwin-installer** | ✅︎ | ❌︎ |
 | **msys2-installer** | ✅︎ | ❌︎ |
 | **julia** | ✅︎ | ❌︎ |
+| **dlang** | ✅︎ | ❌︎ |
+| **serve-d(lsp for dlang)** | ✅︎ | ❌︎ |
 | **odin** | ✅︎ | ❌︎ |
 | **typst** | ✅︎ | ❌︎ |
 | **typst-lsp** | ✅︎ | ❌︎ |

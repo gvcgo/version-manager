@@ -95,6 +95,8 @@
 | **cygwin-installer** | ✅︎ | ❌︎ |
 | **msys2-installer** | ✅︎ | ❌︎ |
 | **julia** | ✅︎ | ❌︎ |
+| **dlang** | ✅︎ | ❌︎ |
+| **serve-d(lsp for dlang)** | ✅︎ | ❌︎ |
 | **odin** | ✅︎ | ❌︎ |
 | **typst** | ✅︎ | ❌︎ |
 | **typst-lsp** | ✅︎ | ❌︎ |
