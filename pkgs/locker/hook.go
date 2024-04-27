@@ -24,19 +24,19 @@ const ShellHook = `cdhook() {
     fi
 }
 
-alias cdr='cdhook'`
+alias cd='cdhook'`
 
 // for Powershell
 const PowershellHook = `function cdhook {
     $TRUE_FALSE=(Test-Path $args[0])
     if ( $TRUE_FALSE -eq "True" )
     {
-        cd $args[0]
+        chdir $args[0]
         vmr use -E
     }
 }
 
-Set-Alias cdr cdhook`
+Set-Alias -Name cd -Option AllScope -Value cdhook`
 
 func CdHookForUnix() {
 	envFilePath := filepath.Join(conf.GetVersionManagerWorkDir(), envs.ShellFileName)
@@ -49,13 +49,21 @@ func CdHookForUnix() {
 }
 
 func CdHookForWindows() {
+	/*
+		powershell config file path:
+		https://learn.microsoft.com/zh-cn/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.4
+		https://www.jb51.net/article/53412.htm
+
+		set-alias:
+		https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/set-alias?view=powershell-7.4
+	*/
 	homeDir, _ := os.UserHomeDir()
 
 	psConfDir := filepath.Join(homeDir,
 		"Documents",
 		"WindowsPowerShell",
 	)
-	psConfName := "Microsoft.PowerShell_profile.ps1"
+	psConfName := "profile.ps1"
 
 	if ok, _ := gutils.PathIsExist(psConfDir); !ok {
 		os.MkdirAll(psConfDir, os.ModePerm)
