@@ -98,6 +98,10 @@ func (c *CondaInstaller) InstallPython(appName, version, zipFilePath string) {
 	}
 	if !IsMinicondaInstalled() {
 		gprint.PrintWarning("No conda is installed. Please install miniconda first.")
+		cmdStr := fmt.Sprintf("%s search %s", "vmr", "miniconda")
+		if err := clipboard.WriteAll(cmdStr); err == nil {
+			gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to search versions for miniconda.")
+		}
 		os.Exit(1)
 	}
 
