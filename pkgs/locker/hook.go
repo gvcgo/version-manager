@@ -44,7 +44,7 @@ function vmrsource {
 }
 
 Set-Alias -Name cd -Option AllScope -Value cdhook
-Set-Alias -Name source -Option AllScope --Value vmrsource`
+Set-Alias -Name source -Value vmrsource`
 
 func CdHookForUnix() {
 	envFilePath := filepath.Join(conf.GetVersionManagerWorkDir(), envs.ShellFileName)
