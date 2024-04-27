@@ -29,13 +29,14 @@ func PrintVersions(appName string, versionList []string) {
 	verList := map[string]string{}
 	for _, verName := range versionList {
 		coloredVerName := gprint.MagentaStr(verName)
+		verList[coloredVerName] = verName
 		rows = append(rows, gtable.Row{
 			coloredVerName,
 		})
 	}
 
 	height := 25
-	if len(rows) <= 5 {
+	if len(rows) <= 7 {
 		height = 8
 	}
 	t := gtable.NewTable(
