@@ -16,10 +16,13 @@ import (
 Hook cd command for shells.
 */
 
+// TODO: source command for windows.
+
 // for Bash/Zsh
-const ShellHook = `cdhook() {
+const ShellHook = `alias cdvmr='cd'
+cdhook() {
     if [ -d "$1" ];then
-        cd "$1"
+        cdvmr "$1"
         vmr use -E
     fi
 }

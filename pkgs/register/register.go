@@ -177,6 +177,72 @@ var DenoInstaller = &installer.Installer{
 	HomePage:           "https://deno.com/",
 }
 
+var DlangInstaller = &installer.Installer{
+	AppName:   "dlang",
+	Version:   "2.108.0",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		switch runtime.GOOS {
+		case gutils.Darwin:
+			return []string{"osx"}
+		case gutils.Linux:
+			return []string{"linux"}
+		default:
+			return []string{"windows"}
+		}
+	},
+
+	BinDirGetter: func(version string) [][]string {
+		switch runtime.GOOS {
+		case gutils.Darwin:
+			return [][]string{
+				{filepath.Join("osx", "bin")},
+			}
+		case gutils.Windows:
+			return [][]string{
+				{filepath.Join("windows", "bin")},
+			}
+		case gutils.Linux:
+			return [][]string{
+				{filepath.Join("linux", "bin64")},
+			}
+		default:
+			return [][]string{}
+		}
+	},
+	BinListGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"dmd.exe"}
+		}
+		return []string{"dmd"}
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	AddBinDirToPath:    true,
+	StoreMultiVersions: true,
+	HomePage:           "https://dlang.org/",
+}
+
+var DlangLspInstaller = &installer.Installer{
+	AppName:   "serve-d",
+	Version:   "v0.7.6",
+	IsZipFile: true,
+	FlagFileGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"serve-d.exe"}
+		}
+		return []string{"serve-d"}
+	},
+	BinListGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"serve-d.exe"}
+		}
+		return []string{"serve-d"}
+	},
+	DUrlDecorator:      installer.DefaultDecorator,
+	StoreMultiVersions: true,
+	HomePage:           "https://github.com/Pure-D/serve-d",
+}
+
 var DotNetInstaller = &installer.Installer{
 	AppName:         "dotnet",
 	Version:         "8.0.202",
@@ -1325,6 +1391,8 @@ func init() {
 	VersionKeeper["coursier"] = CoursierInstaller
 	VersionKeeper["cygwin"] = CygwinInstaller
 	VersionKeeper["deno"] = DenoInstaller
+	VersionKeeper["dlang"] = DlangInstaller
+	VersionKeeper["serve-d"] = DlangLspInstaller
 	VersionKeeper["dotnet"] = DotNetInstaller
 	VersionKeeper["fd"] = FdInstaller
 	VersionKeeper["flutter"] = FlutterInstaller
