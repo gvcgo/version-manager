@@ -26,9 +26,11 @@ func PrintVersions(appName string, versionList []string) {
 
 	rows := []gtable.Row{}
 
+	verList := map[string]string{}
 	for _, verName := range versionList {
+		coloredVerName := gprint.MagentaStr(verName)
 		rows = append(rows, gtable.Row{
-			verName,
+			coloredVerName,
 		})
 	}
 
@@ -46,12 +48,12 @@ func PrintVersions(appName string, versionList []string) {
 	t.CopySelectedRow(true)
 	t.Run()
 
-	if version, err := clipboard.ReadAll(); err == nil && version != "" {
+	if coloredVersion, err := clipboard.ReadAll(); err == nil && coloredVersion != "" {
 		// generate use command to clipboard.
 		binPath, _ := os.Executable()
 		binName := filepath.Base(binPath)
 		if binName != "" {
-			cmdStr := fmt.Sprintf(`%s use "%s@%s"`, binName, appName, version)
+			cmdStr := fmt.Sprintf(`%s use "%s@%s"`, binName, appName, verList[coloredVersion])
 			if err := clipboard.WriteAll(cmdStr); err == nil {
 				gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to install the selected version.")
 			}

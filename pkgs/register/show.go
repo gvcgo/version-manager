@@ -34,10 +34,13 @@ func ShowAppList() {
 
 	rows := []gtable.Row{}
 
+	appNameList := map[string]string{}
 	for _, appName := range al {
+		coloredAppName := gprint.MagentaStr(appName)
+		appNameList[coloredAppName] = appName
 		ver := VersionKeeper[appName]
 		rows = append(rows, gtable.Row{
-			appName,
+			coloredAppName,
 			gprint.GreenStr(ver.GetHomepage()),
 		})
 	}
@@ -52,12 +55,12 @@ func ShowAppList() {
 	t.CopySelectedRow(true)
 	t.Run()
 
-	if appName, err := clipboard.ReadAll(); err == nil && appName != "" {
+	if coloredAppName, err := clipboard.ReadAll(); err == nil && coloredAppName != "" {
 		// generate use command to clipboard.
 		binPath, _ := os.Executable()
 		binName := filepath.Base(binPath)
 		if binName != "" {
-			cmdStr := fmt.Sprintf("%s search %s", binName, appName)
+			cmdStr := fmt.Sprintf("%s search %s", binName, appNameList[coloredAppName])
 			if err := clipboard.WriteAll(cmdStr); err == nil {
 				gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to search versions for the selected SDK.")
 			}
