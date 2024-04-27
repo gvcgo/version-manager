@@ -39,7 +39,12 @@ const PowershellHook = `function cdhook {
     }
 }
 
-Set-Alias -Name cd -Option AllScope -Value cdhook`
+function vmrsource {
+	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+}
+
+Set-Alias -Name cd -Option AllScope -Value cdhook
+Set-Alias -Name source -Option AllScope --Value vmrsource`
 
 func CdHookForUnix() {
 	envFilePath := filepath.Join(conf.GetVersionManagerWorkDir(), envs.ShellFileName)
