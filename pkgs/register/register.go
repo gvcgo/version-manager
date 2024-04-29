@@ -1242,14 +1242,18 @@ var RustInstaller = &installer.Installer{
 		if runtime.GOOS == gutils.Windows {
 			binPath, _ = os.Readlink(binPath)
 		}
+
+		if ok, _ := gutils.PathIsExist(binPath); !ok {
+			gprint.PrintInfo("Installing rustup-init...")
+			gutils.ExecuteSysCommand(false, "", "vmr", "use", "rustup@latest")
+		}
+
 		if ok, _ := gutils.PathIsExist(binPath); ok {
 			os.Setenv("CARGO_HOME", filepath.Join(rustDir, "cargo"))
 			os.Setenv("RUSTUP_HOME", filepath.Join(rustDir, "rustups"))
 			if _, err := gutils.ExecuteSysCommand(false, "", binPath); err != nil {
 				gprint.PrintError("Execute %s failed.", rustupInitName)
 			}
-		} else {
-			gprint.PrintWarning("Please intall rustup-init first.")
 		}
 	},
 	UnInstall: func(appName, version string) {
