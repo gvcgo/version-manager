@@ -41,7 +41,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 ### features
 
 - Cross-platform, supports Windows, Linux, MacOS.
-- Supports multiple languages and tools, no need to worry about SDK version.
+- Supports multiple languages and tools.
 - Nicer TUI, reduces user input, while maintaining the flexibility.
 - Supports locking SDK version for each project.
 - Supports reverse proxy settings and multi-threaded downloads, improve your download experience.
