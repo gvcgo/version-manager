@@ -19,10 +19,7 @@
 - [How to set a proxy?](#how-to-set-a-proxy)
 - [Subcommands](#subcommands)
 - [Related dirs](#related-dirs)
-- [For Windows](#for-windows)
 - [Contributors](#contributors)
-- [Supplementary](#supplementary)
-- [Todo-List](#todo-list)
 
 ------
 <p id="1"></p>  
@@ -35,26 +32,23 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 
 [youtube video demo](https://www.youtube.com/watch?v=CFIxPfBn8QY&t=626s)
 
+[Docs](https://gvcgo.github.io/vmr/)
+
 ------
 
 <p id="2"></p>
 
 ### features
 
-- Installs or uninstalls versions of sdk.
-- Swithes between versions of sdk.
-- Using a version only in current terminal session is supported. See with command **vmr use -h**.
-- Lock sdk version for a project with command like **vmr use -l go@1.22.2**, and autoswithes sdk to the locked version while using command **cdr <path-to-your-project>**.
-- Handles envs.
-- Friendly to VSCoders or Neovimers.
-- Downloads files blazingly fast🚀🚀🚀 with multi-threads. See with command **vmr use -h**.
-- Auto-completions for shells. See with command **vmr completion -h**.
-- Generates command **"vmr use sdk-name@version"** automatically using selected item from version list, and add the command to clipboard for later usage.
-- Android development with Flutter and VSCode. No Android Studio is needed.
-- No plugins needed.
-- More stable.
-
-**Note**: **cdr** is a hook for command **cd** from shell or powershell. It's registered by **vmr** automatically. When you're changing directories using **cdr**, the locked version of sdk will be detected.
+- Cross-platform, supports Windows, Linux, MacOS.
+- Supports multiple languages and tools, no need to worry about SDK version.
+- Nicer TUI, reduces user input, while maintaining the flexibility.
+- Supports locking SDK version for each project.
+- Supports reverse proxy settings and multi-threaded downloads, improve your download experience.
+- Version crawler and main project are separated to ensure faster response and higher stability.
+- No need for plugins, just out of the box.
+- Installs SDKs in local disk instead of docker containers.
+- Easy to use, you only need to focus on about 6 subcommands of vmr.
 
 ------
 <p id="3"></p> 
@@ -122,45 +116,17 @@ curl --proto '=https' --tlsv1.2 -sSf https://gvc.1710717.xyz/proxy/https://raw.g
 powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://gvc.1710717.xyz/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.ps1')"
 ```
 
-- **Manual** installation
-```text
-1. Download zip file from release.
-2. Unzip it, run command "your/full/path/to/vmr install-self".
-```
-
-- **If you're a gopher, you can also complie the project by yourself. The main func is in ./cmd/vmr**
-
-- **update**
-
-```bash
-vmr-update
-```
-
-**Note**: If you are installing **vmr** for the first time, please use **source .zshrc** or **source .bashrc** to refresh your envs. For windows users, just open a new powershell terminal, then **vmr** will be available.
-
 ------
 
 <p id="5"></p> 
 
 ### How to set a proxy?
 
-**Choose either proxy or reverse-proxy.**
-
-- **proxy**
-```bash
-vmr set-proxy <http://localhost:port or socks5://localhost:port>
-```
-
 - **reverse-proxy**
 
 ```bash
 # reverse proxy <https://gvc.1710717.xyz/proxy/> is available for free.
 vmr set-reverse-proxy https://gvc.1710717.xyz/proxy/
-```
-
-- **enable downloading from mirror sites in China**.
-```bash
-vmr use -mirror-in-china go@1.22.1
 ```
 
 ------
@@ -216,23 +182,6 @@ Specified during installation of **vmr**. Use "$HOME/.vm" by default.
 ![installation](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_install.png)
 
 ------
-
-<p id="8"></p> 
-
-### For Windows
-
-**Note**: If you are using **vmr** on Windows11, you need to enable the **Developer Mode** as **vmr** requires to create symbolic links. If you're on Windows10, and any creating-symbolic-links-failure occurrs, you can try **vmr** with **Admin Privilege**. To get **envs** take effect for windows, you may need to close the current powershell terminal and open a new one. Note that extFAT and FAT32 are not supported. 
-
-**sudo command on Windows**: **gsudo**. You can use **vmr search gsudo** to see what's available.
-
-🛎️🚨 **Virus Positive?**: It's definitely a false positive. See [here](https://forum.golangbridge.org/t/my-compiled-exe-file-is-declared-as-a-virus/34038). If this occurrs, you can install **vmr** manually, and add **vmr** to be trusted.
-
-- **How can I add vmr to windows 'Virus & threat protection Exclusions?'**
-```text
-Windows Security>> Virus & threat protection>> Virus & threat protection settings>> Exclusions
-```
-
-------
 <p id="9"></p>  
 
 ### Contributors
@@ -241,16 +190,3 @@ Windows Security>> Virus & threat protection>> Virus & threat protection setting
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
 
-------
-<p id="10"></p> 
-
-### Supplementary
-**vmr** is created to be a cross-platform command line tool. **We will not try to include everything just like asdf-vm or its imitator vfox did**, as that will greatly increase the complexity and also reduce the possibility of cross-platform. And most of the time, frequently used SDKs and tools have already been covered by **vmr**. **vmr** will not try to include SDKs that need to be compiled under a certain platform. Because each developer's development environment is different, it is impossible to ensure the completion of a compilation. So **vmr** will only use pre-built binaries for installations. If you have any SDKs or tools to recommand for version management, please raise an issue in [Issues](https://github.com/gvcgo/version-manager/issues).
-
-So, **vmr** is going to keep as **lightweight, stable, and user-friendly** as possible.
-
-------
-<p id="11"></p> 
-
-### Todo-List
-- [ ] To manage package repo mirror sites in China.
