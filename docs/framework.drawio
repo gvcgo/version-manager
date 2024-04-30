@@ -1,41 +1,50 @@
 <mxfile host="65bd71144e">
     <diagram id="I52Wm_gRqzgB_mbJpFhN" name="Page-1">
-        <mxGraphModel dx="1269" dy="574" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="1269" dy="907" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="8" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3" target="6">
+                <mxCell id="8" style="edgeStyle=none;html=1;" parent="1" source="3" target="6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" value="collector&lt;br style=&quot;font-size: 16px;&quot;&gt;(gvcgo/collector)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=4;fontSize=16;fontColor=#3333FF;" vertex="1" parent="1">
+                <mxCell id="3" value="collector&lt;br style=&quot;font-size: 16px;&quot;&gt;(gvcgo/collector)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=4;fontSize=16;fontColor=#3333FF;" parent="1" vertex="1">
                     <mxGeometry x="254" y="300" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="5" style="edgeStyle=none;html=1;" edge="1" parent="1" source="4" target="3">
+                <mxCell id="5" style="edgeStyle=none;html=1;align=center;" parent="1" source="4" target="3" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="4" value="download pages for SDKs" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;" vertex="1" parent="1">
+                <mxCell id="4" value="download pages for SDKs" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;" parent="1" vertex="1">
                     <mxGeometry x="254" y="160" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="10" style="edgeStyle=none;html=1;" edge="1" parent="1" source="6" target="9">
+                <mxCell id="10" style="edgeStyle=none;html=1;" parent="1" source="6" target="9" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" value="source repo&lt;br style=&quot;font-size: 15px;&quot;&gt;(gvcgo/resources)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=15;fontColor=#FF0080;" vertex="1" parent="1">
+                <mxCell id="6" value="source repo&lt;br style=&quot;font-size: 15px;&quot;&gt;(gvcgo/resources)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=15;fontColor=#FF0080;" parent="1" vertex="1">
                     <mxGeometry x="484" y="300" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="9" value="vmr&lt;br style=&quot;font-size: 16px;&quot;&gt;(gvcgo/version-manager)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=3;fontSize=16;fontColor=#3333FF;" vertex="1" parent="1">
+                <mxCell id="9" value="vmr&lt;br style=&quot;font-size: 16px;&quot;&gt;(gvcgo/version-manager)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=3;fontSize=16;fontColor=#3333FF;" parent="1" vertex="1">
                     <mxGeometry x="484" y="160" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="11" value="" style="endArrow=none;dashed=1;html=1;strokeWidth=4;strokeColor=#FF5E24;" edge="1" parent="1">
+                <mxCell id="11" value="" style="endArrow=none;dashed=1;html=1;strokeWidth=4;strokeColor=#FF5E24;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="424" y="420" as="sourcePoint"/>
                         <mxPoint x="424" y="120" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="16" value="Visible For&lt;br&gt;Users" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=16;fillColor=#d80073;strokeColor=#A50040;fontColor=#ffffff;" vertex="1" parent="1">
+                <mxCell id="16" value="Visible For&lt;br&gt;Users" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=16;fillColor=#d80073;strokeColor=#A50040;fontColor=#ffffff;" parent="1" vertex="1">
                     <mxGeometry x="644" y="150" width="140" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="17" value="Invisible For&lt;br&gt;Users" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=16;fillColor=#d0cee2;strokeColor=#56517e;" vertex="1" parent="1">
+                <mxCell id="17" value="Invisible For&lt;br&gt;Users" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;strokeWidth=2;fontSize=16;fillColor=#d0cee2;strokeColor=#56517e;" parent="1" vertex="1">
                     <mxGeometry x="44" y="290" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="raw data" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#FF3333;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="250" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="data" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#00CC00;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="370" y="330" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="data" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#00CC00;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="550" y="254" width="60" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
