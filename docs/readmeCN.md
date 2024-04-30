@@ -14,7 +14,7 @@
 
 - [vmr简介](#vmr简介)
 - [功能特点](#功能特点)
-- [vmr和vfox支持列表对比](#vmr和vfox支持列表对比)
+- [vmr的数据流](#vmr的数据流)
 - [一键安装/更新vm](#一键安装更新vm)
 - [如何设置代理?](#如何设置代理)
 - [子命令介绍](#子命令介绍)
@@ -31,7 +31,7 @@
 
 [b站演示视频(不包含project锁定版本)](https://www.bilibili.com/video/BV1bZ421v7sD/)
 
-[文档](https://gvcgo.github.io/vmr/)
+[查看详细文档](https://gvcgo.github.io/vmr/)
 
 ------
 
@@ -50,55 +50,19 @@
 - 简单易用，用较少的命令，实现了常见SDK版本管理器的所有功能(用户只需关注vmr的大约6个子命令即可)
 
 ------
-<p id="3"></p> 
 
-### vmr和vfox支持列表对比
+### vmr的数据流
 
-| sdk | vmr | vfox |
-|-------|-------|-------|
-| **java(jdk)** | ✅︎ | ✅︎ |
-| **maven** | ✅︎ | ✅︎ |
-| **gradle** | ✅︎ | ✅︎ |
-| **kotlin** | ✅︎ | ✅︎ |
-| **scala** | ✅︎ | ✅︎ |
-| **groovy** | ✅︎ | ✅︎ |
-| **python** | ✅︎ | ✅︎ |
-| **pypy** | ✅︎ | ❌︎ |
-| **miniconda** | ✅︎ | ❌︎ |
-| **go** | ✅︎ | ✅︎ |
-| **node** | ✅︎ | ✅︎ |
-| **deno** | ✅︎ | ✅︎ |
-| **bun** | ✅︎ | ❌︎ |
-| **flutter(dart)** | ✅︎ | ✅︎ |
-| **.net** | ✅︎ | ✅︎ |
-| **zig** | ✅︎ | ✅︎ |
-| **zls** | ✅︎ | ❌︎ |
-| **php** | ✅︎ | ✅︎ |
-| **rust** | ✅︎ | ❌︎ |
-| **cmdline-tool(android)** | ✅︎ | ❌︎ |
-| **android sdks** | ✅︎ | ❌︎ |
-| **vlang** | ✅︎ | ❌︎ |
-| **v-analyzer** | ✅︎ | ❌︎ |
-| **cygwin-installer** | ✅︎ | ❌︎ |
-| **msys2-installer** | ✅︎ | ❌︎ |
-| **julia** | ✅︎ | ❌︎ |
-| **dlang** | ✅︎ | ❌︎ |
-| **serve-d(lsp for dlang)** | ✅︎ | ❌︎ |
-| **odin** | ✅︎ | ❌︎ |
-| **typst** | ✅︎ | ❌︎ |
-| **typst-lsp** | ✅︎ | ❌︎ |
-| **typst-preview** | ✅︎ | ❌︎ |
-| **gleam** | ✅︎ | ❌︎ |
-| **git-for-windows** | ✅︎ | ❌︎ |
-| **neovim** | ✅︎ | ❌︎ |
-| **vscode** | ✅︎ | ❌︎ |
-| **protobuf(protoc)** | ✅︎ | ❌︎ |
-| **lazygit** | ✅︎ | ❌︎ |
-| **kubectl** | ✅︎ | ❌︎ |
-| **upx** | ✅︎ | ❌︎ |
-| **acast(asciinema)** | ✅︎ | ❌︎ |
-| **erlang(需要编译)** | ❌︎ | ✅︎ |
-| **elixir(需要编译)** | ❌︎ | ✅︎ |
+![framwork.png](https://github.com/moqsien/img_repo/raw/main/framework.png)
+
+- [collector](https://github.com/gvcgo/collector) 收集SDK版本信息数据，并上传到**resources**（用户对此无感知）
+- [resources](https://github.com/gvcgo/resources) 存储所有SDK的版本信息（用户对此无感知）
+- [vmr](https://github.com/gvcgo/version-manager) 整个项目的用户接口
+
+collector部署在远程服务器中，会定时获取SDK的最新版，并上传到resources仓库中，用户一般无需关心这些。
+**Vmr** 从**resources**仓库获取版本信息, 用于给用户展示或者下载相应版本。
+
+这样的结构，**增加了稳定性**，**响应更快速**，**用户体验更好**。
 
 ------
 

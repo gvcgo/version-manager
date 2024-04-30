@@ -14,7 +14,7 @@
 
 - [version-manager(vmr)](#version-managervmr)
 - [features](#features)
-- [vmr versus vfox](#vmr-versus-vfox)
+- [Data flow for vmr](#data-flow-for-vmr)
 - [Installation/Update](#installationupdate)
 - [How to set a proxy?](#how-to-set-a-proxy)
 - [Subcommands](#subcommands)
@@ -32,7 +32,7 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 
 [youtube video demo](https://www.youtube.com/watch?v=CFIxPfBn8QY&t=626s)
 
-[Docs](https://gvcgo.github.io/vmr/)
+[See docs for details](https://gvcgo.github.io/vmr/)
 
 ------
 
@@ -50,56 +50,18 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 - Installs SDKs in local disk instead of docker containers.
 - Easy to use, you only need to focus on about 6 subcommands of vmr.
 
-------
-<p id="3"></p> 
+------------
 
-### vmr versus vfox
+### Data flow for vmr
 
-| sdk | vmr | vfox |
-|-------|-------|-------|
-| **java(jdk)** | ✅︎ | ✅︎ |
-| **maven** | ✅︎ | ✅︎ |
-| **gradle** | ✅︎ | ✅︎ |
-| **kotlin** | ✅︎ | ✅︎ |
-| **scala** | ✅︎ | ✅︎ |
-| **groovy** | ✅︎ | ✅︎ |
-| **python** | ✅︎ | ✅︎ |
-| **pypy** | ✅︎ | ❌︎ |
-| **miniconda** | ✅︎ | ❌︎ |
-| **go** | ✅︎ | ✅︎ |
-| **node** | ✅︎ | ✅︎ |
-| **deno** | ✅︎ | ✅︎ |
-| **bun** | ✅︎ | ❌︎ |
-| **flutter(dart)** | ✅︎ | ✅︎ |
-| **.net** | ✅︎ | ✅︎ |
-| **zig** | ✅︎ | ✅︎ |
-| **zls** | ✅︎ | ❌︎ |
-| **php** | ✅︎ | ✅︎ |
-| **rust** | ✅︎ | ❌︎ |
-| **cmdline-tool(android)** | ✅︎ | ❌︎ |
-| **android SDKs** | ✅︎ | ❌︎ |
-| **vlang** | ✅︎ | ❌︎ |
-| **v-analyzer** | ✅︎ | ❌︎ |
-| **cygwin-installer** | ✅︎ | ❌︎ |
-| **msys2-installer** | ✅︎ | ❌︎ |
-| **julia** | ✅︎ | ❌︎ |
-| **dlang** | ✅︎ | ❌︎ |
-| **serve-d(lsp for dlang)** | ✅︎ | ❌︎ |
-| **odin** | ✅︎ | ❌︎ |
-| **typst** | ✅︎ | ❌︎ |
-| **typst-lsp** | ✅︎ | ❌︎ |
-| **typst-preview** | ✅︎ | ❌︎ |
-| **gleam** | ✅︎ | ❌︎ |
-| **git-for-windows** | ✅︎ | ❌︎ |
-| **neovim** | ✅︎ | ❌︎ |
-| **vscode** | ✅︎ | ❌︎ |
-| **protobuf(protoc)** | ✅︎ | ❌︎ |
-| **lazygit** | ✅︎ | ❌︎ |
-| **kubectl** | ✅︎ | ❌︎ |
-| **upx** | ✅︎ | ❌︎ |
-| **acast(asciinema)** | ✅︎ | ❌︎ |
-| **erlang(need compilation)** | ❌︎ | ✅︎ |
-| **elixir(need compilation)** | ❌︎ | ✅︎ |
+![framwork.png](https://github.com/moqsien/img_repo/raw/main/framework.png)
+
+- [collector](https://github.com/gvcgo/collector) collects version list for SDKs and uploads the results to repo **resources**.
+- [resources](https://github.com/gvcgo/resources) Holds the version list for SDKs.
+- [vmr](https://github.com/gvcgo/version-manager) The user interface of the whole project.
+
+The collector is deployed on a remote server, which users do never need to know about.
+**Vmr** fetches the prepared version list from repo **resources**, and shows/downloads the versions of an SDK.
 
 ------
 
