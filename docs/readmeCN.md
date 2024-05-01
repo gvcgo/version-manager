@@ -1,6 +1,6 @@
 <p style="" align="center">
   <!-- <img src="https://github.com/moqsien/img_repo/raw/main/vm_header_photo_2.png" alt="logo" width="720" height="240"> -->
-  <img src="https://github.com/moqsien/img_repo/raw/main/vmr_logo.png" alt="logo" width="240" height="240">
+  <img src="https://github.com/moqsien/img_repo/raw/main/vmr_logo.png" alt="logo" width="360" height="120">
 </p>
 
 [![go report card](https://img.shields.io/badge/go%20report-a+-brightgreen.svg?style=for-the-badge)](https://goreportcard.com/report/github.com/gvcgo/version-manager)
