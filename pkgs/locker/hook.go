@@ -16,21 +16,24 @@ import (
 Hook cd command for shells.
 */
 
-// TODO: source command for windows.
-
 // for Bash/Zsh
-const ShellHook = `alias cdvmr='cd'
-cdhook() {
-    if [ -d "$1" ];then
-        cdvmr "$1"
-        vmr use -E
-    fi
-}
+const ShellHook string = `# cd hook start
+%s
+if [ -z "$cdalias" ]; then
+	cdhook() {
+		if [ -d "$1" ];then
+			cd "$1"
+			vmr use -E
+		fi
+	}
+	alias cd='cdhook'
+fi
+# cd hook end`
 
-alias cd='cdhook'`
+const ShellHookStr string = "cdalias=`alias|grep cdhook`"
 
 // for Powershell
-const PowershellHook = `function cdhook {
+const PowershellHook string = `function cdhook {
     $TRUE_FALSE=(Test-Path $args[0])
     if ( $TRUE_FALSE -eq "True" )
     {
@@ -50,15 +53,22 @@ func CdHookForUnix() {
 	envFilePath := filepath.Join(conf.GetVersionManagerWorkDir(), envs.ShellFileName)
 	data, _ := os.ReadFile(envFilePath)
 	content := strings.TrimSpace(string(data))
-	flag := `alias cd='cdhook'\n`
+	var flag string
+	if !strings.Contains(content, "# cd hook end") {
+		flag = "alias cd='cdhook'"
+	} else {
+		flag = "# cd hook end"
+	}
 	if strings.Contains(content, flag) {
 		sList := strings.Split(content, flag)
 		if len(sList) > 1 {
 			content = sList[len(sList)-1]
 		}
 	}
-	if !strings.Contains(content, ShellHook) {
-		content = fmt.Sprintf("%s\n%s", ShellHook, content)
+
+	shellHook := fmt.Sprintf(ShellHook, ShellHookStr)
+	if !strings.Contains(content, shellHook) {
+		content = fmt.Sprintf("%s\n%s", shellHook, strings.TrimSpace(content))
 	}
 	os.WriteFile(envFilePath, []byte(content), os.ModePerm)
 }
