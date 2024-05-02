@@ -232,9 +232,18 @@ func (c *CondaInstaller) SearchVersion() {
 	}
 	vf := c.Searcher.GetVersions(c.AppName)
 	vs := make([]string, 0)
-	for key := range vf {
-		if strings.Contains(key, c.Version) {
-			vs = append(vs, key)
+
+	// accurate
+	if _, ok := vf[c.Version]; ok {
+		vs = append(vs, c.Version)
+	}
+
+	// fuzzy
+	if len(vs) == 0 {
+		for key := range vf {
+			if strings.Contains(key, c.Version) {
+				vs = append(vs, key)
+			}
 		}
 	}
 

@@ -50,6 +50,13 @@ func CdHookForUnix() {
 	envFilePath := filepath.Join(conf.GetVersionManagerWorkDir(), envs.ShellFileName)
 	data, _ := os.ReadFile(envFilePath)
 	content := strings.TrimSpace(string(data))
+	flag := `alias cd='cdhook'\n`
+	if strings.Contains(content, flag) {
+		sList := strings.Split(content, flag)
+		if len(sList) > 1 {
+			content = sList[len(sList)-1]
+		}
+	}
 	if !strings.Contains(content, ShellHook) {
 		content = fmt.Sprintf("%s\n%s", ShellHook, content)
 	}
