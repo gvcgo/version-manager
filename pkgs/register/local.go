@@ -89,7 +89,7 @@ func ShowInstalled(appName string) {
 		binPath, _ := os.Executable()
 		binName := filepath.Base(binPath)
 		if binName != "" {
-			cmdStr := fmt.Sprintf("%s use %s@%s", binName, appName, versionList[coloredVersion])
+			cmdStr := fmt.Sprintf(`%s use "%s@%s"`, binName, appName, versionList[coloredVersion])
 			if err := clipboard.WriteAll(cmdStr); err == nil {
 				gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to swith to the selected for the selected SDK.")
 			}
