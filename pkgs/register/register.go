@@ -436,6 +436,7 @@ var GradleInstaller = &installer.Installer{
 		}
 		return installer.DefaultDecorator(dUrl, ft)
 	},
+	AddBinDirToPath:    true,
 	StoreMultiVersions: true,
 	HomePage:           "https://gradle.org/",
 }
@@ -621,6 +622,7 @@ var MavenInstaller = &installer.Installer{
 			},
 		}
 	},
+	AddBinDirToPath:    true,
 	StoreMultiVersions: true,
 	HomePage:           "https://maven.apache.org/",
 }
