@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/atotto/clipboard"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -45,12 +46,19 @@ func ShowInstalled(appName string) {
 		gprint.PrintInfo("No versions installed for %s.", appName)
 		return
 	}
+	versionList := map[string]string{}
+
 	currentVersion := filepath.Base(slink)
-	vList := []string{gprint.CyanStr(currentVersion) + gprint.YellowStr("<current>")}
+	coloredCurrentVersion := gprint.CyanStr(currentVersion) + gprint.YellowStr("<current>")
+	versionList[coloredCurrentVersion] = currentVersion
+
+	vList := []string{coloredCurrentVersion}
 	dList, _ := os.ReadDir(vDir)
 	for _, d := range dList {
 		if d.IsDir() && d.Name() != currentVersion {
-			vList = append(vList, gprint.CyanStr(d.Name()))
+			coloredVersion := gprint.CyanStr(d.Name())
+			versionList[coloredVersion] = d.Name()
+			vList = append(vList, coloredVersion)
 		}
 	}
 
@@ -62,7 +70,7 @@ func ShowInstalled(appName string) {
 
 	for _, verName := range vList {
 		rows = append(rows, gtable.Row{
-			gprint.CyanStr(verName),
+			verName,
 		})
 	}
 
@@ -73,5 +81,18 @@ func ShowInstalled(appName string) {
 		gtable.WithHeight(15),
 		gtable.WithWidth(160),
 	)
+	t.CopySelectedRow(true)
 	t.Run()
+
+	if coloredVersion, err := clipboard.ReadAll(); err == nil && coloredVersion != "" {
+		// generate use command to clipboard.
+		binPath, _ := os.Executable()
+		binName := filepath.Base(binPath)
+		if binName != "" {
+			cmdStr := fmt.Sprintf("%s use %s@%s", binName, appName, versionList[coloredVersion])
+			if err := clipboard.WriteAll(cmdStr); err == nil {
+				gprint.PrintInfo("Now you can use 'ctrl+v/cmd+v' to swith to the selected for the selected SDK.")
+			}
+		}
+	}
 }

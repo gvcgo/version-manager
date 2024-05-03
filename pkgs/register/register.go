@@ -423,6 +423,12 @@ var GradleInstaller = &installer.Installer{
 			{"bin"},
 		}
 	},
+	BinListGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"gradle.bat"}
+		}
+		return []string{"gradle"}
+	},
 	// DUrlDecorator:      installer.DefaultDecorator,
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
 		if conf.UseMirrorSiteInChina() {
@@ -596,6 +602,9 @@ var MavenInstaller = &installer.Installer{
 		}
 	},
 	BinListGetter: func() []string {
+		if runtime.GOOS == gutils.Windows {
+			return []string{"mvn.cmd"}
+		}
 		return []string{"mvn"}
 	},
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
