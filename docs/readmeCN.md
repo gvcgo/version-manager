@@ -15,7 +15,8 @@
 - [vmr简介](#vmr简介)
 - [贡献者](#贡献者)
 
-![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif)
+<!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
+<div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif"></div>
 
 ------
 <p id="1"></p>  
