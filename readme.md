@@ -15,6 +15,8 @@
 - [version-manager(vmr)](#version-managervmr)
 - [Contributors](#contributors)
 
+![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif)
+
 ------
 <p id="1"></p>  
 
