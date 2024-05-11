@@ -15,7 +15,13 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
 
-func PrintVersions(appName string, versionList []string) {
+func PrintVersionList(appName string, vvList map[string]versions.VersionList) {
+	versionList := []string{}
+	for vStr := range vvList {
+		versionList = append(versionList, vStr)
+	}
+	utils.SortVersions(versionList)
+
 	if IsAppNameSupportedBySDKManager(appName) {
 		appName = fmt.Sprintf("android-%s", appName)
 	}
@@ -29,6 +35,10 @@ func PrintVersions(appName string, versionList []string) {
 	verList := map[string]string{}
 	for _, verName := range versionList {
 		coloredVerName := gprint.MagentaStr(verName)
+		vv := vvList[verName]
+		if len(vv) > 0 && strings.Contains(strings.ToLower(vv[0].Extra), "lts") {
+			coloredVerName += gprint.MagentaStr("-LTS")
+		}
 		verList[coloredVerName] = verName
 		rows = append(rows, gtable.Row{
 			coloredVerName,
@@ -103,13 +113,14 @@ func (s *Searcher) Search(appName string) {
 		s.init(appName)
 	}
 
-	vl := s.VersionInfo.GetSortedVersionList()
-	if len(vl) == 0 {
+	if s.VersionInfo.CurrentList == nil || len(s.VersionInfo.CurrentList) == 0 {
+		s.VersionInfo.GetVersions()
+	}
+	if len(s.VersionInfo.CurrentList) == 0 {
 		gprint.PrintWarning("No versions found!")
 		return
 	}
-
-	PrintVersions(appName, vl)
+	PrintVersionList(appName, s.VersionInfo.CurrentList)
 }
 
 // Checks if sdkmanager has been installed correctly.
@@ -234,11 +245,5 @@ func (s *SDKManagerSearcher) Search(appName string) {
 		return
 	}
 
-	vl := []string{}
-	for vName := range s.currentList {
-		vl = append(vl, vName)
-	}
-	utils.SortVersions(vl)
-
-	PrintVersions(appName, vl)
+	PrintVersionList(appName, s.currentList)
 }
