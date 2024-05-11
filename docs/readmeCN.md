@@ -13,6 +13,7 @@
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmecn.md) | [en](https://github.com/gvcgo/version-manager)
 
 - [vmr简介](#vmr简介)
+- [功能特点](#功能特点)
 - [贡献者](#贡献者)
 
 <!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
@@ -30,6 +31,20 @@
 [b站演示视频(不包含project锁定版本)](https://www.bilibili.com/video/BV1bZ421v7sD/)
 
 [查看详细文档](https://gvcgo.github.io/vmrdocs/#/zh-cn/)
+
+------
+
+### 功能特点
+
+- 跨平台，支持Windows，Linux，MacOS
+- 支持多种语言和工具，省心
+- 更友好的TUI交互，尽量减少用户输入，同时不失灵活性
+- 支持针对项目锁定SDK版本
+- 支持反向代理设置和多线程下载，提高国内用户下载体验
+- 版本爬虫与主项目分离，响应更快，稳定性更高
+- 无需插件，开箱即用
+- 无需docker，纯本地安装
+- 简单易用，用较少的命令，实现了常见SDK版本管理器的所有功能(用户只需关注VMR的大约6个子命令即可)。
 
 ------
 <p id="9"></p>  

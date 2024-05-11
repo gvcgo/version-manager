@@ -13,6 +13,7 @@
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
 - [version-manager(vmr)](#version-managervmr)
+- [Features](#features)
 - [Contributors](#contributors)
 
 <!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
@@ -30,6 +31,21 @@ Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, 
 [youtube video demo](https://www.youtube.com/watch?v=CFIxPfBn8QY&t=626s)
 
 [See docs for details](https://gvcgo.github.io/vmrdocs/#/) 
+
+------
+
+### Features
+- Cross-platform, supports Windows, Linux, MacOS.
+- Supports multiple languages and tools.
+- Nicer TUI, reduces user input, while maintaining the flexibility.
+- Supports locking SDK version for each project.
+- Supports reverse proxy settings and multi-threaded downloads, improve your download experience.
+- Version crawler and main project are separated to ensure faster response and higher stability.
+- No need for plugins, just out of the box.
+- Installs SDKs in local disk instead of docker containers.
+- Easy to use, you only need to focus on about 6 subcommands of VMR.
+
+------
 
 ### Contributors
 > Thanks to the following people who have contributed to this project.
