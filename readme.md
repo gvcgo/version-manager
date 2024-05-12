@@ -17,7 +17,7 @@
 - [Contributors](#contributors)
 
 <!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
-<div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif"></div>
+<div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_new.gif"></div>
 
 ------
 <p id="1"></p>  
