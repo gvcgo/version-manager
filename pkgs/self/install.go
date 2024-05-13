@@ -2,6 +2,7 @@ package self
 
 import (
 	"fmt"
+	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -10,7 +11,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/input"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 )
 
@@ -44,9 +44,8 @@ func InstallVmr() {
 	if strings.HasSuffix(currentBinPath, vmBinName) {
 		gutils.CopyFile(currentBinPath, binPath)
 	}
-	em := envs.NewEnvManager()
-	defer em.CloseKey()
-	em.AddToPath(conf.GetManagerDir())
+	sh := shell.NewShell()
+	sh.WriteVMEnvToShell()
 
 	SetUpdateScript()
 

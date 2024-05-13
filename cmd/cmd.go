@@ -28,7 +28,6 @@ import (
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/locker"
 	"github.com/gvcgo/version-manager/pkgs/register"
@@ -255,7 +254,6 @@ func (c *Cli) initiate() {
 		Short:   "Installs version manager.",
 		Run: func(cmd *cobra.Command, args []string) {
 			self.InstallVmr()
-			locker.AddCdHook()
 		},
 	})
 
@@ -276,24 +274,6 @@ func (c *Cli) initiate() {
 			}
 		},
 	})
-
-	envHandler := &cobra.Command{
-		Use:     "env",
-		Aliases: []string{"e"},
-		GroupID: GroupID,
-		Short:   "Handles env manually.",
-		Long:    "Example: vmr e <-r>",
-		Run: func(cmd *cobra.Command, args []string) {
-			enableRemove, _ := cmd.Flags().GetBool("remove")
-			if enableRemove {
-				envs.RemoveEnvManually()
-			} else {
-				envs.AddEnvManually()
-			}
-		},
-	}
-	envHandler.Flags().BoolP("remove", "r", false, "<false>(by default): adds env; <true>: removes env.")
-	c.rootCmd.AddCommand(envHandler)
 
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "version",

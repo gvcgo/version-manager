@@ -23,6 +23,7 @@ package installer
 
 import (
 	"fmt"
+	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,7 +31,6 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/versions"
 )
@@ -64,20 +64,19 @@ func SetAndroidSDKEnvs() {
 	// ANDROID_AVD_HOME
 	avdHomeDir := filepath.Join(androidHomeDir, "avd")
 
+	sh := shell.NewShell()
+	defer sh.Close()
+
 	if os.Getenv("ANDROID_HOME") == "" {
-		os.Setenv("ANDROID_HOME", androidHomeDir)
-		em := envs.NewEnvManager()
-		defer em.CloseKey()
-		em.Set("ANDROID_HOME", androidHomeDir)
-		os.MkdirAll(androidHomeDir, os.ModePerm)
+		_ = os.Setenv("ANDROID_HOME", androidHomeDir)
+		sh.SetEnv("ANDROID_HOME", androidHomeDir)
+		_ = os.MkdirAll(androidHomeDir, os.ModePerm)
 	}
 
 	if os.Getenv("ANDROID_AVD_HOME") == "" {
-		os.Setenv("ANDROID_AVD_HOME", avdHomeDir)
-		em := envs.NewEnvManager()
-		defer em.CloseKey()
-		em.Set("ANDROID_AVD_HOME", avdHomeDir)
-		os.MkdirAll(avdHomeDir, os.ModePerm)
+		_ = os.Setenv("ANDROID_AVD_HOME", avdHomeDir)
+		sh.SetEnv("ANDROID_AVD_HOME", avdHomeDir)
+		_ = os.MkdirAll(avdHomeDir, os.ModePerm)
 	}
 }
 
@@ -136,14 +135,14 @@ func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {
 		}
 
 		if a.EnvGetter != nil {
+			sh := shell.NewShell()
+			defer sh.Close()
 			envList := a.EnvGetter(a.AppName, a.Version)
 			for _, e := range envList {
-				em := envs.NewEnvManager()
-				defer em.CloseKey()
 				if strings.ToLower(e.Name) == "path" {
-					em.AddToPath(e.Value)
+					sh.SetPath(e.Value)
 				} else {
-					em.Set(e.Name, e.Value)
+					sh.SetEnv(e.Name, e.Value)
 				}
 			}
 		}
@@ -171,14 +170,15 @@ func (a *AndroidSDKInstaller) UnInstallSDK(appName, version string) {
 			os.Exit(1)
 		}
 		if a.EnvGetter != nil {
+			sh := shell.NewShell()
+			defer sh.Close()
+
 			envList := a.EnvGetter(a.AppName, a.Version)
 			for _, e := range envList {
-				em := envs.NewEnvManager()
-				defer em.CloseKey()
 				if strings.ToLower(e.Name) == "path" {
-					em.DeleteFromPath(e.Value)
+					sh.UnsetPath(e.Value)
 				} else {
-					em.UnSet(e.Name)
+					sh.UnsetEnv(e.Name)
 				}
 			}
 		}

@@ -23,6 +23,7 @@ package register
 
 import (
 	"fmt"
+	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,7 +32,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
-	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/utils"
@@ -1147,22 +1147,22 @@ var SDKManagerInstaller = &installer.Installer{
 			}
 
 			binDir := filepath.Join(dstDir, "bin")
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
-			em.AddToPath(binDir)
-			em.Set("ADROID_HOME", installer.GetAndroidHomeDir())
+			sh := shell.NewShell()
+			defer sh.Close()
+			sh.SetPath(binDir)
+			sh.SetEnv("ADROID_HOME", installer.GetAndroidHomeDir())
 		}
-		os.RemoveAll(tmpDir)
+		_ = os.RemoveAll(tmpDir)
 	},
 	UnInstall: func(appName, version string) {
 		cmdlineToolsDir := filepath.Join(installer.GetAndroidHomeDir(), "cmdline-tools")
-		os.RemoveAll(cmdlineToolsDir)
+		_ = os.RemoveAll(cmdlineToolsDir)
 
 		binDir := filepath.Join(cmdlineToolsDir, "latest", "bin")
-		em := envs.NewEnvManager()
-		defer em.CloseKey()
-		em.DeleteFromPath(binDir)
-		em.UnSet("ANDROID_HOME")
+		sh := shell.NewShell()
+		defer sh.Close()
+		sh.UnsetPath(binDir)
+		sh.UnsetEnv("ADROID_HOME")
 	},
 	StoreMultiVersions: false,
 	HomePage:           "https://developer.android.google.cn/tools/releases/cmdline-tools",
@@ -1299,13 +1299,14 @@ var MinicondaInstaller = &installer.Installer{
 		} else {
 			binDir := filepath.Join(vDir, "bin")
 			binDir2 := filepath.Join(vDir, "condabin")
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
+			sh := shell.NewShell()
+			defer sh.Close()
+
 			if ok, _ := gutils.PathIsExist(binDir); ok {
-				em.AddToPath(binDir)
+				sh.SetPath(binDir)
 			}
 			if ok, _ := gutils.PathIsExist(binDir2); ok {
-				em.AddToPath(binDir2)
+				sh.SetPath(binDir2)
 			}
 		}
 	},
@@ -1314,10 +1315,10 @@ var MinicondaInstaller = &installer.Installer{
 		os.RemoveAll(miniDir)
 		binDir := filepath.Join(miniDir, appName, "bin")
 		binDir2 := filepath.Join(miniDir, appName, "condabin")
-		em := envs.NewEnvManager()
-		defer em.CloseKey()
-		em.DeleteFromPath(binDir)
-		em.DeleteFromPath(binDir2)
+		sh := shell.NewShell()
+		defer sh.Close()
+		sh.UnsetPath(binDir)
+		sh.UnsetPath(binDir2)
 	},
 	DUrlDecorator: func(dUrl string, ft *request.Fetcher) string {
 		if conf.UseMirrorSiteInChina() {

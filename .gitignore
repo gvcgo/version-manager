@@ -24,6 +24,9 @@ cmd/vmr/vmr
 cmd/vmr/vmr.exe
 cmd/vmr/vm
 cmd/vmr/vm.exe
+manager
+vmr
+vm
 
 build_win.sh
 .DS_Store

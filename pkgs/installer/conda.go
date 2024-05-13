@@ -23,6 +23,7 @@ package installer
 
 import (
 	"fmt"
+	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -32,7 +33,6 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/utils"
@@ -125,9 +125,9 @@ func (c *CondaInstaller) InstallPython(appName, version, zipFilePath string) {
 			binPath = symbolicPath
 		}
 		if ok, _ := gutils.PathIsExist(binPath); ok {
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
-			em.AddToPath(binPath)
+			sh := shell.NewShell()
+			sh.SetPath(binPath)
+			sh.Close()
 		}
 	}
 }
@@ -182,9 +182,9 @@ func (c *CondaInstaller) InstallPyPy(appName, version, zipFilePath string) {
 			binPath = symbolicPath
 		}
 		if ok, _ := gutils.PathIsExist(binPath); ok {
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
-			em.AddToPath(binPath)
+			sh := shell.NewShell()
+			sh.SetPath(binPath)
+			sh.Close()
 		}
 	}
 }
@@ -343,11 +343,11 @@ func (c *CondaInstaller) DeleteAll() {
 		binPath = symbolicPath
 	}
 	if ok, _ := gutils.PathIsExist(binPath); ok {
-		em := envs.NewEnvManager()
-		defer em.CloseKey()
-		em.DeleteFromPath(binPath)
+		sh := shell.NewShell()
+		sh.UnsetPath(binPath)
+		sh.Close()
 	}
-	os.RemoveAll(vDir)
+	_ = os.RemoveAll(vDir)
 }
 
 func (c *CondaInstaller) ClearCache() {}
