@@ -55,4 +55,4 @@
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
 
-**也欢迎gopher们踊跃贡献代码或者提供好的建议**。一些后面需要优化的问题放在讨论区了，感兴趣的同学可以到[discussions](https://github.com/gvcgo/version-manager/discussions)查看。注意，大家在提出问题之前，可以先阅读**VMR**的官方文档，避提问重复或者与**VMR**的总体设计理念相违背。同时，**VMR**也十分期待有时间和精力的同学，参与到**VMR**项目的优化和改进中来。
+一些后面需要优化的问题放在讨论区了，感兴趣的同学可以到[discussions](https://github.com/gvcgo/version-manager/discussions)查看。注意，大家在提出问题之前，可以先阅读**VMR**的官方文档，避提问重复或者与**VMR**的总体设计理念相违背。同时，**VMR**也十分期待有时间和精力的同学，参与到**VMR**项目的优化和改进中来。
