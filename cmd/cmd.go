@@ -53,6 +53,7 @@ type Cli struct {
 func New(gitTag, gitHash string) (c *Cli) {
 	c = &Cli{
 		rootCmd: &cobra.Command{
+			Use:   "vmr",
 			Short: "version manager",
 			Long:  "vmr <Command> <SubCommand> --flags args...",
 		},
