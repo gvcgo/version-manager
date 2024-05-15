@@ -97,7 +97,7 @@ func SaveConfigFile(c *Config) {
 		oldCfg.AppInstallationDir = c.AppInstallationDir
 	}
 	if content, err := json.MarshalIndent(oldCfg, "", "    "); err == nil {
-		os.WriteFile(cfgPath, content, os.ModePerm)
+		os.WriteFile(cfgPath, content, 0o644)
 	}
 }
 

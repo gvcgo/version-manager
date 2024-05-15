@@ -23,6 +23,7 @@ package installer
 
 import (
 	"fmt"
+	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +32,6 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/utils"
@@ -101,11 +101,11 @@ func NewCoursierInstaller() *CoursierInstaller {
 			c.NewPty(installDir) // for session scope only.
 
 			symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
-			os.RemoveAll(symbolicPath)
-			utils.SymbolicLink(installDir, symbolicPath)
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
-			em.AddToPath(symbolicPath)
+			_ = os.RemoveAll(symbolicPath)
+			_ = utils.SymbolicLink(installDir, symbolicPath)
+			sh := shell.NewShell()
+			sh.SetPath(symbolicPath)
+			sh.Close()
 		}
 	}
 
@@ -235,11 +235,11 @@ func (c *CoursierInstaller) DeleteAll() {
 	vDir := conf.GetVMVersionsDir(c.AppName)
 	symbolicPath := filepath.Join(vDir, c.AppName)
 	if ok, _ := gutils.PathIsExist(symbolicPath); ok {
-		em := envs.NewEnvManager()
-		defer em.CloseKey()
-		em.DeleteFromPath(symbolicPath)
+		sh := shell.NewShell()
+		sh.UnsetPath(symbolicPath)
+		sh.Close()
 	}
-	os.RemoveAll(vDir)
+	_ = os.RemoveAll(vDir)
 }
 
 func (c *CoursierInstaller) ClearCache() {}

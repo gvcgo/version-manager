@@ -22,6 +22,7 @@
 package installer
 
 import (
+	"github.com/gvcgo/version-manager/internal/shell"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -33,7 +34,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
-	"github.com/gvcgo/version-manager/internal/envs"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/utils"
@@ -377,9 +377,9 @@ func (i *Installer) CreateVersionSymbol() {
 	if i.AddBinDirToPath {
 		pathValue := i.preparePathValue(symbolPath)
 		if pathValue != "" {
-			em := envs.NewEnvManager()
-			defer em.CloseKey()
-			em.AddToPath(pathValue)
+			sh := shell.NewShell()
+			defer sh.Close()
+			sh.SetPath(pathValue)
 		}
 		return
 	}
@@ -577,14 +577,15 @@ func (i *Installer) createBinarySymbolForCurrentDir(currentPath string) {
 }
 
 func (i *Installer) SetEnv() {
-	em := envs.NewEnvManager()
-	defer em.CloseKey()
+	sh := shell.NewShell()
+	defer sh.Close()
+
 	if i.EnvGetter != nil {
 		for _, env := range i.EnvGetter(i.AppName, i.Version) {
-			em.Set(env.Name, env.Value)
+			sh.SetEnv(env.Name, env.Value)
 		}
 	}
-	em.SetPath()
+	sh.SetPath(conf.GetAppBinDir())
 
 	// PostInstall
 	if i.PostInstall != nil {
@@ -658,20 +659,21 @@ func (i *Installer) DeleteAll() {
 	os.RemoveAll(vDir)
 
 	// delete env
-	em := envs.NewEnvManager()
-	defer em.CloseKey()
+	sh := shell.NewShell()
+	defer sh.Close()
+
 	if i.EnvGetter != nil {
 		if i.AppName == "jdk" {
 			// handle jdk8.
 			for _, env := range i.EnvGetter(i.AppName, "8u") {
-				em.UnSet(env.Name)
+				sh.UnsetEnv(env.Name)
 			}
 			for _, env := range i.EnvGetter(i.AppName, "all") {
-				em.UnSet(env.Name)
+				sh.UnsetEnv(env.Name)
 			}
 		} else {
 			for _, env := range i.EnvGetter(i.AppName, i.Version) {
-				em.UnSet(env.Name)
+				sh.UnsetEnv(env.Name)
 			}
 		}
 	}
@@ -686,9 +688,7 @@ func (i *Installer) DeleteAll() {
 			pathValue := i.preparePathValue(filepath.Join(conf.GetVMVersionsDir(i.AppName), i.AppName))
 			// fmt.Println("pathValue: ", pathValue)
 			if pathValue != "" {
-				em := envs.NewEnvManager()
-				defer em.CloseKey()
-				em.DeleteFromPath(pathValue)
+				sh.UnsetPath(pathValue)
 			}
 		}
 	}
