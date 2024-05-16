@@ -25,7 +25,10 @@ end
 fish_add_path --global %s %s/bin
 `
 
-/**/
+/*
+$VM_DISABLE is an env for the Session Mode of vmr.
+It will stop the Shell from loading the envs for SDKs repeatedly.
+*/
 const fishShellContent = `# vm_envs start
 if not test $%s 
     . %s
