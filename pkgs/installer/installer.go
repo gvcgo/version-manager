@@ -22,12 +22,13 @@
 package installer
 
 import (
-	"github.com/gvcgo/version-manager/internal/shell"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/gvcgo/version-manager/internal/shell"
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/archiver"
@@ -132,14 +133,21 @@ func (i *Installer) SearchVersion() {
 
 	if len(vs) == 0 {
 		i.V = nil
+		i.Version = ""
 		gprint.PrintError("Cannot find version: %s", i.Version)
 	} else if len(vs) == 1 {
 		i.Version = vs[0]
 		i.V = &vf[i.Version][0]
 	} else {
 		i.V = nil
+		i.Version = ""
 		gprint.PrintError("Found multiple versions: \n%v", strings.Join(vs, "\n"))
 	}
+}
+
+func (i *Installer) ReadVersion() string {
+	i.SearchVersion()
+	return i.Version
 }
 
 func (i *Installer) SearchLatestVersion() {

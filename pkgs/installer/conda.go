@@ -23,11 +23,12 @@ package installer
 
 import (
 	"fmt"
-	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/gvcgo/version-manager/internal/shell"
 
 	"github.com/atotto/clipboard"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -249,14 +250,21 @@ func (c *CondaInstaller) SearchVersion() {
 
 	if len(vs) == 0 {
 		c.V = nil
+		c.Version = ""
 		gprint.PrintError("Cannot find version: %s", c.Version)
 	} else if len(vs) == 1 {
 		c.Version = vs[0]
 		c.V = &vf[c.Version][0]
 	} else {
 		c.V = nil
+		c.Version = ""
 		gprint.PrintError("Found multiple versions: \n%v", strings.Join(vs, "\n"))
 	}
+}
+
+func (c *CondaInstaller) ReadVersion() string {
+	c.SearchVersion()
+	return c.Version
 }
 
 func (c *CondaInstaller) getSymbolicPath() string {

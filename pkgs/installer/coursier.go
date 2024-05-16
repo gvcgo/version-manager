@@ -23,10 +23,11 @@ package installer
 
 import (
 	"fmt"
-	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gvcgo/version-manager/internal/shell"
 
 	"github.com/atotto/clipboard"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -67,7 +68,7 @@ func NewCoursierInstaller() *CoursierInstaller {
 	}
 	c.Install = func(appName, version, zipFilePath string) {
 		if c.V == nil {
-			c.GetVersion()
+			c.SearchVersion()
 		}
 		if c.V == nil {
 			gprint.PrintError("Can't find version: %s", c.Version)
@@ -129,7 +130,7 @@ func (c *CoursierInstaller) SetVersion(version string) {
 
 func (c *CoursierInstaller) FixAppName() {}
 
-func (c *CoursierInstaller) GetVersion() {
+func (c *CoursierInstaller) SearchVersion() {
 	if c.Searcher == nil {
 		c.Searcher = NewSearcher()
 	}
@@ -152,12 +153,14 @@ func (c *CoursierInstaller) GetVersion() {
 
 	if len(vs) == 0 {
 		c.V = nil
+		c.Version = ""
 		gprint.PrintError("Cannot find version: %s", c.Version)
 	} else if len(vs) == 1 {
 		c.Version = vs[0]
 		c.V = &vf[c.Version][0]
 	} else {
 		c.V = nil
+		c.Version = ""
 		gprint.PrintError("Found multiple versions: \n%v", strings.Join(vs, "\n"))
 	}
 	// Handle "LTS"
@@ -165,6 +168,11 @@ func (c *CoursierInstaller) GetVersion() {
 		c.Version = strings.ReplaceAll(c.Version, "-LTS", "")
 		c.Version = strings.ReplaceAll(c.Version, " LTS", "")
 	}
+}
+
+func (c *CoursierInstaller) ReadVersion() string {
+	c.SearchVersion()
+	return c.Version
 }
 
 // Uses a version only in current session.
@@ -177,7 +185,7 @@ func (c *CoursierInstaller) NewPty(installDir string) {
 }
 
 func (c *CoursierInstaller) Download() (zipFilePath string) {
-	c.GetVersion()
+	c.SearchVersion()
 	if c.V != nil {
 		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
 		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)

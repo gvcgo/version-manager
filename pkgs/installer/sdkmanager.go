@@ -23,10 +23,11 @@ package installer
 
 import (
 	"fmt"
-	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gvcgo/version-manager/internal/shell"
 
 	"github.com/atotto/clipboard"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -113,6 +114,11 @@ func (a *AndroidSDKInstaller) InstallPlatformTools() {
 		gprint.PrintError("Install platform-tools failed: %+v", err)
 		os.Exit(1)
 	}
+}
+
+// Do not support lock versions.
+func (c *AndroidSDKInstaller) ReadVersion() string {
+	return ""
 }
 
 func (a *AndroidSDKInstaller) InstallSDK(appName, version, zipFilePath string) {

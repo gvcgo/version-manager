@@ -13,6 +13,7 @@ const (
 )
 
 /*
+TODO: lock versions for multi SDKs in one project.
 Lock the sdk version for a project.
 */
 type VersionLocker struct {
