@@ -1,11 +1,13 @@
 package locker
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/shell/sh"
 )
 
 const (
@@ -17,11 +19,12 @@ TODO: lock versions for multi SDKs in one project.
 Lock the sdk version for a project.
 */
 type VersionLocker struct {
-	versionInfo string
+	versionInfo   string
+	VersionOfSDKs map[string]string
 }
 
 func NewVLocker() (v *VersionLocker) {
-	return &VersionLocker{}
+	return &VersionLocker{VersionOfSDKs: make(map[string]string)}
 }
 
 func (v *VersionLocker) FindLockerFile(dirPath ...string) string {
@@ -49,20 +52,44 @@ func (v *VersionLocker) Load() {
 	}
 	if ok, _ := gutils.PathIsExist(fPath); ok {
 		data, _ := os.ReadFile(fPath)
-		v.versionInfo = string(data)
+		v.versionInfo = strings.TrimSpace(string(data))
+		if v.versionInfo != "" && !strings.Contains(v.versionInfo, "{") {
+			sList := strings.Split(v.versionInfo, "@")
+			if len(sList) == 2 {
+				v.VersionOfSDKs[sList[0]] = sList[1]
+			}
+		} else {
+			json.Unmarshal([]byte(v.versionInfo), &v.VersionOfSDKs)
+		}
 	}
 }
 
 func (v *VersionLocker) Save(vInfo string) {
-	if strings.Contains(vInfo, "@") {
-		v.versionInfo = vInfo
-		fPath := v.FindLockerFile()
-		if fPath == "" {
-			cwd, _ := os.Getwd()
-			fPath = filepath.Join(cwd, LockerFileName)
+	lockFilePath := v.FindLockerFile()
+
+	var content string
+	if lockFilePath != "" {
+		data, _ := os.ReadFile(lockFilePath)
+		content = strings.TrimSpace(string(data))
+		if content != "" && !strings.Contains(content, "{") {
+			sList := strings.Split(content, "@")
+			if len(sList) == 2 {
+				v.VersionOfSDKs[sList[0]] = sList[1]
+			}
+		} else {
+			json.Unmarshal([]byte(content), &v.VersionOfSDKs)
 		}
-		os.WriteFile(fPath, []byte(v.versionInfo), os.ModePerm)
+	} else {
+		cwd, _ := os.Getwd()
+		lockFilePath = filepath.Join(cwd, LockerFileName)
 	}
+
+	if sList := strings.Split(vInfo, "@"); len(sList) == 2 {
+		v.VersionOfSDKs[sList[0]] = sList[1]
+	}
+
+	data, _ := json.MarshalIndent(&v.VersionOfSDKs, "", "    ")
+	_ = os.WriteFile(lockFilePath, data, sh.ModePerm)
 }
 
 func (v *VersionLocker) Get() (vInfo string) {

@@ -23,7 +23,6 @@ package register
 
 import (
 	"fmt"
-	"github.com/gvcgo/version-manager/internal/shell"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -32,12 +31,14 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
+	"github.com/gvcgo/version-manager/internal/shell"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/installer"
 	"github.com/gvcgo/version-manager/pkgs/utils"
 )
 
 type VersionManager interface {
+	ReadVersion() string
 	Download() (zipFilePath string)
 	Unzip(zipFilePath string)
 	Copy()
