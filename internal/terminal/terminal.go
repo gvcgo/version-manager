@@ -7,10 +7,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/gvcgo/asciinema/terminal"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
+	"github.com/gvcgo/version-manager/internal/terminal/term"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 )
 
@@ -41,13 +41,13 @@ conpty for Windows.
 */
 type PtyTerminal struct {
 	AppName  string
-	Terminal terminal.Terminal
+	Terminal term.Terminal
 }
 
 func NewPtyTerminal(appName string) (p *PtyTerminal) {
 	p = &PtyTerminal{
 		AppName:  appName,
-		Terminal: terminal.NewTerminal(),
+		Terminal: term.NewTerminal(),
 	}
 	return
 }
@@ -87,13 +87,13 @@ func (p *PtyTerminal) Run() {
 	}
 	p.modifyPath()
 
-	// Disable reading vm_env.sh for the new pseudo-shell.
+	// Disable reading vmr.sh/vmr.fish for the new pseudo-shell.
 	if runtime.GOOS != gutils.Windows {
 		os.Setenv(sh.VMDisableEnvName, "111")
 	}
 
 	if p.Terminal != nil {
-		if err := p.Terminal.Record(command, &NilWriter{}, os.Environ()...); err != nil {
+		if err := p.Terminal.Record(command, os.Environ()...); err != nil {
 			gprint.PrintError("open pty failed: %+v", err)
 			return
 		}
@@ -101,11 +101,4 @@ func (p *PtyTerminal) Run() {
 		gprint.PrintError("no pty found")
 	}
 	os.Exit(0)
-}
-
-type NilWriter struct{}
-
-func (nw *NilWriter) Write(p []byte) (n int, err error) {
-	// doing nothing.
-	return len(p), nil
 }
