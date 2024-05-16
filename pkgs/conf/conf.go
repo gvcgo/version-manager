@@ -35,7 +35,6 @@ const (
 	VMDownloadThreadsEnvName      string = "VM_DOWNLOAD_THREADS"
 	VMUseMirrorInChinaEnvName     string = "VM_USE_MIRROR_IN_CHINA"
 	VMOnlyInCurrentSessionEnvName string = "VM_ONLY_IN_CURRENT_SESSION" // uses a version only in current session.
-	VMDiableEnvName               string = "VM_DISABLE"
 	VMLockedVersionEnvName        string = "VM_LOCKED_VERSIONS"
 )
 

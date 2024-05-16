@@ -10,6 +10,7 @@ import (
 	"github.com/gvcgo/asciinema/terminal"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 )
 
@@ -88,7 +89,7 @@ func (p *PtyTerminal) Run() {
 
 	// Disable reading vm_env.sh for the new pseudo-shell.
 	if runtime.GOOS != gutils.Windows {
-		os.Setenv(conf.VMDiableEnvName, "111")
+		os.Setenv(sh.VMDisableEnvName, "111")
 	}
 
 	if p.Terminal != nil {

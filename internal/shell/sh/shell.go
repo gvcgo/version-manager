@@ -1,5 +1,7 @@
 package sh
 
+import "io/fs"
+
 const (
 	Bash = "bash"
 	Zsh  = "zsh"
@@ -7,7 +9,9 @@ const (
 )
 
 const (
-	vmEnvFileName = "vmr"
+	ModePerm         fs.FileMode = 0o644
+	VMDisableEnvName string      = "VM_DISABLE"
+	vmEnvFileName    string      = "vmr"
 )
 
 type Sheller interface {

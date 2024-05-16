@@ -3,9 +3,10 @@
 package shell
 
 import (
-	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"os"
 	"strings"
+
+	"github.com/gvcgo/version-manager/internal/shell/sh"
 )
 
 var _ Sheller = (*Shell)(nil)
@@ -35,14 +36,14 @@ func (s *Shell) SetPath(path string) {
 	path = s.PackPath(path)
 	data = strings.ReplaceAll(data, path+"\n", "")
 	data = data + "\n" + path
-	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), 0o644)
+	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), sh.ModePerm)
 }
 
 func (s *Shell) UnsetPath(path string) {
 	content, _ := os.ReadFile(s.VMEnvConfPath())
 	data := string(content)
 	data = strings.ReplaceAll(data, "\n"+s.PackPath(path)+"\n", "")
-	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), 0o644)
+	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), sh.ModePerm)
 }
 
 func (s *Shell) SetEnv(key, value string) {
@@ -52,7 +53,7 @@ func (s *Shell) SetEnv(key, value string) {
 	env := s.PackEnv(key, value)
 	data = strings.ReplaceAll(data, env+"\n", "")
 	data = data + "\n" + env
-	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), 0o644)
+	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), sh.ModePerm)
 }
 
 func (s *Shell) UnsetEnv(key string) {
@@ -64,7 +65,7 @@ func (s *Shell) UnsetEnv(key string) {
 			data = strings.ReplaceAll(data, line+"\n", "")
 		}
 	}
-	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), 0o644)
+	_ = os.WriteFile(s.VMEnvConfPath(), []byte(data), sh.ModePerm)
 }
 
 func (s *Shell) Close() {}

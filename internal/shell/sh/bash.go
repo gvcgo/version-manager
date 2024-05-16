@@ -2,10 +2,11 @@ package sh
 
 import (
 	"fmt"
-	"github.com/gvcgo/version-manager/pkgs/conf"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gvcgo/version-manager/pkgs/conf"
 )
 
 type BashShell struct{}
@@ -28,7 +29,7 @@ func (b *BashShell) WriteVMEnvToShell() {
 	installPath := conf.GetVersionManagerWorkDir()
 	vmEnvConfPath := b.VMEnvConfPath()
 	envStr := fmt.Sprintf(vmEnvZsh, installPath, installPath)
-	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), 0o644)
+	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
 
 	shellConfig := b.ConfPath()
 	content, _ := os.ReadFile(shellConfig)
@@ -36,7 +37,7 @@ func (b *BashShell) WriteVMEnvToShell() {
 
 	home, _ := os.UserHomeDir()
 	vmEnvConfPath = strings.ReplaceAll(vmEnvConfPath, home, "~")
-	sourceStr := fmt.Sprintf(shellContent, vmEnvConfPath, vmEnvConfPath)
+	sourceStr := fmt.Sprintf(shellContent, VMDisableEnvName, vmEnvConfPath)
 	if strings.Contains(data, sourceStr) {
 		return
 	}
@@ -46,7 +47,7 @@ func (b *BashShell) WriteVMEnvToShell() {
 	} else {
 		data = data + "\n" + sourceStr
 	}
-	_ = os.WriteFile(shellConfig, []byte(data), 0o644)
+	_ = os.WriteFile(shellConfig, []byte(data), ModePerm)
 }
 
 func (b *BashShell) PackPath(path string) string {

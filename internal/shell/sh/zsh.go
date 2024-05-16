@@ -23,8 +23,16 @@ fi
 
 export PATH=%s:%s/bin:$PATH
 `
-const shellContent = `# vmr envs
-[[ ! -f %s ]] || source %s
+
+/*
+$VM_DISABLE is an env for Session Mode fo vmr.
+It will stop the Shell from loading the envs for SDKs repeatedly.
+*/
+const shellContent = `# vm_envs start
+if [ -z $%s ]; then
+    . %s
+fi
+# vm_envs end
 `
 
 type ZshShell struct{}
@@ -47,7 +55,7 @@ func (z *ZshShell) WriteVMEnvToShell() {
 	installPath := conf.GetVersionManagerWorkDir()
 	vmEnvConfPath := z.VMEnvConfPath()
 	envStr := fmt.Sprintf(vmEnvZsh, installPath, installPath)
-	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), 0o644)
+	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
 
 	shellConfig := z.ConfPath()
 	content, _ := os.ReadFile(shellConfig)
@@ -55,7 +63,7 @@ func (z *ZshShell) WriteVMEnvToShell() {
 
 	home, _ := os.UserHomeDir()
 	vmEnvConfPath = strings.ReplaceAll(vmEnvConfPath, home, "~")
-	sourceStr := fmt.Sprintf(shellContent, vmEnvConfPath, vmEnvConfPath)
+	sourceStr := fmt.Sprintf(shellContent, VMDisableEnvName, vmEnvConfPath)
 	if strings.Contains(data, sourceStr) {
 		return
 	}
@@ -65,7 +73,7 @@ func (z *ZshShell) WriteVMEnvToShell() {
 	} else {
 		data = data + "\n" + sourceStr
 	}
-	_ = os.WriteFile(shellConfig, []byte(data), 0o644)
+	_ = os.WriteFile(shellConfig, []byte(data), ModePerm)
 }
 
 func (z *ZshShell) PackPath(path string) string {
