@@ -6,19 +6,9 @@ import (
 	"io"
 	"os"
 	"syscall"
+
+	"github.com/gvcgo/version-manager/internal/terminal/term/fdset"
 )
-
-func FD_SET(p *syscall.FdSet, fd int) {
-	p.Bits[fd/32] |= 1 << uint(fd) % 32
-}
-
-func FD_ISSET(p *syscall.FdSet, fd int) bool {
-	return (p.Bits[fd/32] & (1 << uint(fd) % 32)) != 0
-}
-
-func Select(nfd int, r *syscall.FdSet, w *syscall.FdSet, e *syscall.FdSet, timeout *syscall.Timeval) error {
-	return syscall.Select(nfd, r, w, e, timeout)
-}
 
 func Copy(dst io.Writer, src *os.File) func() {
 	r, w, _ := os.Pipe()
@@ -45,10 +35,10 @@ func copy(dst io.Writer, src *os.File, finish *os.File) (written int64, err erro
 	buf := make([]byte, 32*1024)
 
 	for {
-		FD_SET(rfds, fd)
-		FD_SET(rfds, ffd)
+		fdset.FD_SET(rfds, fd)
+		fdset.FD_SET(rfds, ffd)
 
-		es := Select(maxfd, rfds, nil, nil, nil)
+		es := fdset.Select(maxfd, rfds, nil, nil, nil)
 		if es != nil {
 			if es == syscall.EINTR {
 				continue
@@ -58,7 +48,7 @@ func copy(dst io.Writer, src *os.File, finish *os.File) (written int64, err erro
 			break
 		}
 
-		if FD_ISSET(rfds, fd) {
+		if fdset.FD_ISSET(rfds, fd) {
 			nr, er := src.Read(buf)
 			if nr > 0 {
 				nw, ew := dst.Write(buf[0:nr])
@@ -83,7 +73,7 @@ func copy(dst io.Writer, src *os.File, finish *os.File) (written int64, err erro
 			}
 		}
 
-		if FD_ISSET(rfds, ffd) {
+		if fdset.FD_ISSET(rfds, ffd) {
 			break
 		}
 	}
