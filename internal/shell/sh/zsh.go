@@ -32,6 +32,8 @@ export PATH=%s:%s/bin:$PATH
 `
 
 /*
+internal/terminal/terminal.go line:90
+
 $VM_DISABLE is an env for the Session Mode of vmr.
 It will stop the Shell from loading the envs for SDKs repeatedly.
 */
