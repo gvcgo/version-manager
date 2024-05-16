@@ -9,6 +9,13 @@ import (
 	"github.com/gvcgo/version-manager/pkgs/conf"
 )
 
+/*
+This is a hook for command "cd".
+
+When you use "cd" command, cdhook will be executed.
+In cdhook, it will cd to the target directory and then try to execute "vmr use -E".
+The command "vmr use -E" will automatically find the .vmr.lock file, and add corresponding versions of an SDK to the envs.
+*/
 const vmEnvZsh = `# cd hook start
 if [ -z $(alias|grep cdhook) ]; then
 	cdhook() {
@@ -25,7 +32,7 @@ export PATH=%s:%s/bin:$PATH
 `
 
 /*
-$VM_DISABLE is an env for Session Mode fo vmr.
+$VM_DISABLE is an env for the Session Mode of vmr.
 It will stop the Shell from loading the envs for SDKs repeatedly.
 */
 const shellContent = `# vm_envs start

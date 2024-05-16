@@ -33,4 +33,4 @@ build_linux.sh
 build/*64
 *.zip
 test.sh
-.DS_Store
+*.fish
