@@ -1,6 +1,13 @@
 package sh
 
-import "io/fs"
+import (
+	"io/fs"
+	"os"
+	"runtime"
+	"strings"
+
+	"github.com/gvcgo/goutils/pkgs/gutils"
+)
 
 const (
 	Bash = "bash"
@@ -20,4 +27,15 @@ type Sheller interface {
 	WriteVMEnvToShell()
 	PackPath(path string) string
 	PackEnv(key, value string) string
+}
+
+func FormatPathString(p string) (formattedPath string) {
+	formattedPath = p
+	if runtime.GOOS != gutils.Windows {
+		homeDir, _ := os.UserHomeDir()
+		if strings.HasPrefix(p, homeDir) {
+			formattedPath = strings.ReplaceAll(p, homeDir, "~")
+		}
+	}
+	return
 }
