@@ -101,6 +101,10 @@ func NewAndroidSDKInstaller() (a *AndroidSDKInstaller) {
 	return
 }
 
+func (a *AndroidSDKInstaller) GetPtyEnvs() (pathDirs []string, envList []Env) {
+	return
+}
+
 func (a *AndroidSDKInstaller) InstallPlatformTools() {
 	platformToolsADB := filepath.Join(GetAndroidHomeDir(), "platform-tools", "adb")
 	if ok, _ := gutils.PathIsExist(platformToolsADB); ok {

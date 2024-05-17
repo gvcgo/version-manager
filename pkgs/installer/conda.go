@@ -116,7 +116,7 @@ func (c *CondaInstaller) InstallPython(appName, version, zipFilePath string) {
 		fmt.Sprintf("python=%s", c.Version),
 	)
 	if err == nil {
-		c.NewPTY(installDir) // for session scope only.
+		c.NewPTY() // for current session only.
 
 		symbolicPath := c.getSymbolicPath()
 		os.RemoveAll(symbolicPath)
@@ -173,7 +173,7 @@ func (c *CondaInstaller) InstallPyPy(appName, version, zipFilePath string) {
 	)
 
 	if err == nil {
-		c.NewPTY(installDir) // for session scope only.
+		c.NewPTY() // for current session only.
 
 		symbolicPath := c.getSymbolicPath()
 		os.RemoveAll(symbolicPath)
@@ -280,11 +280,23 @@ func (c *CondaInstaller) getInstallDir() string {
 	return filepath.Join(conf.GetVMVersionsDir(pseudoAppName), c.Version)
 }
 
+func (c *CondaInstaller) GetPtyEnvs() (pathDirs []string, envList []Env) {
+	installDir := c.getInstallDir()
+	if ok, _ := gutils.PathIsExist(installDir); !ok {
+		return
+	}
+	pathDirs = append(pathDirs, filepath.Join(installDir, "bin"))
+	return
+}
+
 // Uses a version only in current session.
-func (c *CondaInstaller) NewPTY(installDir string) {
+func (c *CondaInstaller) NewPTY() {
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
 		t := terminal.NewPtyTerminal(c.AppName)
-		t.AddEnv("PATH", filepath.Join(installDir, "bin"))
+		pathDirs, _ := c.GetPtyEnvs()
+		for _, p := range pathDirs {
+			t.AddEnv("PATH", p)
+		}
 		t.Run()
 	}
 }
@@ -295,7 +307,7 @@ func (c *CondaInstaller) Download() (zipFilePath string) {
 		symbolicPath := c.getSymbolicPath()
 		installDir := c.getInstallDir()
 		if ok, _ := gutils.PathIsExist(installDir); ok {
-			c.NewPTY(installDir) // for session scope only.
+			c.NewPTY() // for current session scope only.
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)
 			gprint.PrintSuccess("Switched to %s", c.Version)

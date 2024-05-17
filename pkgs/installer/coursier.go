@@ -99,7 +99,7 @@ func NewCoursierInstaller() *CoursierInstaller {
 			fmt.Sprintf("scala:%s", c.Version),
 		)
 		if err == nil {
-			c.NewPty(installDir) // for session scope only.
+			c.NewPty() // for current session only.
 
 			symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
 			_ = os.RemoveAll(symbolicPath)
@@ -175,11 +175,23 @@ func (c *CoursierInstaller) ReadVersion() string {
 	return c.Version
 }
 
+func (c *CoursierInstaller) GetPtyEnvs() (pathDirs []string, envList []Env) {
+	installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
+	if ok, _ := gutils.PathIsExist(installDir); !ok {
+		return
+	}
+	pathDirs = append(pathDirs, installDir)
+	return
+}
+
 // Uses a version only in current session.
-func (c *CoursierInstaller) NewPty(installDir string) {
+func (c *CoursierInstaller) NewPty() {
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
 		t := terminal.NewPtyTerminal(c.AppName)
-		t.AddEnv("PATH", installDir)
+		pathDirs, _ := c.GetPtyEnvs()
+		for _, p := range pathDirs {
+			t.AddEnv("PATH", p)
+		}
 		t.Run()
 	}
 }
@@ -190,7 +202,7 @@ func (c *CoursierInstaller) Download() (zipFilePath string) {
 		symbolicPath := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.AppName)
 		installDir := filepath.Join(conf.GetVMVersionsDir(c.AppName), c.Version)
 		if ok, _ := gutils.PathIsExist(installDir); ok {
-			c.NewPty(installDir) // for session scope only.
+			c.NewPty() // for current session only.
 
 			os.RemoveAll(symbolicPath)
 			utils.SymbolicLink(installDir, symbolicPath)

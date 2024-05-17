@@ -96,3 +96,5 @@ func (v *VersionLocker) Get() (vInfo string) {
 	v.Load()
 	return v.versionInfo
 }
+
+// TODO: Open a new session.

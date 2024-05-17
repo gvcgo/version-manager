@@ -55,6 +55,7 @@ type VersionManager interface {
 	SetVersion(version string)
 	SearchVersions()
 	FixAppName()
+	GetPtyEnvs() (pathDirs []string, envList []installer.Env)
 }
 
 /*
