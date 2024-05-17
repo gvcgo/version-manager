@@ -187,11 +187,12 @@ func (c *CoursierInstaller) GetPtyEnvs() (pathDirs []string, envList []Env) {
 // Uses a version only in current session.
 func (c *CoursierInstaller) NewPty() {
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
-		t := terminal.NewPtyTerminal(c.AppName)
+		t := terminal.NewPtyTerminal()
 		pathDirs, _ := c.GetPtyEnvs()
 		for _, p := range pathDirs {
 			t.AddEnv("PATH", p)
 		}
+		terminal.ModifyPathForPty(c.AppName)
 		t.Run()
 	}
 }

@@ -36,29 +36,11 @@ func addEnv(key, value string) {
 }
 
 /*
-pty for Unix.
-conpty for Windows.
+Remove default global envs for an SDK.
 */
-type PtyTerminal struct {
-	AppName  string
-	Terminal term.Terminal
-}
-
-func NewPtyTerminal(appName string) (p *PtyTerminal) {
-	p = &PtyTerminal{
-		AppName:  appName,
-		Terminal: term.NewTerminal(),
-	}
-	return
-}
-
-func (p *PtyTerminal) AddEnv(key, value string) {
-	addEnv(key, value)
-}
-
-func (p *PtyTerminal) modifyPath() {
+func ModifyPathForPty(appName string) {
 	pathStr := os.Getenv("PATH")
-	symbolicPath := filepath.Join(conf.GetVMVersionsDir(p.AppName), p.AppName)
+	symbolicPath := filepath.Join(conf.GetVMVersionsDir(appName), appName)
 	binPath := conf.GetAppBinDir()
 	sep := ":"
 	if runtime.GOOS == gutils.Windows {
@@ -74,6 +56,25 @@ func (p *PtyTerminal) modifyPath() {
 	os.Setenv("PATH", strings.Join(eList, sep))
 }
 
+/*
+pty for Unix.
+conpty for Windows.
+*/
+type PtyTerminal struct {
+	Terminal term.Terminal
+}
+
+func NewPtyTerminal() (p *PtyTerminal) {
+	p = &PtyTerminal{
+		Terminal: term.NewTerminal(),
+	}
+	return
+}
+
+func (p *PtyTerminal) AddEnv(key, value string) {
+	addEnv(key, value)
+}
+
 func (p *PtyTerminal) Run() {
 	command := "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
 	if ok, _ := gutils.PathIsExist(command); !ok {
@@ -85,7 +86,6 @@ func (p *PtyTerminal) Run() {
 			command = shell
 		}
 	}
-	p.modifyPath()
 
 	// Disable reading vmr.sh/vmr.fish for the new pseudo-shell.
 	if runtime.GOOS != gutils.Windows {

@@ -8,6 +8,9 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
+	"github.com/gvcgo/version-manager/internal/terminal"
+	"github.com/gvcgo/version-manager/pkgs/installer"
+	"github.com/gvcgo/version-manager/pkgs/register"
 )
 
 const (
@@ -15,8 +18,7 @@ const (
 )
 
 /*
-TODO: lock versions for multi SDKs in one project.
-Lock the sdk version for a project.
+Lock the SDK version for a project.
 */
 type VersionLocker struct {
 	versionInfo   string
@@ -97,4 +99,35 @@ func (v *VersionLocker) Get() (vInfo string) {
 	return v.versionInfo
 }
 
-// TODO: Open a new session.
+/*
+This is a hook func for cd command.
+
+When you are using cd command, this func will be executed.
+
+See internal/shell/sh/zsh.go or internal/shell/sh/fish.go
+*/
+func (v *VersionLocker) HookForCDCommand() {
+	v.Load()
+	pathDirs := []string{}
+	envList := []installer.Env{}
+
+	for appName, version := range v.VersionOfSDKs {
+		if reg, ok := register.VersionKeeper[appName]; ok {
+			reg.SetVersion(version)
+			p, e := reg.GetPtyEnvs()
+			pathDirs = append(pathDirs, p...)
+			envList = append(envList, e...)
+			terminal.ModifyPathForPty(appName)
+		}
+	}
+
+	t := terminal.NewPtyTerminal()
+	for _, pStr := range pathDirs {
+		t.AddEnv("PATH", pStr)
+	}
+	for _, env := range envList {
+		t.AddEnv(env.Name, env.Value)
+	}
+	t.Run()
+	os.Exit(0)
+}

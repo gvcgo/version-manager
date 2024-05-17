@@ -472,13 +472,14 @@ func (i *Installer) GetPtyEnvs() (pathDirs []string, envList []Env) {
 func (i *Installer) NewPty() {
 	PathDirs, EnvList := i.GetPtyEnvs()
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
-		t := terminal.NewPtyTerminal(i.AppName)
+		t := terminal.NewPtyTerminal()
 		for _, pStr := range PathDirs {
 			t.AddEnv("PATH", pStr)
 		}
 		for _, env := range EnvList {
 			t.AddEnv(env.Name, env.Value)
 		}
+		terminal.ModifyPathForPty(i.AppName)
 		t.Run()
 	}
 }

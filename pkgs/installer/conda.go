@@ -292,11 +292,12 @@ func (c *CondaInstaller) GetPtyEnvs() (pathDirs []string, envList []Env) {
 // Uses a version only in current session.
 func (c *CondaInstaller) NewPTY() {
 	if gconv.Bool(os.Getenv(conf.VMOnlyInCurrentSessionEnvName)) {
-		t := terminal.NewPtyTerminal(c.AppName)
+		t := terminal.NewPtyTerminal()
 		pathDirs, _ := c.GetPtyEnvs()
 		for _, p := range pathDirs {
 			t.AddEnv("PATH", p)
 		}
+		terminal.ModifyPathForPty(c.AppName)
 		t.Run()
 	}
 }
