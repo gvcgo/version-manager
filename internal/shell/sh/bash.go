@@ -22,7 +22,7 @@ func (b *BashShell) ConfPath() string {
 
 func (b *BashShell) VMEnvConfPath() string {
 	installPath := conf.GetVersionManagerWorkDir()
-	return filepath.Join(installPath, fmt.Sprintf("%s.sh", vmEnvFileName))
+	return filepath.Join(installPath, fmt.Sprintf("%s.sh", VMEnvFileName))
 }
 
 func (b *BashShell) WriteVMEnvToShell() {
@@ -57,7 +57,7 @@ func (b *BashShell) WriteVMEnvToShell() {
 }
 
 func (b *BashShell) PackPath(path string) string {
-	return fmt.Sprintf("export PATH=%s:PATH", path)
+	return fmt.Sprintf("export PATH=%s:$PATH", path)
 }
 
 func (b *BashShell) PackEnv(key, value string) string {

@@ -57,7 +57,7 @@ func (z *ZshShell) ConfPath() string {
 
 func (z *ZshShell) VMEnvConfPath() string {
 	installPath := conf.GetVersionManagerWorkDir()
-	return filepath.Join(installPath, fmt.Sprintf("%s.sh", vmEnvFileName))
+	return filepath.Join(installPath, fmt.Sprintf("%s.sh", VMEnvFileName))
 }
 
 func (z *ZshShell) WriteVMEnvToShell() {
@@ -91,7 +91,7 @@ func (z *ZshShell) WriteVMEnvToShell() {
 }
 
 func (z *ZshShell) PackPath(path string) string {
-	return fmt.Sprintf("export PATH=%s:PATH", path)
+	return fmt.Sprintf("export PATH=%s:$PATH", path)
 }
 
 func (z *ZshShell) PackEnv(key, value string) string {

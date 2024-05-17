@@ -25,6 +25,7 @@ func NewShell() *Shell {
 		shell = sh.NewZshShell()
 	case strings.HasSuffix(shellPath, sh.Fish):
 		shell = sh.NewFishShell()
+	default:
 	}
 	return &Shell{shell}
 }

@@ -18,7 +18,7 @@ const (
 const (
 	ModePerm         fs.FileMode = 0o644
 	VMDisableEnvName string      = "VM_DISABLE"
-	vmEnvFileName    string      = "vmr"
+	VMEnvFileName    string      = "vmr"
 )
 
 type Sheller interface {

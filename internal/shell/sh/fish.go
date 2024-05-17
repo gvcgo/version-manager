@@ -51,7 +51,7 @@ func (f *FishShell) ConfPath() string {
 
 func (f *FishShell) VMEnvConfPath() string {
 	installPath := conf.GetVersionManagerWorkDir()
-	return filepath.Join(installPath, fmt.Sprintf("%s.fish", vmEnvFileName))
+	return filepath.Join(installPath, fmt.Sprintf("%s.fish", VMEnvFileName))
 }
 
 func (f *FishShell) WriteVMEnvToShell() {
