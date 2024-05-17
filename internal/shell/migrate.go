@@ -57,8 +57,10 @@ func (s *ShellMigrator) fishLineToline(line string) (newLine string) {
 	envPrefix := "set --global "
 	if strings.HasPrefix(line, pathPrefix) {
 		p := strings.TrimSpace(strings.ReplaceAll(line, pathPrefix, ""))
-		if p != "" {
-			newLine = fmt.Sprintf("export PATH=%s:PATH", p)
+		pList := strings.Split(p, " ")
+		if len(pList) > 0 {
+			p = strings.Join(pList, ":")
+			newLine = fmt.Sprintf("export PATH=%s:$PATH", p)
 		}
 	} else if strings.HasPrefix(line, envPrefix) {
 		envStr := strings.TrimSpace(strings.ReplaceAll(line, envPrefix, ""))
@@ -77,13 +79,9 @@ func (s *ShellMigrator) lineToFishLine(line string) (newLine string) {
 		line = strings.TrimSpace(strings.ReplaceAll(line, pathPrefix, ""))
 		line = strings.TrimSuffix(line, ":$PATH")
 		pList := strings.Split(line, ":")
-		sList := []string{}
-		for _, p := range pList {
-			if p != "" {
-				sList = append(sList, fmt.Sprintf("fish_add_path --global %s", p))
-			}
+		if len(pList) > 0 {
+			newLine = fmt.Sprintf("fish_add_path --global %s", strings.Join(pList, " "))
 		}
-		newLine = strings.Join(sList, "\n")
 	} else if strings.HasPrefix(line, envPrefix) && !strings.Contains(line, "$PATH") {
 		line = strings.TrimSpace(strings.ReplaceAll(line, envPrefix, ""))
 		eList := strings.Split(line, "=")
@@ -92,6 +90,68 @@ func (s *ShellMigrator) lineToFishLine(line string) (newLine string) {
 		}
 	}
 	return
+}
+
+func (s *ShellMigrator) filterLine(line string) bool {
+	if line == "" {
+		return false
+	}
+
+	installPath := conf.GetVersionManagerWorkDir()
+	installBinPath := filepath.Join(installPath, "bin")
+
+	if line == fmt.Sprintf("fish_add_path --global %s", installPath) {
+		return false
+	}
+
+	if line == fmt.Sprintf("fish_add_path --global %s", installBinPath) {
+		return false
+	}
+
+	if line == fmt.Sprintf("fish_add_path --global %s", sh.FormatPathString(installPath)) {
+		return false
+	}
+
+	if line == fmt.Sprintf("fish_add_path --global %s", sh.FormatPathString(installBinPath)) {
+		return false
+	}
+
+	if line == fmt.Sprintf("fish_add_path --global %s %s", installPath, installBinPath) {
+		return false
+	}
+
+	if line == fmt.Sprintf("fish_add_path --global %s %s", sh.FormatPathString(installPath), sh.FormatPathString(installBinPath)) {
+		return false
+	}
+
+	if !strings.HasPrefix(line, "export") {
+		return true
+	}
+
+	if line == fmt.Sprintf("export PATH=%s:$PATH", installPath) {
+		return false
+	}
+
+	if line == fmt.Sprintf("export PATH=%s:$PATH", installBinPath) {
+		return false
+	}
+
+	if line == fmt.Sprintf("export PATH=%s:$PATH", sh.FormatPathString(installPath)) {
+		return false
+	}
+
+	if line == fmt.Sprintf("export PATH=%s:$PATH", sh.FormatPathString(installBinPath)) {
+		return false
+	}
+
+	if line == fmt.Sprintf("export PATH=%s:%s:$PATH", sh.FormatPathString(installPath), sh.FormatPathString(installBinPath)) {
+		return false
+	}
+
+	if line == fmt.Sprintf("export PATH=%s:%s:$PATH", installPath, installBinPath) {
+		return false
+	}
+	return true
 }
 
 func (s *ShellMigrator) handle(oldFile string, lineHandler func(string) string) {
@@ -105,7 +165,12 @@ func (s *ShellMigrator) handle(oldFile string, lineHandler func(string) string) 
 	lines := strings.Split(oldContent, "\n")
 	for _, line := range lines {
 		l := lineHandler(line)
-		if strings.HasPrefix(l, "export ") && !strings.Contains(newContent, l) {
+
+		if !s.filterLine(l) {
+			continue
+		}
+
+		if l != "" && !strings.Contains(newContent, l) {
 			newContent = newContent + "\n" + l
 		}
 	}
