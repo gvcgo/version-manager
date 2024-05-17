@@ -57,17 +57,25 @@ func (f *FishShell) VMEnvConfPath() string {
 func (f *FishShell) WriteVMEnvToShell() {
 	installPath := conf.GetVersionManagerWorkDir()
 	vmEnvConfPath := f.VMEnvConfPath()
+
+	content, _ := os.ReadFile(vmEnvConfPath)
+	oldEnvStr := strings.TrimSpace(string(content))
 	envStr := fmt.Sprintf(vmEnvFish, installPath, installPath)
-	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
+	if !strings.Contains(oldEnvStr, envStr) {
+		if oldEnvStr != "" {
+			envStr = envStr + "\n" + oldEnvStr
+		}
+		_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
+	}
 
 	shellConfig := f.ConfPath()
-	content, _ := os.ReadFile(shellConfig)
+	content, _ = os.ReadFile(shellConfig)
 	data := string(content)
 
 	home, _ := os.UserHomeDir()
 	vmEnvConfPath = strings.ReplaceAll(vmEnvConfPath, home, "~")
 	sourceStr := fmt.Sprintf(fishShellContent, VMDisableEnvName, vmEnvConfPath)
-	if strings.Contains(data, sourceStr) {
+	if strings.Contains(data, strings.TrimSpace(sourceStr)) {
 		return
 	}
 

@@ -28,17 +28,25 @@ func (b *BashShell) VMEnvConfPath() string {
 func (b *BashShell) WriteVMEnvToShell() {
 	installPath := conf.GetVersionManagerWorkDir()
 	vmEnvConfPath := b.VMEnvConfPath()
+
+	content, _ := os.ReadFile(vmEnvConfPath)
+	oldEnvStr := strings.TrimSpace(string(content))
 	envStr := fmt.Sprintf(vmEnvZsh, installPath, installPath)
-	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
+	if !strings.Contains(oldEnvStr, envStr) {
+		if oldEnvStr != "" {
+			envStr = envStr + "\n" + oldEnvStr
+		}
+		_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
+	}
 
 	shellConfig := b.ConfPath()
-	content, _ := os.ReadFile(shellConfig)
+	content, _ = os.ReadFile(shellConfig)
 	data := string(content)
 
 	home, _ := os.UserHomeDir()
 	vmEnvConfPath = strings.ReplaceAll(vmEnvConfPath, home, "~")
 	sourceStr := fmt.Sprintf(shellContent, VMDisableEnvName, vmEnvConfPath)
-	if strings.Contains(data, sourceStr) {
+	if strings.Contains(data, strings.TrimSpace(sourceStr)) {
 		return
 	}
 

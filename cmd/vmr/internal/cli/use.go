@@ -1,14 +1,15 @@
 package cli
 
 import (
+	"os"
+	"strings"
+
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/pkgs/conf"
 	"github.com/gvcgo/version-manager/pkgs/locker"
 	"github.com/gvcgo/version-manager/pkgs/register"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 )
 
 var useCmd = &cobra.Command{
@@ -22,24 +23,12 @@ var useCmd = &cobra.Command{
 		toLock, _ := cmd.Flags().GetBool("lock")
 		// uses a version for current session only.
 		sessionOnly, _ := cmd.Flags().GetBool("session-only")
+
 		// enable locked version.
 		elv, _ := cmd.Flags().GetBool("enable-locked-version")
-
-		vlocker := locker.NewVLocker()
-		lockedVersion := vlocker.Get()
-		if elv && lockedVersion == "" {
-			return
-		}
-		// Uses the locked version.
-		if lockedVersion != "" && !toLock {
-			args = []string{lockedVersion}
-			sessionOnly = true
-			alreadyLockedVersions := os.Getenv(conf.VMLockedVersionEnvName)
-			if strings.Contains(alreadyLockedVersions, lockedVersion) {
-				return
-			} else {
-				_ = os.Setenv(conf.VMLockedVersionEnvName, lockedVersion)
-			}
+		if elv {
+			l := locker.NewVLocker()
+			l.HookForCDCommand()
 		}
 
 		if toLock {

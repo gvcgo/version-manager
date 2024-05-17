@@ -63,17 +63,24 @@ func (z *ZshShell) VMEnvConfPath() string {
 func (z *ZshShell) WriteVMEnvToShell() {
 	installPath := conf.GetVersionManagerWorkDir()
 	vmEnvConfPath := z.VMEnvConfPath()
-	envStr := fmt.Sprintf(vmEnvZsh, installPath, installPath)
-	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
 
+	content, _ := os.ReadFile(vmEnvConfPath)
+	oldEnvStr := strings.TrimSpace(string(content))
+	envStr := fmt.Sprintf(vmEnvZsh, installPath, installPath)
+	if !strings.Contains(oldEnvStr, envStr) {
+		if oldEnvStr != "" {
+			envStr = envStr + "\n" + oldEnvStr
+		}
+		_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
+	}
 	shellConfig := z.ConfPath()
-	content, _ := os.ReadFile(shellConfig)
+	content, _ = os.ReadFile(shellConfig)
 	data := string(content)
 
 	home, _ := os.UserHomeDir()
 	vmEnvConfPath = strings.ReplaceAll(vmEnvConfPath, home, "~")
 	sourceStr := fmt.Sprintf(shellContent, VMDisableEnvName, vmEnvConfPath)
-	if strings.Contains(data, sourceStr) {
+	if strings.Contains(data, strings.TrimSpace(sourceStr)) {
 		return
 	}
 

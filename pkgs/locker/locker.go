@@ -111,6 +111,10 @@ func (v *VersionLocker) HookForCDCommand() {
 	pathDirs := []string{}
 	envList := []installer.Env{}
 
+	if len(v.VersionOfSDKs) == 0 {
+		os.Exit(0)
+	}
+
 	for appName, version := range v.VersionOfSDKs {
 		if reg, ok := register.VersionKeeper[appName]; ok {
 			reg.SetVersion(version)
@@ -119,6 +123,10 @@ func (v *VersionLocker) HookForCDCommand() {
 			envList = append(envList, e...)
 			terminal.ModifyPathForPty(appName)
 		}
+	}
+
+	if len(pathDirs) == 0 {
+		os.Exit(0)
 	}
 
 	t := terminal.NewPtyTerminal()
