@@ -21,11 +21,7 @@
 
 package main
 
-import (
-	"fmt"
-	"os"
-	"os/exec"
-)
+import "github.com/gvcgo/version-manager/internal/tui/table"
 
 func main() {
 	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
@@ -36,16 +32,19 @@ func main() {
 	// pt.Run()
 	// fmt.Println("----hello")
 
-	c := exec.Command("zsh", `cd`, `~`)
+	// c := exec.Command("zsh", `cd`, `~`)
 
-	c.Env = os.Environ()
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	err := c.Run()
-	fmt.Println(err)
+	// c.Env = os.Environ()
+	// c.Stdin = os.Stdin
+	// c.Stdout = os.Stdout
+	// err := c.Run()
+	// fmt.Println(err)
 
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)
 	// l, _ := os.Readlink(filepath.Join(conf.GetVMVersionsDir("python"), "python"))
 	// fmt.Println(l)
+
+	l := table.NewList()
+	l.Run()
 }
