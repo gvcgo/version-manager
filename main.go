@@ -21,7 +21,9 @@
 
 package main
 
-import "github.com/gvcgo/version-manager/internal/tui/table"
+import (
+	"github.com/gvcgo/version-manager/internal/tui/cmds"
+)
 
 func main() {
 	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
@@ -45,6 +47,7 @@ func main() {
 	// l, _ := os.Readlink(filepath.Join(conf.GetVMVersionsDir("python"), "python"))
 	// fmt.Println(l)
 
-	l := table.NewList()
-	l.Run()
+	// l := table.NewList()
+	// l.Run()
+	cmds.ShowSDKNameList()
 }

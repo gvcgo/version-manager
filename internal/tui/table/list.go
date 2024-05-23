@@ -30,14 +30,14 @@ func NewList() (l *List) {
 }
 
 func (l *List) initTable() {
-	l.Table.SetColumns([]Column{
-		{Title: "SDKName", Width: 20},
-	})
-	l.Table.SetRows([]Row{
-		{"go"},
-		{"jdk"},
-		{"python"},
-	})
+	// l.Table.SetColumns([]Column{
+	// 	{Title: "sdkname", Width: 20},
+	// })
+	// l.Table.SetRows([]Row{
+	// 	{"go"},
+	// 	{"jdk"},
+	// 	{"python"},
+	// })
 	s := DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
@@ -50,6 +50,14 @@ func (l *List) initTable() {
 		Background(lipgloss.Color("57")).
 		Bold(false)
 	l.Table.SetStyles(s)
+}
+
+func (l *List) SetHeader(header []Column) {
+	l.Table.SetColumns(header)
+}
+
+func (l *List) SetRows(rows []Row) {
+	l.Table.SetRows(rows)
 }
 
 func (l *List) initText() {
