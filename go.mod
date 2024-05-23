@@ -4,10 +4,15 @@ go 1.22.0
 
 require (
 	github.com/atotto/clipboard v0.1.4
+	github.com/charmbracelet/bubbles v0.16.1
+	github.com/charmbracelet/bubbletea v0.24.2
+	github.com/charmbracelet/lipgloss v0.8.0
 	github.com/creack/pty v1.1.21
 	github.com/creack/termios v0.0.0-20160714173321-88d0029e36a1
 	github.com/gogf/gf/v2 v2.6.1
 	github.com/gvcgo/goutils v0.9.5
+	github.com/mattn/go-runewidth v0.0.15
+	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/sys v0.18.0
 	golang.org/x/term v0.18.0
@@ -20,10 +25,7 @@ require (
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.4.2 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
-	github.com/charmbracelet/bubbles v0.16.1 // indirect
-	github.com/charmbracelet/bubbletea v0.24.2 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
-	github.com/charmbracelet/lipgloss v0.8.0 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
@@ -39,9 +41,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
-	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
