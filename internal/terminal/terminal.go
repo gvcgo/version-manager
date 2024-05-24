@@ -102,3 +102,8 @@ func (p *PtyTerminal) Run() {
 	}
 	os.Exit(0)
 }
+
+func GetTerminalSize() (height, width int, err error) {
+	t := term.NewTerminal()
+	return t.Size()
+}

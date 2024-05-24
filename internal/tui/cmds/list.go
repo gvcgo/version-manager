@@ -7,10 +7,16 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 )
 
-type SDKNameList map[string]string
+type SDKSha struct {
+	Sha      string `json:"sha256"`
+	HomePage string `json:"homepage"`
+}
+
+type SDKNameList map[string]SDKSha
 
 func ShowSDKNameList() {
 	fetcher := request.NewFetcher()
@@ -22,15 +28,16 @@ func ShowSDKNameList() {
 	sList := SDKNameList{}
 	json.Unmarshal([]byte(resp), &sList)
 	l := table.NewList()
+	_, w, _ := terminal.GetTerminalSize()
 	l.SetHeader([]table.Column{
-		{Title: "sdkname", Width: 30},
-		{Title: "homepage", Width: 180},
+		{Title: "sdkname", Width: 20},
+		{Title: "homepage", Width: w - 30},
 	})
 	rows := []table.Row{}
 	for k, v := range sList {
 		rows = append(rows, table.Row{
 			k,
-			v,
+			v.HomePage,
 		})
 	}
 	l.SetRows(rows)
