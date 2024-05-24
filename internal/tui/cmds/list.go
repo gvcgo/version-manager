@@ -20,8 +20,8 @@ type SDKNameList map[string]SDKSha
 
 func ShowSDKNameList() {
 	fetcher := request.NewFetcher()
-	dUrl, _ := url.JoinPath(cnf.HostUrl, cnf.SDKNameListFileUrl)
-	dUrl = cnf.ReverseProxy + dUrl
+	dUrl, _ := url.JoinPath(cnf.DefaultHostUrl, cnf.SDKNameListFileUrl)
+	dUrl = cnf.DefaultReverseProxy + dUrl
 	fetcher.SetUrl(dUrl)
 	fetcher.Timeout = 10 * time.Second
 	resp, _ := fetcher.GetString()
