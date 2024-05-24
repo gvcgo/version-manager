@@ -392,8 +392,12 @@ func (m Model) headersView() string {
 
 func (m *Model) renderRow(rowID int) string {
 	s := make([]string, 0, len(m.cols))
+	st := lipgloss.NewStyle()
+	if m.Focused() {
+		st = lipgloss.NewStyle().Foreground(lipgloss.Color("#32CD32"))
+	}
 	for i, value := range m.rows[rowID] {
-		style := lipgloss.NewStyle().Foreground(lipgloss.Color("#32CD32")).Width(m.cols[i].Width).MaxWidth(m.cols[i].Width).Inline(true)
+		style := st.Width(m.cols[i].Width).MaxWidth(m.cols[i].Width).Inline(true)
 		renderedCell := m.styles.Cell.Render(style.Render(runewidth.Truncate(value, m.cols[i].Width, "…")))
 		s = append(s, renderedCell)
 	}

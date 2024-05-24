@@ -17,16 +17,15 @@ const (
 	VersionList ListType = "Versions"
 )
 
-type Event func(selectedRow Row) tea.Cmd
+type Event func(key string, l *List) tea.Cmd
 
 type KeyEvent struct {
-	Event    func(selectedRow Row) tea.Cmd
+	Event    Event
 	HelpInfo string
 }
 
 /*
-TODO: searchable table
-TODO: textView to show help info.
+Searchable list.
 */
 type List struct {
 	Table         Model
@@ -37,6 +36,7 @@ type List struct {
 	tableRows     []Row
 	Type          ListType
 	TableKeyEvent map[string]KeyEvent
+	PressedKey    string
 }
 
 func NewList() (l *List) {
@@ -63,6 +63,7 @@ func (l *List) initTable() {
 		Background(lipgloss.Color("57")).
 		Bold(false)
 	l.Table.SetStyles(s)
+	l.Table.Blur()
 }
 
 func (l *List) initText() {
@@ -78,9 +79,9 @@ func (l *List) SetListType(t ListType) {
 	l.Type = t
 }
 
-func (l *List) SetKeyEventForTable(key string, f KeyEvent) {
-	if key != "" && f.Event != nil {
-		l.TableKeyEvent[key] = f
+func (l *List) SetKeyEventForTable(key string, ke KeyEvent) {
+	if key != "" && ke.Event != nil {
+		l.TableKeyEvent[key] = ke
 	}
 }
 
@@ -111,7 +112,7 @@ func (l *List) GetSelected() string {
 }
 
 func (l *List) Init() tea.Cmd {
-	return nil
+	return textinput.Blink
 }
 
 func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -134,6 +135,7 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if l.Table.Focused() {
 				l.Table.Blur()
 				l.Text.Focus()
+				return l, textinput.Blink
 			}
 		case "tab":
 			if l.Text.Focused() {
@@ -142,6 +144,7 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				l.Table.Blur()
 				l.Text.Focus()
+				return l, textinput.Blink
 			}
 		case "esc", "ctrl+c":
 			return l, tea.Quit
@@ -152,9 +155,18 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return l, cmd
 			}
 			if f, ok := l.TableKeyEvent[keypress]; ok && f.Event != nil {
-				cmd = f.Event(l.Table.SelectedRow())
+				cmd = f.Event(keypress, l)
 				return l, cmd
 			}
+			l.Table, cmd = l.Table.Update(msg)
+			return l, cmd
+		}
+	default:
+		var cmd tea.Cmd
+		if l.Text.Focused() {
+			l.Text, cmd = l.Text.Update(msg)
+			return l, cmd
+		} else {
 			l.Table, cmd = l.Table.Update(msg)
 			return l, cmd
 		}
@@ -162,7 +174,7 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return l, nil
 }
 
-func (l *List) RenderHelpInfo() (count int, s string) {
+func (l *List) renderHelpInfo() (count int, s string) {
 	lines := []string{"<key map>"}
 	pattern := "→| %-12s  %s"
 	if l.Text.Focused() {
@@ -183,6 +195,7 @@ func (l *List) RenderHelpInfo() (count int, s string) {
 			lines = append(lines, fmt.Sprintf(pattern, key, event.HelpInfo))
 		}
 	}
+	lines = append(lines, "See docs: https://gvcgo.github.io/vmrdocs/")
 	return len(lines), JoinVertical(lipgloss.Left, lines...)
 }
 
@@ -191,11 +204,14 @@ func (l *List) View() string {
 		return ""
 	}
 	if l.Text.Focused() {
+		l.Text.Placeholder = "Enter something to search for."
 		l.Text.Prompt = lipgloss.NewStyle().Copy().Foreground(lipgloss.Color("#32CD32")).Render(">")
 	} else {
+		l.Text.Placeholder = "Search..."
 		l.Text.Prompt = ""
 	}
-	helpCount, helpInfo := l.RenderHelpInfo()
+
+	helpCount, helpInfo := l.renderHelpInfo()
 	l.Table.SetHeight(l.WindowHeight - helpCount - 5)
 	return lipgloss.JoinVertical(
 		lipgloss.Left,

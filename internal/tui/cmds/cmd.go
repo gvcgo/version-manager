@@ -1,7 +1,5 @@
 package cmds
 
-var TUIContinueToNext bool
-
 type VmrTUI struct {
 	SList *VMRSDKList
 	VList *SDKVersionList
@@ -12,19 +10,18 @@ func NewTUI() *VmrTUI {
 }
 
 func (v *VmrTUI) ListSDKName() {
-	TUIContinueToNext = false
 	if v.SList == nil {
 		v.SList = NewVMRSDKList()
 	}
-	v.SList.ShowSDKList()
+	lastPressedKey, sdkName := v.SList.ShowSDKList()
 
-	if TUIContinueToNext {
-		v.SearchVersions(v.SList.GetSelected())
+	// search version list for selected sdkname.
+	if lastPressedKey == "s" {
+		v.SearchVersions(sdkName)
 	}
 }
 
 func (v *VmrTUI) SearchVersions(sdkName string) {
-	TUIContinueToNext = false
 	if v.VList == nil {
 		v.VList = NewSDKVersionList()
 	}

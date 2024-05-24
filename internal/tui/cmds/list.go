@@ -30,14 +30,13 @@ type VMRSDKList struct {
 }
 
 func NewVMRSDKList() *VMRSDKList {
-	TUIContinueToNext = false
 	return &VMRSDKList{
 		SdkList: make(SDKNameList),
 		Fetcher: request.NewFetcher(),
 	}
 }
 
-func (v *VMRSDKList) ShowSDKList() {
+func (v *VMRSDKList) ShowSDKList() (lastPressedKey string, selectedItem string) {
 	dUrl := cnf.GetSDKListFileUrl()
 	v.Fetcher.SetUrl(dUrl)
 	v.Fetcher.Timeout = 10 * time.Second
@@ -71,22 +70,26 @@ func (v *VMRSDKList) ShowSDKList() {
 	ll.SetRows(rows)
 	ll.Run()
 
-	v.selected = ll.GetSelected()
+	selectedItem = ll.GetSelected()
+	lastPressedKey = ll.PressedKey
+	return
 }
 
 func (v *VMRSDKList) RegisterKeyEvents(ll *table.List) {
 	ll.SetKeyEventForTable("o", table.KeyEvent{
-		Event: func(sr table.Row) tea.Cmd {
-			if len(sr) > 0 {
+		Event: func(key string, l *table.List) tea.Cmd {
+			sr := l.Table.SelectedRow()
+			if len(sr) > 1 {
 				utils.OpenURL(sr[1])
 			}
+			l.PressedKey = "o"
 			return nil
 		},
 		HelpInfo: "open homepage",
 	})
 	ll.SetKeyEventForTable("s", table.KeyEvent{
-		Event: func(sr table.Row) tea.Cmd {
-			TUIContinueToNext = true
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.PressedKey = "s"
 			return tea.Quit
 		},
 		HelpInfo: "search versions for selected sdk",
