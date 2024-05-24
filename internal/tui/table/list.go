@@ -36,7 +36,7 @@ type List struct {
 	tableRows     []Row
 	Type          ListType
 	TableKeyEvent map[string]KeyEvent
-	PressedKey    string
+	NextEvent     string
 }
 
 func NewList() (l *List) {

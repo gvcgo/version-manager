@@ -1,8 +1,8 @@
 package cmds
 
 type VmrTUI struct {
-	SList *VMRSDKList
-	VList *SDKVersionList
+	SList *SDKSearcher
+	VList *VersionSearcher
 }
 
 func NewTUI() *VmrTUI {
@@ -11,19 +11,19 @@ func NewTUI() *VmrTUI {
 
 func (v *VmrTUI) ListSDKName() {
 	if v.SList == nil {
-		v.SList = NewVMRSDKList()
+		v.SList = NewSDKSearcher()
 	}
-	lastPressedKey, sdkName := v.SList.ShowSDKList()
+	lastPressedKey, sdkName := v.SList.Show()
 
 	// search version list for selected sdkname.
-	if lastPressedKey == "s" {
+	if lastPressedKey == KeyEventSeachVersionList {
 		v.SearchVersions(sdkName)
 	}
 }
 
 func (v *VmrTUI) SearchVersions(sdkName string) {
 	if v.VList == nil {
-		v.VList = NewSDKVersionList()
+		v.VList = NewVersionSearcher()
 	}
 	v.VList.Search(sdkName)
 }

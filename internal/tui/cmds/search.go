@@ -41,31 +41,31 @@ type SDKVersion []Item
 
 type VersionList map[string]SDKVersion
 
-type SDKVersionList struct {
+type VersionSearcher struct {
 	V       VersionList
 	SDKName string
 	Fetcher *request.Fetcher
 }
 
-func NewSDKVersionList() (sv *SDKVersionList) {
-	sv = &SDKVersionList{
+func NewVersionSearcher() (sv *VersionSearcher) {
+	sv = &VersionSearcher{
 		V:       make(VersionList),
 		Fetcher: request.NewFetcher(),
 	}
 	return
 }
 
-func (s *SDKVersionList) Search(sdkName string) {
+func (s *VersionSearcher) Search(sdkName string) {
 	s.SDKName = sdkName
 	dUrl := cnf.GetVersionFileUrlBySDKName(s.SDKName)
 	s.Fetcher.SetUrl(dUrl)
 	s.Fetcher.Timeout = time.Minute
 	resp, _ := s.Fetcher.GetString()
 	json.Unmarshal([]byte(resp), &s.V)
-	s.ShowList()
+	s.Show()
 }
 
-func (s *SDKVersionList) ShowList() {
+func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 	if len(s.V) == 0 {
 		gprint.PrintInfo("No versions found for current platform.")
 		return
@@ -98,4 +98,12 @@ func (s *SDKVersionList) ShowList() {
 	SortVersions(rows)
 	ll.SetRows(rows)
 	ll.Run()
+
+	selectedItem = ll.GetSelected()
+	nextEvent = ll.NextEvent
+	return
+}
+
+// TODO: install, switch-to, session-only, lock-version
+func (s *VersionSearcher) RegisterKeyEvents(ll *table.List) {
 }

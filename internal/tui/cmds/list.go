@@ -12,6 +12,12 @@ import (
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
+const (
+	// tui key envent name.
+	KeyEventOpenHomePage     = "open-homepage"
+	KeyEventSeachVersionList = "search-version-list"
+)
+
 /*
 Show the SDK list supported by vmr.
 */
@@ -23,20 +29,19 @@ type SDKSha struct {
 
 type SDKNameList map[string]SDKSha
 
-type VMRSDKList struct {
-	SdkList  SDKNameList
-	Fetcher  *request.Fetcher
-	selected string
+type SDKSearcher struct {
+	SdkList SDKNameList
+	Fetcher *request.Fetcher
 }
 
-func NewVMRSDKList() *VMRSDKList {
-	return &VMRSDKList{
+func NewSDKSearcher() *SDKSearcher {
+	return &SDKSearcher{
 		SdkList: make(SDKNameList),
 		Fetcher: request.NewFetcher(),
 	}
 }
 
-func (v *VMRSDKList) ShowSDKList() (lastPressedKey string, selectedItem string) {
+func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 	dUrl := cnf.GetSDKListFileUrl()
 	v.Fetcher.SetUrl(dUrl)
 	v.Fetcher.Timeout = 10 * time.Second
@@ -71,31 +76,32 @@ func (v *VMRSDKList) ShowSDKList() (lastPressedKey string, selectedItem string) 
 	ll.Run()
 
 	selectedItem = ll.GetSelected()
-	lastPressedKey = ll.PressedKey
+	nextEvent = ll.NextEvent
 	return
 }
 
-func (v *VMRSDKList) RegisterKeyEvents(ll *table.List) {
+func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
+	// Open homepage.
 	ll.SetKeyEventForTable("o", table.KeyEvent{
 		Event: func(key string, l *table.List) tea.Cmd {
 			sr := l.Table.SelectedRow()
 			if len(sr) > 1 {
 				utils.OpenURL(sr[1])
 			}
-			l.PressedKey = "o"
+			l.NextEvent = KeyEventOpenHomePage
 			return nil
 		},
 		HelpInfo: "open homepage",
 	})
+
+	// Search version list.
 	ll.SetKeyEventForTable("s", table.KeyEvent{
 		Event: func(key string, l *table.List) tea.Cmd {
-			l.PressedKey = "s"
+			l.NextEvent = KeyEventSeachVersionList
 			return tea.Quit
 		},
 		HelpInfo: "search versions for selected sdk",
 	})
-}
 
-func (v *VMRSDKList) GetSelected() string {
-	return v.selected
+	// TODO: Show local installed.
 }
