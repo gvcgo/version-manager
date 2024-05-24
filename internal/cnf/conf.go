@@ -1,18 +1,28 @@
 package cnf
 
 import (
+	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 
 	toml "github.com/pelletier/go-toml/v2"
 )
 
+var DefaultConfig *VMRConf
+
+func init() {
+	DefaultConfig = NewVMRConf()
+}
+
 const (
-	DefaultReverseProxy   string = "https://gvc.1710717.xyz/proxy/"
-	DefaultHostUrl        string = "https://raw.githubusercontent.com/gvcgo/vsources/main"
-	SDKNameListFileUrl    string = `/sdk-list.version.json`
-	VersionFileUrlPattern string = `/%s.version.json`
-	VMRWorkDirName        string = ".vmr"
+	DefaultReverseProxy       string = "https://gvc.1710717.xyz/proxy/"
+	DefaultHostUrl            string = "https://raw.githubusercontent.com/gvcgo/vsources/main"
+	DefaultInstallationHost   string = "" // sdk installation config file
+	SDKNameListFileUrl        string = `/sdk-list.version.json`
+	VersionFileUrlPattern     string = `/%s.version.json`
+	SDKInstallationUrlPattern string = `/%s.install.toml`
+	VMRWorkDirName            string = ".vmr"
 )
 
 /*
@@ -20,6 +30,9 @@ Envs
 */
 const (
 	VMRSdkInstallationDirEnv string = "VMR_SDK_INSTALLATION_DIR"
+	VMRHostUrlEnv            string = "VMR_HOST"
+	VMRInstallationHostEnv   string = "VMR_INSTALLATION_HOST"
+	VMRReverseProxyEnv       string = "VMR_REVERSE_PROXY"
 )
 
 func GetVMRWorkDir() string {
@@ -72,6 +85,12 @@ func NewVMRConf() (v *VMRConf) {
 	if v.SDKIntallationDir != "" {
 		os.Setenv(VMRSdkInstallationDirEnv, v.SDKIntallationDir)
 	}
+	if v.VersionHostUrl != "" {
+		os.Setenv(VMRHostUrlEnv, v.VersionHostUrl)
+	}
+	if v.InstallationHostUrl != "" {
+		os.Setenv(VMRInstallationHostEnv, v.InstallationHostUrl)
+	}
 	return v
 }
 
@@ -105,4 +124,46 @@ func (v *VMRConf) SetReverseProxy(sUri string) {
 	v.Load()
 	v.ReverseProxy = sUri
 	v.Save()
+}
+
+// reverse proxy
+func GetReverseProxyUri() string {
+	rp := os.Getenv(VMRReverseProxyEnv)
+	if rp == "" {
+		rp = DefaultReverseProxy
+	}
+	return rp
+}
+
+// sdk-list.version.json
+func GetSDKListFileUrl() string {
+	host := os.Getenv(VMRHostUrlEnv)
+	if host == "" {
+		host = DefaultHostUrl
+	}
+	u, _ := url.JoinPath(host, SDKNameListFileUrl)
+	u = GetReverseProxyUri() + u
+	return u
+}
+
+// {sdkname}.version.json file
+func GetVersionFileUrlBySDKName(sdkName string) string {
+	host := os.Getenv(VMRHostUrlEnv)
+	if host == "" {
+		host = DefaultHostUrl
+	}
+	u, _ := url.JoinPath(host, fmt.Sprintf(VersionFileUrlPattern, sdkName))
+	u = GetReverseProxyUri() + u
+	return u
+}
+
+// {sdkname}.install.toml file
+func GetSDKInstallationConfFileBySDKName(sdkName string) string {
+	host := os.Getenv(VMRInstallationHostEnv)
+	if host == "" {
+		host = DefaultInstallationHost
+	}
+	u, _ := url.JoinPath(host, fmt.Sprintf(SDKInstallationUrlPattern, sdkName))
+	u = GetReverseProxyUri() + u
+	return u
 }
