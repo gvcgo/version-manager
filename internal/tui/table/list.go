@@ -16,23 +16,27 @@ const (
 	VersionList ListType = "Versions"
 )
 
+type Event func(selectedRow Row) tea.Cmd
+
 /*
 TODO: searchable table
 */
 type List struct {
-	Table        Model
-	Text         textinput.Model
-	WindowHeight int
-	WindowWidth  int
-	tableHeader  []Column
-	tableRows    []Row
-	Type         ListType
+	Table         Model
+	Text          textinput.Model
+	WindowHeight  int
+	WindowWidth   int
+	tableHeader   []Column
+	tableRows     []Row
+	Type          ListType
+	TableKeyEvent map[string]Event
 }
 
 func NewList() (l *List) {
 	l = &List{
-		Table: New(),
-		Text:  textinput.New(),
+		Table:         New(),
+		Text:          textinput.New(),
+		TableKeyEvent: make(map[string]Event),
 	}
 	l.initTable()
 	l.initText()
@@ -65,6 +69,12 @@ func (l *List) initText() {
 
 func (l *List) SetListType(t ListType) {
 	l.Type = t
+}
+
+func (l *List) SetKeyEventForTable(key string, f Event) {
+	if key != "" && f != nil {
+		l.TableKeyEvent[key] = f
+	}
 }
 
 func (l *List) SetHeader(header []Column) {
@@ -132,6 +142,10 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			var cmd tea.Cmd
 			if l.Text.Focused() {
 				l.Text, cmd = l.Text.Update(msg)
+				return l, cmd
+			}
+			if f, ok := l.TableKeyEvent[keypress]; ok {
+				cmd = f(l.Table.SelectedRow())
 				return l, cmd
 			}
 			l.Table, cmd = l.Table.Update(msg)

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 /*
@@ -45,6 +47,7 @@ func (v *VMRSDKList) ShowSDKList() {
 
 	ll := table.NewList()
 	ll.SetListType(table.SDKList)
+	v.RegisterKeyEvents(ll)
 
 	_, w, _ := terminal.GetTerminalSize()
 	if w > 30 {
@@ -69,4 +72,13 @@ func (v *VMRSDKList) ShowSDKList() {
 
 	ss := ll.GetSelected()
 	fmt.Println("selected: ", ss)
+}
+
+func (v *VMRSDKList) RegisterKeyEvents(ll *table.List) {
+	ll.SetKeyEventForTable("o", func(sr table.Row) tea.Cmd {
+		if len(sr) > 0 {
+			utils.OpenURL(sr[1])
+		}
+		return nil
+	})
 }
