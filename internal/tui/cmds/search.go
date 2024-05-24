@@ -15,47 +15,25 @@ import (
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 /*
 Search version list for SDK.
 */
-const (
-	Conda      string = "conda"
-	CondaForge string = "conda-forge"
-	Coursier   string = "coursier"
-	Unarchiver string = "unarchiver"
-	Executable string = "executable"
-	Dpkg       string = "dpkg"
-	Rpm        string = "rpm"
-)
-
-type Item struct {
-	Url       string `json:"url"`       // download url
-	Arch      string `json:"arch"`      // amd64 | arm64
-	Os        string `json:"os"`        // linux | darwin | windows
-	Sum       string `json:"sum"`       // Checksum
-	SumType   string `json:"sum_type"`  // sha1 | sha256 | sha512 | md5
-	Size      int64  `json:"size"`      // Size in bytes
-	Installer string `json:"installer"` // conda | conda-forge | coursier | unarchiver | executable | dpkg | rpm
-	LTS       string `json:"lts"`       // Long Term Support
-	Extra     string `json:"extra"`     // Extra Info
-}
-
-type SDKVersion []Item
-
-type VersionList map[string]SDKVersion
 
 type VersionSearcher struct {
-	V       VersionList
-	SDKName string
-	Fetcher *request.Fetcher
+	V                utils.VersionList
+	SDKName          string
+	Fetcher          *request.Fetcher
+	FilteredVersions map[string]utils.Item
 }
 
 func NewVersionSearcher() (sv *VersionSearcher) {
 	sv = &VersionSearcher{
-		V:       make(VersionList),
-		Fetcher: request.NewFetcher(),
+		V:                make(utils.VersionList),
+		Fetcher:          request.NewFetcher(),
+		FilteredVersions: make(map[string]utils.Item),
 	}
 	return
 }
@@ -69,8 +47,6 @@ func (s *VersionSearcher) checkSum(newSha256 string) (ok bool, fPath string) {
 	h := sha256.New()
 	h.Write(content)
 	oldSha256 := fmt.Sprintf("%x", h.Sum(nil))
-	// fmt.Println("oldSha256:", oldSha256)
-	// fmt.Println("newSha256:", newSha256)
 	return oldSha256 == newSha256, fPath
 }
 
@@ -115,13 +91,17 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: "installer", Width: w},
 	})
 	rows := []table.Row{}
-	for k, v := range s.V {
-		for _, item := range v {
+	for vName, vList := range s.V {
+		for _, item := range vList {
 			if (item.Os == runtime.GOOS || item.Os == "any") && (item.Arch == runtime.GOARCH || item.Arch == "any") {
 				rows = append(rows, table.Row{
-					k,
+					vName,
 					item.Installer,
 				})
+				item.Os = runtime.GOOS
+				item.Arch = runtime.GOARCH
+				// save filtered version.
+				s.FilteredVersions[vName] = item
 			}
 		}
 	}
