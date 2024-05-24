@@ -1,6 +1,7 @@
 package table
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/cursor"
@@ -18,8 +19,14 @@ const (
 
 type Event func(selectedRow Row) tea.Cmd
 
+type KeyEvent struct {
+	Event    func(selectedRow Row) tea.Cmd
+	HelpInfo string
+}
+
 /*
 TODO: searchable table
+TODO: textView to show help info.
 */
 type List struct {
 	Table         Model
@@ -29,14 +36,14 @@ type List struct {
 	tableHeader   []Column
 	tableRows     []Row
 	Type          ListType
-	TableKeyEvent map[string]Event
+	TableKeyEvent map[string]KeyEvent
 }
 
 func NewList() (l *List) {
 	l = &List{
 		Table:         New(),
 		Text:          textinput.New(),
-		TableKeyEvent: make(map[string]Event),
+		TableKeyEvent: make(map[string]KeyEvent),
 	}
 	l.initTable()
 	l.initText()
@@ -71,8 +78,8 @@ func (l *List) SetListType(t ListType) {
 	l.Type = t
 }
 
-func (l *List) SetKeyEventForTable(key string, f Event) {
-	if key != "" && f != nil {
+func (l *List) SetKeyEventForTable(key string, f KeyEvent) {
+	if key != "" && f.Event != nil {
 		l.TableKeyEvent[key] = f
 	}
 }
@@ -136,7 +143,7 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				l.Table.Blur()
 				l.Text.Focus()
 			}
-		case "esc", "q":
+		case "esc", "ctrl+c":
 			return l, tea.Quit
 		default:
 			var cmd tea.Cmd
@@ -144,8 +151,8 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				l.Text, cmd = l.Text.Update(msg)
 				return l, cmd
 			}
-			if f, ok := l.TableKeyEvent[keypress]; ok {
-				cmd = f(l.Table.SelectedRow())
+			if f, ok := l.TableKeyEvent[keypress]; ok && f.Event != nil {
+				cmd = f.Event(l.Table.SelectedRow())
 				return l, cmd
 			}
 			l.Table, cmd = l.Table.Update(msg)
@@ -153,6 +160,30 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return l, nil
+}
+
+func (l *List) RenderHelpInfo() (count int, s string) {
+	lines := []string{"<key map>"}
+	pattern := "→| %-12s  %s"
+	if l.Text.Focused() {
+		lines = append(lines, fmt.Sprintf(pattern, "enter", "start searching and change focus on table"))
+		lines = append(lines, fmt.Sprintf(pattern, "tab", "change focus on table"))
+		lines = append(lines, fmt.Sprintf(pattern, "esc", "exit"))
+		lines = append(lines, fmt.Sprintf(pattern, "ctrl+c", "exit"))
+	} else {
+		lines = append(lines, fmt.Sprintf(pattern, "enter", "change focus on search input"))
+		lines = append(lines, fmt.Sprintf(pattern, "tab", "change focus on search input"))
+		lines = append(lines, fmt.Sprintf(pattern, "esc", "exit"))
+		lines = append(lines, fmt.Sprintf(pattern, "ctrl+c", "exit"))
+		lines = append(lines, fmt.Sprintf(pattern, "↑/k", "scroll up"))
+		lines = append(lines, fmt.Sprintf(pattern, "↓/j", "scroll down"))
+		lines = append(lines, fmt.Sprintf(pattern, "g", "goto the first line"))
+		lines = append(lines, fmt.Sprintf(pattern, "G", "goto the last line"))
+		for key, event := range l.TableKeyEvent {
+			lines = append(lines, fmt.Sprintf(pattern, key, event.HelpInfo))
+		}
+	}
+	return len(lines), JoinVertical(lipgloss.Left, lines...)
 }
 
 func (l *List) View() string {
@@ -164,11 +195,15 @@ func (l *List) View() string {
 	} else {
 		l.Text.Prompt = ""
 	}
+	helpCount, helpInfo := l.RenderHelpInfo()
+	l.Table.SetHeight(l.WindowHeight - helpCount - 5)
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		l.Text.View(),
 		"",
 		l.Table.View(),
+		"",
+		lipgloss.NewStyle().Foreground(lipgloss.Color("#D2691E")).Render(helpInfo),
 	)
 }
 

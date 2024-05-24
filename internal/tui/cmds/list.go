@@ -75,10 +75,13 @@ func (v *VMRSDKList) ShowSDKList() {
 }
 
 func (v *VMRSDKList) RegisterKeyEvents(ll *table.List) {
-	ll.SetKeyEventForTable("o", func(sr table.Row) tea.Cmd {
-		if len(sr) > 0 {
-			utils.OpenURL(sr[1])
-		}
-		return nil
+	ll.SetKeyEventForTable("o", table.KeyEvent{
+		Event: func(sr table.Row) tea.Cmd {
+			if len(sr) > 0 {
+				utils.OpenURL(sr[1])
+			}
+			return nil
+		},
+		HelpInfo: "open homepage",
 	})
 }
