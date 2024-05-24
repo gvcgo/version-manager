@@ -1,8 +1,13 @@
 package cmds
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -55,13 +60,38 @@ func NewVersionSearcher() (sv *VersionSearcher) {
 	return
 }
 
-func (s *VersionSearcher) Search(sdkName string) {
+func (s *VersionSearcher) checkSum(newSha256 string) (ok bool, fPath string) {
+	versionFileCacheDir := filepath.Join(cnf.GetCacheDir(), s.SDKName)
+	os.MkdirAll(versionFileCacheDir, os.ModePerm)
+	fPath = filepath.Join(versionFileCacheDir, strings.Trim(fmt.Sprintf(cnf.VersionFileUrlPattern, s.SDKName), "/"))
+	content, _ := os.ReadFile(fPath)
+
+	h := sha256.New()
+	h.Write(content)
+	oldSha256 := fmt.Sprintf("%x", h.Sum(nil))
+	// fmt.Println("oldSha256:", oldSha256)
+	// fmt.Println("newSha256:", newSha256)
+	return oldSha256 == newSha256, fPath
+}
+
+func (s *VersionSearcher) Search(sdkName, newSha256 string) {
 	s.SDKName = sdkName
 	dUrl := cnf.GetVersionFileUrlBySDKName(s.SDKName)
 	s.Fetcher.SetUrl(dUrl)
 	s.Fetcher.Timeout = time.Minute
-	resp, _ := s.Fetcher.GetString()
-	json.Unmarshal([]byte(resp), &s.V)
+
+	// compare sha256.
+	var content []byte
+	if ok, localFile := s.checkSum(newSha256); ok {
+		content, _ = os.ReadFile(localFile)
+	} else {
+		resp, _ := s.Fetcher.GetString()
+		content = []byte(resp)
+		// cache version files.
+		os.WriteFile(localFile, content, os.ModePerm)
+	}
+
+	json.Unmarshal(content, &s.V)
 	s.Show()
 }
 

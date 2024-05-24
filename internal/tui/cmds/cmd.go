@@ -17,13 +17,14 @@ func (v *VmrTUI) ListSDKName() {
 
 	// search version list for selected sdkname.
 	if lastPressedKey == KeyEventSeachVersionList {
-		v.SearchVersions(sdkName)
+		sdkSha := v.SList.GetShaBySDKName(sdkName)
+		v.SearchVersions(sdkName, sdkSha.Sha)
 	}
 }
 
-func (v *VmrTUI) SearchVersions(sdkName string) {
+func (v *VmrTUI) SearchVersions(sdkName, sha256 string) {
 	if v.VList == nil {
 		v.VList = NewVersionSearcher()
 	}
-	v.VList.Search(sdkName)
+	v.VList.Search(sdkName, sha256)
 }

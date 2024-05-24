@@ -41,14 +41,18 @@ func NewSDKSearcher() *SDKSearcher {
 	}
 }
 
+func (v *SDKSearcher) GetShaBySDKName(sdkName string) (ss SDKSha) {
+	ss = v.SdkList[sdkName]
+	return
+}
+
 func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 	dUrl := cnf.GetSDKListFileUrl()
 	v.Fetcher.SetUrl(dUrl)
 	v.Fetcher.Timeout = 10 * time.Second
 
 	resp, _ := v.Fetcher.GetString()
-	sdkList := make(SDKNameList)
-	json.Unmarshal([]byte(resp), &sdkList)
+	json.Unmarshal([]byte(resp), &v.SdkList)
 
 	ll := table.NewList()
 	ll.SetListType(table.SDKList)
@@ -65,7 +69,7 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: "homepage", Width: w},
 	})
 	rows := []table.Row{}
-	for k, v := range sdkList {
+	for k, v := range v.SdkList {
 		rows = append(rows, table.Row{
 			k,
 			v.HomePage,
