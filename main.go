@@ -50,6 +50,6 @@ func main() {
 	// l := table.NewList()
 	// l.Run()
 	// cmds.ShowSDKNameList()
-	ll := cmds.NewVMRSDKList()
-	ll.ShowSDKList()
+	ll := cmds.NewTUI()
+	ll.ListSDKName()
 }

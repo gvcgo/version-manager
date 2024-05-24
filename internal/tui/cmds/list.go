@@ -2,7 +2,6 @@ package cmds
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -25,11 +24,13 @@ type SDKSha struct {
 type SDKNameList map[string]SDKSha
 
 type VMRSDKList struct {
-	SdkList SDKNameList
-	Fetcher *request.Fetcher
+	SdkList  SDKNameList
+	Fetcher  *request.Fetcher
+	selected string
 }
 
 func NewVMRSDKList() *VMRSDKList {
+	TUIContinueToNext = false
 	return &VMRSDKList{
 		SdkList: make(SDKNameList),
 		Fetcher: request.NewFetcher(),
@@ -70,8 +71,7 @@ func (v *VMRSDKList) ShowSDKList() {
 	ll.SetRows(rows)
 	ll.Run()
 
-	ss := ll.GetSelected()
-	fmt.Println("selected: ", ss)
+	v.selected = ll.GetSelected()
 }
 
 func (v *VMRSDKList) RegisterKeyEvents(ll *table.List) {
@@ -84,4 +84,15 @@ func (v *VMRSDKList) RegisterKeyEvents(ll *table.List) {
 		},
 		HelpInfo: "open homepage",
 	})
+	ll.SetKeyEventForTable("s", table.KeyEvent{
+		Event: func(sr table.Row) tea.Cmd {
+			TUIContinueToNext = true
+			return tea.Quit
+		},
+		HelpInfo: "search versions for selected sdk",
+	})
+}
+
+func (v *VMRSDKList) GetSelected() string {
+	return v.selected
 }
