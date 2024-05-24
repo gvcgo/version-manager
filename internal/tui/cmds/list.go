@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/request"
@@ -43,10 +44,17 @@ func (v *VMRSDKList) ShowSDKList() {
 	json.Unmarshal([]byte(resp), &sdkList)
 
 	ll := table.NewList()
+	ll.SetListType(table.SDKList)
+
 	_, w, _ := terminal.GetTerminalSize()
+	if w > 30 {
+		w -= 30
+	} else {
+		w = 120
+	}
 	ll.SetHeader([]table.Column{
 		{Title: "sdkname", Width: 20},
-		{Title: "homepage", Width: w - 30},
+		{Title: "homepage", Width: w},
 	})
 	rows := []table.Row{}
 	for k, v := range sdkList {
@@ -58,4 +66,7 @@ func (v *VMRSDKList) ShowSDKList() {
 	SortVersionAscend(rows)
 	ll.SetRows(rows)
 	ll.Run()
+
+	ss := ll.GetSelected()
+	fmt.Println("selected: ", ss)
 }

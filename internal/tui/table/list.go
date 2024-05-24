@@ -1,12 +1,19 @@
 package table
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+)
+
+type ListType string
+
+const (
+	SDKList     ListType = "SDKs"
+	VersionList ListType = "Versions"
 )
 
 /*
@@ -17,6 +24,9 @@ type List struct {
 	Text         textinput.Model
 	WindowHeight int
 	WindowWidth  int
+	tableHeader  []Column
+	tableRows    []Row
+	Type         ListType
 }
 
 func NewList() (l *List) {
@@ -30,14 +40,6 @@ func NewList() (l *List) {
 }
 
 func (l *List) initTable() {
-	// l.Table.SetColumns([]Column{
-	// 	{Title: "sdkname", Width: 20},
-	// })
-	// l.Table.SetRows([]Row{
-	// 	{"go"},
-	// 	{"jdk"},
-	// 	{"python"},
-	// })
 	s := DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
@@ -52,14 +54,6 @@ func (l *List) initTable() {
 	l.Table.SetStyles(s)
 }
 
-func (l *List) SetHeader(header []Column) {
-	l.Table.SetColumns(header)
-}
-
-func (l *List) SetRows(rows []Row) {
-	l.Table.SetRows(rows)
-}
-
 func (l *List) initText() {
 	l.Text.Cursor.SetMode(cursor.CursorBlink)
 	l.Text.Prompt = ">"
@@ -67,6 +61,36 @@ func (l *List) initText() {
 	l.Text.CharLimit = -1
 	l.Text.Focus()
 	l.Text.CursorEnd()
+}
+
+func (l *List) SetListType(t ListType) {
+	l.Type = t
+}
+
+func (l *List) SetHeader(header []Column) {
+	l.tableHeader = header
+	l.Table.SetColumns(header)
+}
+
+func (l *List) SetRows(rows []Row) {
+	l.tableRows = rows
+	l.Table.SetRows(rows)
+}
+
+func (l *List) Search() {
+	s := l.Text.Value()
+	newRows := []Row{}
+	for _, row := range l.tableRows {
+		if strings.HasPrefix(row[0], s) {
+			newRows = append(newRows, row)
+		}
+	}
+	l.Table.SetRows(newRows)
+}
+
+func (l *List) GetSelected() string {
+	r := l.Table.SelectedRow()
+	return r[0]
 }
 
 func (l *List) Init() tea.Cmd {
@@ -86,9 +110,13 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch keypress {
 		case "enter":
 			if l.Text.Focused() {
-				fmt.Println(l.Text.Value())
+				l.Search()
+				l.Text.Blur()
+				l.Table.Focus()
+				l.Table.SetCursor(0)
 			} else if l.Table.Focused() {
-				fmt.Println(l.Table.SelectedRow())
+				l.Table.Blur()
+				l.Text.Focus()
 			}
 		case "tab":
 			if l.Text.Focused() {
@@ -116,6 +144,11 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (l *List) View() string {
 	if l.WindowHeight == 0 || l.WindowWidth == 0 {
 		return ""
+	}
+	if l.Text.Focused() {
+		l.Text.Prompt = lipgloss.NewStyle().Copy().Foreground(lipgloss.Color("#32CD32")).Render(">")
+	} else {
+		l.Text.Prompt = ""
 	}
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
