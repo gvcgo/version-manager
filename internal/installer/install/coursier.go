@@ -45,7 +45,7 @@ func (c *CoursierInstaller) Install(originSDKName, versionName string, version u
 	_, err := gutils.ExecuteSysCommand(
 		false, homeDir,
 		"cs", "install",
-		"-P",
+		"-q",
 		fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
 		fmt.Sprintf("%s:%s", c.OriginSDKName, c.VersionName),
 	)

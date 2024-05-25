@@ -50,6 +50,7 @@ func (c *CondaInstaller) Install(originSDKName, versionName string, version util
 	_, err := gutils.ExecuteSysCommand(
 		false, homeDir,
 		"conda", "create",
+		"-q", "-y",
 		fmt.Sprintf("--prefix=%s", c.GetInstallDir()),
 		"-c", "conda-forge", c.OriginSDKName,
 		fmt.Sprintf("%s=%s", c.OriginSDKName, c.VersionName),

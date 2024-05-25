@@ -10,7 +10,7 @@ require (
 	github.com/creack/pty v1.1.21
 	github.com/creack/termios v0.0.0-20160714173321-88d0029e36a1
 	github.com/gogf/gf/v2 v2.6.1
-	github.com/gvcgo/goutils v0.9.5
+	github.com/gvcgo/goutils v0.9.7
 	github.com/mattn/go-runewidth v0.0.15
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b
 	github.com/pelletier/go-toml/v2 v2.0.7
