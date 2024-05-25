@@ -48,8 +48,8 @@ func GetVMRConfFilePath() string {
 }
 
 func GetCacheDir() string {
-	installationDir := filepath.Dir(GetVersionsDir())
-	p := filepath.Join(installationDir, "cache")
+	sdkInstallationDir := filepath.Dir(GetVersionsDir())
+	p := filepath.Join(sdkInstallationDir, "cache")
 	os.MkdirAll(p, os.ModePerm)
 	return p
 }

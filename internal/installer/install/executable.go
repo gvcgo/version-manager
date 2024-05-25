@@ -6,6 +6,10 @@ import (
 )
 
 /*
+TODO: install miniconda.
+*/
+
+/*
 1. *.exe
 2. *.deb
 3. *.rpm
