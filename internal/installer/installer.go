@@ -1,5 +1,5 @@
 package installer
 
 /*
-Install SDK using conda.
+SDK Installer.
 */
