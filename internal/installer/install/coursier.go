@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/utils"
@@ -19,10 +21,13 @@ type CoursierInstaller struct {
 	SDKName       string
 	VersionName   string
 	Version       utils.Item
+	spinner       *spinner.Spinner
 }
 
 func NewCoursierInstaller() (c *CoursierInstaller) {
-	c = &CoursierInstaller{}
+	c = &CoursierInstaller{
+		spinner: spinner.NewSpinner(),
+	}
 	return
 }
 
@@ -42,6 +47,11 @@ func (c *CoursierInstaller) Install(originSDKName, versionName string, version u
 	c.FormatSDKName()
 
 	homeDir, _ := os.UserHomeDir()
+	c.spinner.SetTitle(fmt.Sprintf("Coursier installing %s", c.OriginSDKName))
+	go c.spinner.Run()
+	/*
+		https://get-coursier.io/docs/cli-install
+	*/
 	_, err := gutils.ExecuteSysCommand(
 		false, homeDir,
 		"cs", "install",
@@ -49,6 +59,8 @@ func (c *CoursierInstaller) Install(originSDKName, versionName string, version u
 		fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
 		fmt.Sprintf("%s:%s", c.OriginSDKName, c.VersionName),
 	)
+	c.spinner.Quit()
+	time.Sleep(time.Duration(2) * time.Second)
 	if err != nil {
 		gprint.PrintError("%+v", err)
 	}
