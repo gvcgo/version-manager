@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	toml "github.com/pelletier/go-toml/v2"
 )
@@ -47,7 +48,8 @@ func GetVMRConfFilePath() string {
 }
 
 func GetCacheDir() string {
-	p := filepath.Join(GetVMRWorkDir(), "cache")
+	installationDir := filepath.Dir(GetVersionsDir())
+	p := filepath.Join(installationDir, "cache")
 	os.MkdirAll(p, os.ModePerm)
 	return p
 }
@@ -55,16 +57,33 @@ func GetCacheDir() string {
 func GetVersionsDir() string {
 	sdkInstallationDir := os.Getenv(VMRSdkInstallationDirEnv)
 	if sdkInstallationDir != "" {
+		// Use customed directory.
 		vp := filepath.Join(sdkInstallationDir, "versions")
 		os.MkdirAll(vp, os.ModePerm)
 		return vp
 	} else {
+		/*
+			Use ~/.vmr/versions by default.
+		*/
 		vp := filepath.Join(GetVMRWorkDir(), "versions")
 		os.MkdirAll(vp, os.ModePerm)
 		return vp
 	}
 }
 
+/*
+Temp directory is for unarchiving sdk files.
+And will be removed after the temp files are copied to installation directory.
+*/
+func GetTempDir() string {
+	tDir := filepath.Join(GetVMRWorkDir(), "temp")
+	os.MkdirAll(tDir, os.ModePerm)
+	return tDir
+}
+
+/*
+This directory is for storing sdk installation config files.
+*/
 func GetSDKInstallationConfDir() string {
 	icd := filepath.Join(GetVMRWorkDir(), "install_confs")
 	os.MkdirAll(icd, os.ModePerm)
@@ -131,6 +150,9 @@ func GetReverseProxyUri() string {
 	rp := os.Getenv(VMRReverseProxyEnv)
 	if rp == "" {
 		rp = DefaultReverseProxy
+	}
+	if !strings.HasSuffix(rp, "/") {
+		rp = rp + "/"
 	}
 	return rp
 }

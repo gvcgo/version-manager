@@ -27,6 +27,7 @@ type VersionSearcher struct {
 	SDKName          string
 	Fetcher          *request.Fetcher
 	FilteredVersions map[string]utils.Item
+	ToShowList       bool
 }
 
 func NewVersionSearcher() (sv *VersionSearcher) {
@@ -34,6 +35,7 @@ func NewVersionSearcher() (sv *VersionSearcher) {
 		V:                make(utils.VersionList),
 		Fetcher:          request.NewFetcher(),
 		FilteredVersions: make(map[string]utils.Item),
+		ToShowList:       true,
 	}
 	return
 }
@@ -68,7 +70,9 @@ func (s *VersionSearcher) Search(sdkName, newSha256 string) {
 	}
 
 	json.Unmarshal(content, &s.V)
-	s.Show()
+	if s.ToShowList {
+		s.Show()
+	}
 }
 
 func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {

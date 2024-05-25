@@ -29,15 +29,26 @@ type SDKSha struct {
 
 type SDKNameList map[string]SDKSha
 
+func GetSDKList() (sl SDKNameList) {
+	sl = make(SDKNameList)
+	ff := request.NewFetcher()
+
+	dUrl := cnf.GetSDKListFileUrl()
+	ff.SetUrl(dUrl)
+	ff.Timeout = 10 * time.Second
+
+	resp, _ := ff.GetString()
+	json.Unmarshal([]byte(resp), &sl)
+	return
+}
+
 type SDKSearcher struct {
 	SdkList SDKNameList
-	Fetcher *request.Fetcher
 }
 
 func NewSDKSearcher() *SDKSearcher {
 	return &SDKSearcher{
 		SdkList: make(SDKNameList),
-		Fetcher: request.NewFetcher(),
 	}
 }
 
@@ -47,12 +58,7 @@ func (v *SDKSearcher) GetShaBySDKName(sdkName string) (ss SDKSha) {
 }
 
 func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
-	dUrl := cnf.GetSDKListFileUrl()
-	v.Fetcher.SetUrl(dUrl)
-	v.Fetcher.Timeout = 10 * time.Second
-
-	resp, _ := v.Fetcher.GetString()
-	json.Unmarshal([]byte(resp), &v.SdkList)
+	v.SdkList = GetSDKList()
 
 	ll := table.NewList()
 	ll.SetListType(table.SDKList)
