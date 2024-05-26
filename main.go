@@ -21,10 +21,7 @@
 
 package main
 
-import (
-	"github.com/gvcgo/version-manager/internal/download"
-	"github.com/gvcgo/version-manager/internal/installer/install"
-)
+import "github.com/gvcgo/version-manager/internal/tui/cmds"
 
 func main() {
 	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
@@ -51,12 +48,12 @@ func main() {
 	// l := table.NewList()
 	// l.Run()
 	// cmds.ShowSDKNameList()
-	// ll := cmds.NewTUI()
-	// ll.ListSDKName()
+	ll := cmds.NewTUI()
+	ll.ListSDKName()
 
-	sdkName := "miniconda"
-	vName, vItem := download.GetLatestVersionBySDKName(sdkName)
-	ei := install.NewExeInstaller()
-	ei.Initiate(sdkName, vName, vItem)
-	ei.Install()
+	// sdkName := "miniconda"
+	// vName, vItem := download.GetLatestVersionBySDKName(sdkName)
+	// ei := install.NewExeInstaller()
+	// ei.Initiate(sdkName, vName, vItem)
+	// ei.Install()
 }

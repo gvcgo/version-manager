@@ -21,7 +21,7 @@ const (
 	DefaultHostUrl            string = "https://raw.githubusercontent.com/gvcgo/vsources/main"
 	SDKNameListFileUrl        string = `/sdk-list.version.json`
 	VersionFileUrlPattern     string = `/%s.version.json`
-	SDKInstallationUrlPattern string = `install/%s.install.toml`
+	SDKInstallationUrlPattern string = `install/%s.toml`
 	VMRWorkDirName            string = ".vmr"
 )
 
