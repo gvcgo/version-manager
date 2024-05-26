@@ -81,6 +81,13 @@ func NewExeInstaller() (ei *ExeInstaller) {
 	return
 }
 
+func (ei *ExeInstaller) Initiate(originSDKName, versionName string, version download.Item) {
+	ei.OriginSDKName = originSDKName
+	ei.VersionName = versionName
+	ei.Version = version
+	ei.FormatSDKName()
+}
+
 func (ei *ExeInstaller) FormatSDKName() {
 	ei.SDKName = ei.OriginSDKName
 }
@@ -99,20 +106,15 @@ func (ei *ExeInstaller) GetSymbolLinkPath() string {
 	return filepath.Join(d, ei.SDKName)
 }
 
-func (ei *ExeInstaller) Install(originSDKName, versionName string, version download.Item) {
-	ei.OriginSDKName = originSDKName
-	ei.VersionName = versionName
-	ei.Version = version
-	ei.FormatSDKName()
-
-	localPath := ei.downloader.Download(originSDKName, versionName, version)
+func (ei *ExeInstaller) Install() {
+	localPath := ei.downloader.Download(ei.OriginSDKName, ei.VersionName, ei.Version)
 	if localPath == "" {
 		return
 	}
-	ei.spinner.SetTitle(fmt.Sprintf("Installing %s", originSDKName))
+	ei.spinner.SetTitle(fmt.Sprintf("Installing %s", ei.OriginSDKName))
 	go ei.spinner.Run()
 	var err error
-	if originSDKName == MinicondaSDKName {
+	if ei.OriginSDKName == MinicondaSDKName {
 		err = InstallMiniconda(localPath, ei.GetInstallDir())
 	}
 	ei.spinner.Quit()

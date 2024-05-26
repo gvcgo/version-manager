@@ -31,6 +31,13 @@ func NewCoursierInstaller() (c *CoursierInstaller) {
 	return
 }
 
+func (c *CoursierInstaller) Initiate(originSDKName, versionName string, version download.Item) {
+	c.OriginSDKName = originSDKName
+	c.VersionName = versionName
+	c.Version = version
+	c.FormatSDKName()
+}
+
 func (c *CoursierInstaller) FormatSDKName() {
 	c.SDKName = c.OriginSDKName
 }
@@ -49,12 +56,7 @@ func (c *CoursierInstaller) GetSymbolLinkPath() string {
 	return filepath.Join(d, c.SDKName)
 }
 
-func (c *CoursierInstaller) Install(originSDKName, versionName string, version download.Item) {
-	c.OriginSDKName = originSDKName
-	c.VersionName = versionName
-	c.Version = version
-	c.FormatSDKName()
-
+func (c *CoursierInstaller) Install() {
 	homeDir, _ := os.UserHomeDir()
 	c.spinner.SetTitle(fmt.Sprintf("Coursier installing %s", c.OriginSDKName))
 	go c.spinner.Run()

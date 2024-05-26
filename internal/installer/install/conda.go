@@ -35,6 +35,13 @@ func NewCondaInstaller() (c *CondaInstaller) {
 	return
 }
 
+func (c *CondaInstaller) Initiate(originSDKName, versionName string, version download.Item) {
+	c.OriginSDKName = originSDKName
+	c.VersionName = versionName
+	c.Version = version
+	c.FormatSDKName()
+}
+
 func (c *CondaInstaller) FormatSDKName() {
 	if c.OriginSDKName == "pypy" {
 		c.SDKName = "python"
@@ -57,12 +64,7 @@ func (c *CondaInstaller) GetSymbolLinkPath() string {
 	return filepath.Join(d, c.SDKName)
 }
 
-func (c *CondaInstaller) Install(originSDKName, versionName string, version download.Item) {
-	c.OriginSDKName = originSDKName
-	c.VersionName = versionName
-	c.Version = version
-	c.FormatSDKName()
-
+func (c *CondaInstaller) Install() {
 	homeDir, _ := os.UserHomeDir()
 	/*
 		https://docs.conda.io/projects/conda/en/latest/commands/create.html

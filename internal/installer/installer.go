@@ -17,10 +17,11 @@ func IsCoursierInstalled() bool {
 }
 
 type SDKInstaller interface {
+	Initiate(originSDKName, versionName string, version download.Item)
 	FormatSDKName()
 	GetInstallDir() string
 	GetSymbolLinkPath() string
-	Install(originSDKName, versionName string, version download.Item)
+	Install()
 }
 
 /*
@@ -49,6 +50,7 @@ func NewInstaller(originSDKName, versionName string, version download.Item) (i *
 	default:
 		i.sdkInstaller = install.NewArchiverInstaller()
 	}
+	i.sdkInstaller.Initiate(originSDKName, versionName, version)
 	return
 }
 

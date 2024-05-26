@@ -24,6 +24,13 @@ func NewArchiverInstaller() (a *ArchiverInstaller) {
 	return
 }
 
+func (a *ArchiverInstaller) Initiate(originSDKName, versionName string, version download.Item) {
+	a.OriginSDKName = originSDKName
+	a.VersionName = versionName
+	a.Version = version
+	a.FormatSDKName()
+}
+
 func (a *ArchiverInstaller) FormatSDKName() {
 	a.SDKName = a.OriginSDKName
 }
@@ -42,9 +49,5 @@ func (a *ArchiverInstaller) GetSymbolLinkPath() string {
 	return filepath.Join(d, a.SDKName)
 }
 
-func (a *ArchiverInstaller) Install(originSDKName, versionName string, version download.Item) {
-	a.OriginSDKName = originSDKName
-	a.VersionName = versionName
-	a.Version = version
-	a.FormatSDKName()
+func (a *ArchiverInstaller) Install() {
 }

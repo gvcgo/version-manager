@@ -57,5 +57,6 @@ func main() {
 	sdkName := "miniconda"
 	vName, vItem := download.GetLatestVersionBySDKName(sdkName)
 	ei := install.NewExeInstaller()
-	ei.Install(sdkName, vName, vItem)
+	ei.Initiate(sdkName, vName, vItem)
+	ei.Install()
 }
