@@ -55,14 +55,7 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: s.SDKName, Width: 20},
 		{Title: "installer", Width: w},
 	})
-	rows := []table.Row{}
-	for vName, vItem := range s.filteredVersions {
-		rows = append(rows, table.Row{
-			vName,
-			vItem.Installer,
-		})
-	}
-	SortVersions(rows)
+	rows := download.GetVersionsSortedRows(s.filteredVersions)
 	ll.SetRows(rows)
 	ll.Run()
 

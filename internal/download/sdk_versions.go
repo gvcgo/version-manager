@@ -12,6 +12,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/tui/table"
 )
 
 const (
@@ -83,6 +84,41 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 				item.Arch = runtime.GOARCH
 				filteredVersions[vName] = item
 			}
+		}
+	}
+	return
+}
+
+func GetVersionsSortedRows(filteredVersions map[string]Item) (rows []table.Row) {
+	for vName, vItem := range filteredVersions {
+		rows = append(rows, table.Row{
+			vName,
+			vItem.Installer,
+		})
+	}
+	SortVersions(rows)
+	return
+}
+
+func getLatestVersion(sdkName, newSha256 string) (vName string, version Item, ok bool) {
+	fvs := GetVersionList(sdkName, newSha256)
+	if len(fvs) == 0 {
+		return
+	}
+	rows := GetVersionsSortedRows(fvs)
+	vName = rows[0][0]
+	version = fvs[vName]
+	ok = true
+	return
+}
+
+func GetLatestVersionBySDKName(sdkName string) (vName string, vItem Item) {
+	sdkList := GetSDKList()
+	if sdkInfo, ok := sdkList[sdkName]; ok {
+		newSha256 := sdkInfo.Sha256
+		if versionName, versionItem, ok1 := getLatestVersion(sdkName, newSha256); ok1 {
+			vName = versionName
+			vItem = versionItem
 		}
 	}
 	return

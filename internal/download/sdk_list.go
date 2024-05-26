@@ -6,6 +6,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/tui/table"
 )
 
 /*
@@ -28,5 +29,16 @@ func GetSDKList() (ss SDKList) {
 
 	resp, _ := ff.GetString()
 	json.Unmarshal([]byte(resp), &ss)
+	return
+}
+
+func GetSDKSortedRows(ss SDKList) (rows []table.Row) {
+	for k, v := range ss {
+		rows = append(rows, table.Row{
+			k,
+			v.HomePage,
+		})
+	}
+	SortVersionAscend(rows)
 	return
 }

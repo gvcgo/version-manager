@@ -78,14 +78,7 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: "sdkname", Width: 20},
 		{Title: "homepage", Width: w},
 	})
-	rows := []table.Row{}
-	for k, v := range v.SdkList {
-		rows = append(rows, table.Row{
-			k,
-			v.HomePage,
-		})
-	}
-	SortVersionAscend(rows)
+	rows := download.GetSDKSortedRows(v.SdkList)
 	ll.SetRows(rows)
 	ll.Run()
 
