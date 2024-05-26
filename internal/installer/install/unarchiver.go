@@ -50,4 +50,5 @@ func (a *ArchiverInstaller) GetSymbolLinkPath() string {
 }
 
 func (a *ArchiverInstaller) Install() {
+	// in installer.go
 }

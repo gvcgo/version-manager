@@ -54,7 +54,9 @@ func NewInstaller(originSDKName, versionName string, version download.Item) (i *
 	return
 }
 
-func (i *Installer) Install() {}
+func (i *Installer) Install() {
+	i.sdkInstaller.Install()
+}
 
 func (i *Installer) Uninstall() {}
 
