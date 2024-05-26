@@ -33,7 +33,7 @@ func (d *Downloader) getLocalFilePath() string {
 	return filepath.Join(cacheDir, d.SDKName, d.VersionName, filename)
 }
 
-func (d *Downloader) Download(OriginSDKName, versionName string, version Item) {
+func (d *Downloader) Download(OriginSDKName, versionName string, version Item) (fPath string) {
 	if version.Url == "" {
 		return
 	}
@@ -47,5 +47,9 @@ func (d *Downloader) Download(OriginSDKName, versionName string, version Item) {
 	}
 	d.Fetcher.SetUrl(cnf.GetReverseProxyUri() + d.Version.Url)
 	d.Fetcher.Timeout = 30 * time.Minute
-	d.Fetcher.GetAndSaveFile(d.getLocalFilePath(), false)
+	fPath = d.getLocalFilePath()
+	if size := d.Fetcher.GetAndSaveFile(fPath, false); size <= 100 {
+		return ""
+	}
+	return
 }
