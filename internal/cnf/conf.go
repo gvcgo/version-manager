@@ -19,10 +19,9 @@ func init() {
 const (
 	DefaultReverseProxy       string = "https://gvc.1710717.xyz/proxy/"
 	DefaultHostUrl            string = "https://raw.githubusercontent.com/gvcgo/vsources/main"
-	DefaultInstallationHost   string = "" // sdk installation config file
 	SDKNameListFileUrl        string = `/sdk-list.version.json`
 	VersionFileUrlPattern     string = `/%s.version.json`
-	SDKInstallationUrlPattern string = `/%s.install.toml`
+	SDKInstallationUrlPattern string = `install/%s.install.toml`
 	VMRWorkDirName            string = ".vmr"
 )
 
@@ -183,7 +182,7 @@ func GetVersionFileUrlBySDKName(sdkName string) string {
 func GetSDKInstallationConfFileBySDKName(sdkName string) string {
 	host := os.Getenv(VMRInstallationHostEnv)
 	if host == "" {
-		host = DefaultInstallationHost
+		host = DefaultHostUrl
 	}
 	u, _ := url.JoinPath(host, fmt.Sprintf(SDKInstallationUrlPattern, sdkName))
 	u = GetReverseProxyUri() + u
