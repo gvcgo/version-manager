@@ -13,6 +13,10 @@ import (
 	"github.com/gvcgo/version-manager/internal/download"
 )
 
+const (
+	VersionInstallDirPattern string = "%s-%s"
+)
+
 /*
 Install using conda.
 */
@@ -41,7 +45,16 @@ func (c *CondaInstaller) FormatSDKName() {
 
 func (c *CondaInstaller) GetInstallDir() string {
 	versionDir := cnf.GetVersionsDir()
-	return filepath.Join(versionDir, c.SDKName, fmt.Sprintf("%s%s", c.OriginSDKName, c.VersionName))
+	d := filepath.Join(versionDir, c.SDKName)
+	os.MkdirAll(d, os.ModePerm)
+	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, c.OriginSDKName, c.VersionName))
+}
+
+func (c *CondaInstaller) GetSymbolLinkPath() string {
+	versionDir := cnf.GetVersionsDir()
+	d := filepath.Join(versionDir, c.SDKName)
+	os.MkdirAll(d, os.ModePerm)
+	return filepath.Join(d, c.SDKName)
 }
 
 func (c *CondaInstaller) Install(originSDKName, versionName string, version download.Item) {

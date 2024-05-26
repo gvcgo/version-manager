@@ -22,7 +22,8 @@
 package main
 
 import (
-	"github.com/gvcgo/version-manager/internal/tui/cmds"
+	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/installer/install"
 )
 
 func main() {
@@ -50,6 +51,11 @@ func main() {
 	// l := table.NewList()
 	// l.Run()
 	// cmds.ShowSDKNameList()
-	ll := cmds.NewTUI()
-	ll.ListSDKName()
+	// ll := cmds.NewTUI()
+	// ll.ListSDKName()
+
+	sdkName := "miniconda"
+	vName, vItem := download.GetLatestVersionBySDKName(sdkName)
+	ei := install.NewExeInstaller()
+	ei.Install(sdkName, vName, vItem)
 }

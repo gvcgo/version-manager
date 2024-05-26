@@ -1,6 +1,7 @@
 package download
 
 import (
+	"os"
 	"path/filepath"
 	"time"
 
@@ -30,10 +31,12 @@ func NewDownloader() (d *Downloader) {
 func (d *Downloader) getLocalFilePath() string {
 	cacheDir := cnf.GetCacheDir()
 	filename := filepath.Base(d.Version.Url)
-	return filepath.Join(cacheDir, d.SDKName, d.VersionName, filename)
+	dd := filepath.Join(cacheDir, d.SDKName, d.VersionName)
+	os.MkdirAll(dd, os.ModePerm)
+	return filepath.Join(dd, filename)
 }
 
-func (d *Downloader) Download(OriginSDKName, versionName string, version Item) (fPath string) {
+func (d *Downloader) Download(OriginSDKName, versionName string, version Item, force ...bool) (fPath string) {
 	if version.Url == "" {
 		return
 	}
@@ -41,14 +44,16 @@ func (d *Downloader) Download(OriginSDKName, versionName string, version Item) (
 	d.VersionName = versionName
 	d.Version = version
 
-	fName := d.getLocalFilePath()
-	if ok, _ := gutils.PathIsExist(fName); ok {
+	fPath = d.getLocalFilePath()
+	if ok, _ := gutils.PathIsExist(fPath); ok {
 		return
 	}
 	d.Fetcher.SetUrl(cnf.GetReverseProxyUri() + d.Version.Url)
 	d.Fetcher.Timeout = 30 * time.Minute
-	fPath = d.getLocalFilePath()
-	if size := d.Fetcher.GetAndSaveFile(fPath, false); size <= 100 {
+	d.Fetcher.SetCheckSum(version.Sum, version.SumType)
+	d.Fetcher.SetFileContentLength(version.Size)
+
+	if size := d.Fetcher.GetAndSaveFile(fPath, force...); size <= 100 {
 		return ""
 	}
 	return
