@@ -12,8 +12,33 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/utils"
 )
+
+const (
+	Conda      string = "conda"
+	CondaForge string = "conda-forge"
+	Coursier   string = "coursier"
+	Unarchiver string = "unarchiver"
+	Executable string = "executable"
+	Dpkg       string = "dpkg"
+	Rpm        string = "rpm"
+)
+
+type Item struct {
+	Url       string `json:"url"`       // download url
+	Arch      string `json:"arch"`      // amd64 | arm64
+	Os        string `json:"os"`        // linux | darwin | windows
+	Sum       string `json:"sum"`       // Checksum
+	SumType   string `json:"sum_type"`  // sha1 | sha256 | sha512 | md5
+	Size      int64  `json:"size"`      // Size in bytes
+	Installer string `json:"installer"` // conda | conda-forge | coursier | unarchiver | executable | dpkg | rpm
+	LTS       string `json:"lts"`       // Long Term Support
+	Extra     string `json:"extra"`     // Extra Info
+}
+
+type SDKVersion []Item
+
+type VersionList map[string]SDKVersion
 
 /*
 Download version list file.
@@ -30,7 +55,7 @@ func CheckSumForVersionFile(sdkName, newSha256 string) (ok bool, fPath string) {
 	return oldSha256 == newSha256, fPath
 }
 
-func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]utils.Item) {
+func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item) {
 	dUrl := cnf.GetVersionFileUrlBySDKName(sdkName)
 
 	ff := request.NewFetcher()
@@ -47,8 +72,8 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]util
 		os.WriteFile(localFile, content, os.ModePerm)
 	}
 
-	rawVersionList := make(utils.VersionList)
-	filteredVersions = make(map[string]utils.Item)
+	rawVersionList := make(VersionList)
+	filteredVersions = make(map[string]Item)
 	json.Unmarshal(content, &rawVersionList)
 	for vName, vList := range rawVersionList {
 		for _, item := range vList {

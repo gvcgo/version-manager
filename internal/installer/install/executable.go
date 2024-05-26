@@ -2,7 +2,7 @@ package install
 
 import (
 	"github.com/gvcgo/goutils/pkgs/request"
-	"github.com/gvcgo/version-manager/internal/utils"
+	"github.com/gvcgo/version-manager/internal/download"
 )
 
 /*
@@ -20,6 +20,6 @@ type ExeInstaller struct {
 	OriginSDKName string
 	SDKName       string
 	VersionName   string
-	Version       utils.Item
+	Version       download.Item
 	Fetcher       *request.Fetcher
 }

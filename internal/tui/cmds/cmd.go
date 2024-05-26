@@ -17,8 +17,7 @@ func (v *VmrTUI) ListSDKName() {
 
 	// search version list for selected sdkname.
 	if lastPressedKey == KeyEventSeachVersionList {
-		sdkSha := v.SList.GetShaBySDKName(sdkName)
-		v.SearchVersions(sdkName, sdkSha.Sha)
+		v.SearchVersions(sdkName, v.SList.GetShaBySDKName(sdkName))
 	}
 }
 

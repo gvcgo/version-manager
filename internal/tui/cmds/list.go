@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 	"github.com/gvcgo/version-manager/internal/utils"
@@ -20,6 +21,7 @@ const (
 
 /*
 Show the SDK list supported by vmr.
+TODO: use download.
 */
 
 type SDKSha struct {
@@ -43,22 +45,24 @@ func GetSDKList() (sl SDKNameList) {
 }
 
 type SDKSearcher struct {
-	SdkList SDKNameList
+	SdkList download.SDKList
 }
 
 func NewSDKSearcher() *SDKSearcher {
 	return &SDKSearcher{
-		SdkList: make(SDKNameList),
+		SdkList: make(download.SDKList),
 	}
 }
 
-func (v *SDKSearcher) GetShaBySDKName(sdkName string) (ss SDKSha) {
-	ss = v.SdkList[sdkName]
+func (v *SDKSearcher) GetShaBySDKName(sdkName string) (ss string) {
+	if s, ok := v.SdkList[sdkName]; ok {
+		ss = s.Sha256
+	}
 	return
 }
 
 func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
-	v.SdkList = GetSDKList()
+	v.SdkList = download.GetSDKList()
 
 	ll := table.NewList()
 	ll.SetListType(table.SDKList)

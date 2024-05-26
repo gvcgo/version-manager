@@ -10,7 +10,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/utils"
+	"github.com/gvcgo/version-manager/internal/download"
 )
 
 /*
@@ -20,7 +20,7 @@ type CoursierInstaller struct {
 	OriginSDKName string
 	SDKName       string
 	VersionName   string
-	Version       utils.Item
+	Version       download.Item
 	spinner       *spinner.Spinner
 }
 
@@ -40,7 +40,7 @@ func (c *CoursierInstaller) GetInstallDir() string {
 	return filepath.Join(versionDir, c.SDKName, fmt.Sprintf("%s%s", c.OriginSDKName, c.VersionName))
 }
 
-func (c *CoursierInstaller) Install(originSDKName, versionName string, version utils.Item) {
+func (c *CoursierInstaller) Install(originSDKName, versionName string, version download.Item) {
 	c.OriginSDKName = originSDKName
 	c.VersionName = versionName
 	c.Version = version

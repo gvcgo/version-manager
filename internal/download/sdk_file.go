@@ -7,7 +7,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 /*
@@ -19,7 +18,7 @@ type Downloader struct {
 	Fetcher     *request.Fetcher
 	SDKName     string
 	VersionName string
-	Version     utils.Item
+	Version     Item
 }
 
 func NewDownloader() (d *Downloader) {
@@ -34,7 +33,7 @@ func (d *Downloader) getLocalFilePath() string {
 	return filepath.Join(cacheDir, d.SDKName, d.VersionName, filename)
 }
 
-func (d *Downloader) Download(OriginSDKName, versionName string, version utils.Item) {
+func (d *Downloader) Download(OriginSDKName, versionName string, version Item) {
 	if version.Url == "" {
 		return
 	}
