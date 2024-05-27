@@ -37,7 +37,7 @@ func (a *ArchiverInstaller) FormatSDKName() {
 
 func (a *ArchiverInstaller) GetInstallDir() string {
 	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, a.SDKName)
+	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, a.SDKName))
 	os.MkdirAll(d, os.ModePerm)
 	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, a.OriginSDKName, a.VersionName))
 }

@@ -44,7 +44,7 @@ func (c *CoursierInstaller) FormatSDKName() {
 
 func (c *CoursierInstaller) GetInstallDir() string {
 	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, c.SDKName)
+	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, c.SDKName))
 	os.MkdirAll(d, os.ModePerm)
 	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, c.OriginSDKName, c.VersionName))
 }
