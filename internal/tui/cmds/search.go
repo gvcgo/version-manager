@@ -1,11 +1,19 @@
 package cmds
 
 import (
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
+)
+
+const (
+	KeyEventInstallGlobally     string = "install-globally"
+	KeyEventUseVersionGlobally  string = "use-version-globally"
+	KeyEventUseVersionSessionly string = "use-version-sessionly"
+	KeyEventLockVersion         string = "lock-version"
 )
 
 /*
@@ -29,11 +37,17 @@ func NewVersionSearcher() (sv *VersionSearcher) {
 	return
 }
 
-func (s *VersionSearcher) Search(sdkName, newSha256 string) {
+func (s *VersionSearcher) GetVersionByVersionName(vName string) (item download.Item) {
+	item = s.filteredVersions[vName]
+	return
+}
+
+func (s *VersionSearcher) Search(sdkName, newSha256 string) (nextEvent, selectedItem string) {
 	s.filteredVersions = download.GetVersionList(sdkName, newSha256)
 	if s.ToShowList {
-		s.Show()
+		nextEvent, selectedItem = s.Show()
 	}
+	return
 }
 
 func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
@@ -43,7 +57,7 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 	}
 	ll := table.NewList()
 	ll.SetListType(table.SDKList)
-	// s.RegisterKeyEvents(ll)
+	s.RegisterKeyEvents(ll)
 
 	_, w, _ := terminal.GetTerminalSize()
 	if w > 30 {
@@ -66,4 +80,10 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 
 // TODO: install, switch-to, session-only, lock-version
 func (s *VersionSearcher) RegisterKeyEvents(ll *table.List) {
+	ll.SetKeyEventForTable("i", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventInstallGlobally
+			return tea.Quit
+		},
+	})
 }

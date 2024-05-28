@@ -1,12 +1,7 @@
 package cmds
 
 import (
-	"encoding/json"
-	"time"
-
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gvcgo/goutils/pkgs/request"
-	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
@@ -24,26 +19,6 @@ Show the SDK list supported by vmr.
 TODO: use download.
 */
 
-type SDKSha struct {
-	Sha      string `json:"sha256"`
-	HomePage string `json:"homepage"`
-}
-
-type SDKNameList map[string]SDKSha
-
-func GetSDKList() (sl SDKNameList) {
-	sl = make(SDKNameList)
-	ff := request.NewFetcher()
-
-	dUrl := cnf.GetSDKListFileUrl()
-	ff.SetUrl(dUrl)
-	ff.Timeout = 10 * time.Second
-
-	resp, _ := ff.GetString()
-	json.Unmarshal([]byte(resp), &sl)
-	return
-}
-
 type SDKSearcher struct {
 	SdkList download.SDKList
 }
@@ -58,6 +33,11 @@ func (v *SDKSearcher) GetShaBySDKName(sdkName string) (ss string) {
 	if s, ok := v.SdkList[sdkName]; ok {
 		ss = s.Sha256
 	}
+	return
+}
+
+func (v *SDKSearcher) GetSDKItemByName(sdkName string) (item download.SDK) {
+	item = v.SdkList[sdkName]
 	return
 }
 

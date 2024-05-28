@@ -1,5 +1,10 @@
 package cmds
 
+import (
+	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/installer"
+)
+
 type VmrTUI struct {
 	SList *SDKSearcher
 	VList *VersionSearcher
@@ -17,13 +22,19 @@ func (v *VmrTUI) ListSDKName() {
 
 	// search version list for selected sdkname.
 	if lastPressedKey == KeyEventSeachVersionList {
-		v.SearchVersions(sdkName, v.SList.GetShaBySDKName(sdkName))
+		v.SearchVersions(sdkName, v.SList.GetSDKItemByName(sdkName))
 	}
 }
 
-func (v *VmrTUI) SearchVersions(sdkName, sha256 string) {
+func (v *VmrTUI) SearchVersions(sdkName string, sdkItem download.SDK) {
 	if v.VList == nil {
 		v.VList = NewVersionSearcher()
 	}
-	v.VList.Search(sdkName, sha256)
+	lastPressedKy, versionName := v.VList.Search(sdkName, sdkItem.Sha256)
+
+	if lastPressedKy == KeyEventInstallGlobally {
+		vItem := v.VList.GetVersionByVersionName(versionName)
+		ins := installer.NewInstaller(sdkName, versionName, sdkItem.InstallConfSha256, vItem)
+		ins.Install()
+	}
 }

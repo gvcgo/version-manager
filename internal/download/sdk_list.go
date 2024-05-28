@@ -14,8 +14,9 @@ import (
 Download SDK List file.
 */
 type SDK struct {
-	Sha256   string `json:"sha256"`
-	HomePage string `json:"homepage"`
+	Sha256            string `json:"sha256"`
+	HomePage          string `json:"homepage"`
+	InstallConfSha256 string `json:"install_conf_sha256"`
 }
 
 type SDKList map[string]SDK

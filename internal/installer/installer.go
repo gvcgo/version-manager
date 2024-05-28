@@ -33,6 +33,7 @@ type Installer struct {
 	VersionName   string
 	Version       download.Item
 	sdkInstaller  SDKInstaller
+	installerConf download.InstallerConfig
 }
 
 func NewInstaller(originSDKName, versionName, intallSha256 string, version download.Item) (i *Installer) {
@@ -52,8 +53,8 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 		i.sdkInstaller = install.NewArchiverInstaller()
 	}
 	i.sdkInstaller.Initiate(originSDKName, versionName, version)
-	iconf := download.GetSDKInstallationConfig(originSDKName, intallSha256)
-	i.sdkInstaller.SetInstallConf(iconf)
+	i.installerConf = download.GetSDKInstallationConfig(originSDKName, intallSha256)
+	i.sdkInstaller.SetInstallConf(i.installerConf)
 	return
 }
 
