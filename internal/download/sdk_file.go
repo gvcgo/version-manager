@@ -54,6 +54,7 @@ func (d *Downloader) Download(OriginSDKName, versionName string, version Item, f
 	d.Fetcher.SetFileContentLength(version.Size)
 
 	if size := d.Fetcher.GetAndSaveFile(fPath, force...); size <= 100 {
+		os.RemoveAll(fPath)
 		return ""
 	}
 	return

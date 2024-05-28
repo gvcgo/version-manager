@@ -51,14 +51,16 @@ func main() {
 	// l := table.NewList()
 	// l.Run()
 	// cmds.ShowSDKNameList()
-	sh := shell.NewShell()
-	sh.WriteVMEnvToShell()
-	ll := cmds.NewTUI()
-	ll.ListSDKName()
 
 	// sdkName := "miniconda"
 	// vName, vItem := download.GetLatestVersionBySDKName(sdkName)
 	// ei := install.NewExeInstaller()
 	// ei.Initiate(sdkName, vName, vItem)
 	// ei.Install()
+
+	// test vmr
+	sh := shell.NewShell()
+	sh.WriteVMEnvToShell()
+	ll := cmds.NewTUI()
+	ll.ListSDKName()
 }

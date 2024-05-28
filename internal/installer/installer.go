@@ -96,6 +96,9 @@ func (i *Installer) collectEnvs(basePath string) map[string][]string {
 			default:
 			}
 		}
+		if len(binDirList) == 0 {
+			binDirList = append(binDirList, download.DirPath{})
+		}
 		for _, dirPath := range binDirList {
 			pList := append([]string{basePath}, dirPath...)
 			p := filepath.Join(pList...)
@@ -103,7 +106,6 @@ func (i *Installer) collectEnvs(basePath string) map[string][]string {
 				result["PATH"] = append(result["PATH"], p)
 			}
 		}
-
 		// for key, value := range aa {
 
 		// }
