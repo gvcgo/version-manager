@@ -31,7 +31,6 @@ Envs
 const (
 	VMRSdkInstallationDirEnv string = "VMR_SDK_INSTALLATION_DIR"
 	VMRHostUrlEnv            string = "VMR_HOST"
-	VMRInstallationHostEnv   string = "VMR_INSTALLATION_HOST"
 	VMRReverseProxyEnv       string = "VMR_REVERSE_PROXY"
 )
 
@@ -106,9 +105,6 @@ func NewVMRConf() (v *VMRConf) {
 	if v.VersionHostUrl != "" {
 		os.Setenv(VMRHostUrlEnv, v.VersionHostUrl)
 	}
-	if v.InstallationHostUrl != "" {
-		os.Setenv(VMRInstallationHostEnv, v.InstallationHostUrl)
-	}
 	return v
 }
 
@@ -178,9 +174,9 @@ func GetVersionFileUrlBySDKName(sdkName string) string {
 	return u
 }
 
-// {sdkname}.install.toml file
-func GetSDKInstallationConfFileBySDKName(sdkName string) string {
-	host := os.Getenv(VMRInstallationHostEnv)
+// install/{sdkname}.toml file
+func GetSDKInstallationConfFileUrlBySDKName(sdkName string) string {
+	host := os.Getenv(VMRHostUrlEnv)
 	if host == "" {
 		host = DefaultHostUrl
 	}
