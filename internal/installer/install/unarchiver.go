@@ -97,6 +97,7 @@ func (a *ArchiverInstaller) Install() {
 	tempDir := cnf.GetTempDir()
 	if err := utils.Extract(fPath, tempDir); err != nil {
 		gprint.PrintError("Extract file failed: %+v.", err)
+		os.RemoveAll(fPath)
 		return
 	}
 

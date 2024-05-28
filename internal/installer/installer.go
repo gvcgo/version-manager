@@ -84,7 +84,6 @@ func (i *Installer) collectEnvs(basePath string) map[string][]string {
 	if ok, _ := gutils.PathIsExist(basePath); ok {
 		binDirList := []download.DirPath{}
 		dd := i.installerConf.BinaryDirs
-		// aa := i.installerConf.AdditionalEnvs
 		if dd != nil {
 			switch runtime.GOOS {
 			case gutils.Darwin:
@@ -106,9 +105,23 @@ func (i *Installer) collectEnvs(basePath string) map[string][]string {
 				result["PATH"] = append(result["PATH"], p)
 			}
 		}
-		// for key, value := range aa {
 
-		// }
+		// Other envs.
+		aa := i.installerConf.AdditionalEnvs
+		for _, addEnv := range aa {
+			if len(addEnv.Value) == 0 {
+				addEnv.Value = append(addEnv.Value, download.DirPath{})
+			}
+			dirList := []string{}
+			for _, dirPath := range addEnv.Value {
+				dPath := append([]string{basePath}, dirPath...)
+				p := filepath.Join(dPath...)
+				if ok, _ := gutils.PathIsExist(p); ok {
+					dirList = append(dirList, p)
+				}
+			}
+			result[addEnv.Name] = dirList
+		}
 	}
 	return result
 }
@@ -124,6 +137,9 @@ func (i *Installer) addToPathTemporarilly() {
 			p := utils.JoinPath(value...)
 			newPathEnv := utils.JoinPath(p, os.Getenv("PATH"))
 			os.Setenv("PATH", newPathEnv)
+		} else {
+			newValue := utils.JoinPath(value...)
+			os.Setenv(key, newValue)
 		}
 	}
 }
