@@ -82,6 +82,7 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 				// save filtered version.
 				item.Os = runtime.GOOS
 				item.Arch = runtime.GOARCH
+				// TODO: deb,rpm
 				filteredVersions[vName] = item
 			}
 		}
