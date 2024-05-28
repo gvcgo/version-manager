@@ -135,11 +135,15 @@ func (i *Installer) addToPathTemporarilly() {
 	for key, value := range envList {
 		if key == "PATH" {
 			p := utils.JoinPath(value...)
-			newPathEnv := utils.JoinPath(p, os.Getenv("PATH"))
-			os.Setenv("PATH", newPathEnv)
+			if p != "" {
+				newPathEnv := utils.JoinPath(p, os.Getenv("PATH"))
+				os.Setenv("PATH", newPathEnv)
+			}
 		} else {
 			newValue := utils.JoinPath(value...)
-			os.Setenv(key, newValue)
+			if newValue != "" {
+				os.Setenv(key, newValue)
+			}
 		}
 	}
 }
@@ -173,6 +177,8 @@ func (i *Installer) Install() {
 		CheckAndInstallCoursier()
 	default:
 	}
+
+	// TODO: sessionly, locked.
 	if !i.IsInstalled() {
 		i.sdkInstaller.Install()
 		i.CreateSymlink()
