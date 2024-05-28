@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/internal/cnf"
 )
 
 type BashShell struct{}
@@ -21,17 +21,17 @@ func (b *BashShell) ConfPath() string {
 }
 
 func (b *BashShell) VMEnvConfPath() string {
-	installPath := conf.GetVersionManagerWorkDir()
+	installPath := cnf.GetVMRWorkDir()
 	return filepath.Join(installPath, fmt.Sprintf("%s.sh", VMEnvFileName))
 }
 
 func (b *BashShell) WriteVMEnvToShell() {
-	installPath := conf.GetVersionManagerWorkDir()
+	installPath := cnf.GetVMRWorkDir()
 	vmEnvConfPath := b.VMEnvConfPath()
 
 	content, _ := os.ReadFile(vmEnvConfPath)
 	oldEnvStr := strings.TrimSpace(string(content))
-	envStr := fmt.Sprintf(vmEnvZsh, FormatPathString(installPath), FormatPathString(installPath))
+	envStr := fmt.Sprintf(vmEnvZsh, FormatPathString(installPath))
 	if !strings.Contains(oldEnvStr, envStr) {
 		if oldEnvStr != "" {
 			envStr = envStr + "\n" + oldEnvStr

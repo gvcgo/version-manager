@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/internal/cnf"
 )
 
 /*
@@ -28,7 +28,7 @@ if [ -z $(alias|grep cdhook) ]; then
 fi
 # cd hook end
 
-export PATH=%s:%s/bin:$PATH
+export PATH=%s:$PATH
 `
 
 /*
@@ -56,17 +56,17 @@ func (z *ZshShell) ConfPath() string {
 }
 
 func (z *ZshShell) VMEnvConfPath() string {
-	installPath := conf.GetVersionManagerWorkDir()
+	installPath := cnf.GetVMRWorkDir()
 	return filepath.Join(installPath, fmt.Sprintf("%s.sh", VMEnvFileName))
 }
 
 func (z *ZshShell) WriteVMEnvToShell() {
-	installPath := conf.GetVersionManagerWorkDir()
+	installPath := cnf.GetVMRWorkDir()
 	vmEnvConfPath := z.VMEnvConfPath()
 
 	content, _ := os.ReadFile(vmEnvConfPath)
 	oldEnvStr := strings.TrimSpace(string(content))
-	envStr := fmt.Sprintf(vmEnvZsh, FormatPathString(installPath), FormatPathString(installPath))
+	envStr := fmt.Sprintf(vmEnvZsh, FormatPathString(installPath))
 	if !strings.Contains(oldEnvStr, envStr) {
 		if oldEnvStr != "" {
 			envStr = envStr + "\n" + oldEnvStr

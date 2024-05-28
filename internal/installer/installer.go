@@ -6,6 +6,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
+	"github.com/gvcgo/version-manager/internal/shell"
 )
 
 type SDKInstaller interface {
@@ -26,6 +27,7 @@ type Installer struct {
 	Version       download.Item
 	sdkInstaller  SDKInstaller
 	installerConf download.InstallerConfig
+	Shell         shell.Sheller
 }
 
 func NewInstaller(originSDKName, versionName, intallSha256 string, version download.Item) (i *Installer) {
@@ -33,6 +35,7 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 		OriginSDKName: originSDKName,
 		VersionName:   versionName,
 		Version:       version,
+		Shell:         shell.NewShell(),
 	}
 	switch version.Installer {
 	case download.Conda, download.CondaForge:

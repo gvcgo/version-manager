@@ -4,16 +4,16 @@ package shell
 
 import (
 	"fmt"
-	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
 	"unsafe"
 
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/shell/sh"
+
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/version-manager/pkgs/conf"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -141,25 +141,7 @@ func (s *Shell) VMEnvConfPath() string {
 }
 
 func (s *Shell) WriteVMEnvToShell() {
-	if s.KeyInfo == nil {
-		gprint.PrintError("Windows registry key is closed.")
-		return
-	}
-	binDir := conf.GetAppBinDir()
-	value, _, err := s.Key.GetStringValue(PathEnvName)
-	if err != nil {
-		gprint.PrintError("Get env $path failed: %+v", err)
-		return
-	}
-	if !strings.Contains(value, binDir) {
-		value = binDir + ";" + value
-		err := s.Key.SetStringValue(PathEnvName, value)
-		if err != nil {
-			gprint.PrintError("Set env $path failed: %s, %+v", binDir, err)
-			return
-		}
-	}
-	s.broadcast()
+	s.cdHook()
 }
 
 func (s *Shell) SetEnv(key, value string) {
