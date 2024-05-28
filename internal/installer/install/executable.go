@@ -71,6 +71,7 @@ type ExeInstaller struct {
 	Fetcher       *request.Fetcher
 	spinner       *spinner.Spinner
 	downloader    *download.Downloader
+	installConf   download.InstallerConfig
 }
 
 func NewExeInstaller() (ei *ExeInstaller) {
@@ -79,6 +80,10 @@ func NewExeInstaller() (ei *ExeInstaller) {
 		downloader: download.NewDownloader(),
 	}
 	return
+}
+
+func (ei *ExeInstaller) SetInstallConf(iconf download.InstallerConfig) {
+	ei.installConf = iconf
 }
 
 func (ei *ExeInstaller) Initiate(originSDKName, versionName string, version download.Item) {

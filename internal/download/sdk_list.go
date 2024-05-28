@@ -2,6 +2,7 @@ package download
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/request"
@@ -34,6 +35,9 @@ func GetSDKList() (ss SDKList) {
 
 func GetSDKSortedRows(ss SDKList) (rows []table.Row) {
 	for k, v := range ss {
+		if strings.Contains(k, "conda-forge-pkgs") {
+			continue
+		}
 		rows = append(rows, table.Row{
 			k,
 			v.HomePage,

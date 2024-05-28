@@ -17,11 +17,16 @@ type ArchiverInstaller struct {
 	SDKName       string
 	VersionName   string
 	Version       download.Item
+	installConf   download.InstallerConfig
 }
 
 func NewArchiverInstaller() (a *ArchiverInstaller) {
 	a = &ArchiverInstaller{}
 	return
+}
+
+func (a *ArchiverInstaller) SetInstallConf(iconf download.InstallerConfig) {
+	a.installConf = iconf
 }
 
 func (a *ArchiverInstaller) Initiate(originSDKName, versionName string, version download.Item) {

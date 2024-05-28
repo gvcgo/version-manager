@@ -22,6 +22,7 @@ type CoursierInstaller struct {
 	VersionName   string
 	Version       download.Item
 	spinner       *spinner.Spinner
+	installConf   download.InstallerConfig
 }
 
 func NewCoursierInstaller() (c *CoursierInstaller) {
@@ -29,6 +30,10 @@ func NewCoursierInstaller() (c *CoursierInstaller) {
 		spinner: spinner.NewSpinner(),
 	}
 	return
+}
+
+func (c *CoursierInstaller) SetInstallConf(iconf download.InstallerConfig) {
+	c.installConf = iconf
 }
 
 func (c *CoursierInstaller) Initiate(originSDKName, versionName string, version download.Item) {

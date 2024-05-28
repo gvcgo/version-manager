@@ -27,6 +27,7 @@ type CondaInstaller struct {
 	VersionName   string
 	Version       download.Item
 	spinner       *spinner.Spinner
+	installConf   download.InstallerConfig
 }
 
 func NewCondaInstaller() (c *CondaInstaller) {
@@ -34,6 +35,10 @@ func NewCondaInstaller() (c *CondaInstaller) {
 		spinner: spinner.NewSpinner(),
 	}
 	return
+}
+
+func (c *CondaInstaller) SetInstallConf(iconf download.InstallerConfig) {
+	c.installConf = iconf
 }
 
 func (c *CondaInstaller) Initiate(originSDKName, versionName string, version download.Item) {
