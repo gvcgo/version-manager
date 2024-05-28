@@ -2,7 +2,6 @@ package download
 
 import (
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/pelletier/go-toml/v2"
 )
 
 type FileItems struct {
@@ -64,7 +64,7 @@ func GetSDKInstallationConfig(sdkName, newSha256 string) (ic InstallerConfig) {
 	oldSha256 := fmt.Sprintf("%x", h.Sum(nil))
 
 	if oldSha256 == newSha256 {
-		json.Unmarshal(oldContent, &ic)
+		toml.Unmarshal(oldContent, &ic)
 		return
 	}
 
@@ -73,7 +73,7 @@ func GetSDKInstallationConfig(sdkName, newSha256 string) (ic InstallerConfig) {
 	fetcher.SetUrl(dUrl)
 	fetcher.Timeout = 10 * time.Second
 	if resp, code := fetcher.GetString(); code == 200 {
-		json.Unmarshal([]byte(resp), &ic)
+		toml.Unmarshal([]byte(resp), &ic)
 		os.WriteFile(fPath, []byte(resp), os.ModePerm)
 	}
 	return

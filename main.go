@@ -21,7 +21,10 @@
 
 package main
 
-import "github.com/gvcgo/version-manager/internal/tui/cmds"
+import (
+	"github.com/gvcgo/version-manager/internal/shell"
+	"github.com/gvcgo/version-manager/internal/tui/cmds"
+)
 
 func main() {
 	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
@@ -48,6 +51,8 @@ func main() {
 	// l := table.NewList()
 	// l.Run()
 	// cmds.ShowSDKNameList()
+	sh := shell.NewShell()
+	sh.WriteVMEnvToShell()
 	ll := cmds.NewTUI()
 	ll.ListSDKName()
 

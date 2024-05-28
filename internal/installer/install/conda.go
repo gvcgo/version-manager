@@ -16,6 +16,7 @@ import (
 const (
 	VersionInstallDirPattern string = "%s-%s"
 	VerisonDirPattern        string = "%s_versions"
+	CondaPathEnvName         string = "VMR_CONDA_PATH"
 )
 
 /*
@@ -78,9 +79,14 @@ func (c *CondaInstaller) Install() {
 	*/
 	c.spinner.SetTitle(fmt.Sprintf("Conda installing %s", c.OriginSDKName))
 	go c.spinner.Run()
+
+	condaCommand := os.Getenv(CondaPathEnvName)
+	if condaCommand == "" {
+		condaCommand = "conda"
+	}
 	_, err := gutils.ExecuteSysCommand(
 		true, homeDir,
-		"conda", "create",
+		condaCommand, "create",
 		"-q", "-y",
 		fmt.Sprintf("--prefix=%s", c.GetInstallDir()),
 		"-c", "conda-forge", c.OriginSDKName,

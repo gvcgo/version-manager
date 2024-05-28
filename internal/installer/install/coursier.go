@@ -13,6 +13,10 @@ import (
 	"github.com/gvcgo/version-manager/internal/download"
 )
 
+const (
+	CoursierPathEnvName string = "VMR_COURSIER_PATH"
+)
+
 /*
 Install use coursier.
 */
@@ -68,9 +72,13 @@ func (c *CoursierInstaller) Install() {
 	/*
 		https://get-coursier.io/docs/cli-install
 	*/
+	coursierCommand := os.Getenv(CoursierPathEnvName)
+	if coursierCommand == "" {
+		coursierCommand = "cs"
+	}
 	_, err := gutils.ExecuteSysCommand(
 		false, homeDir,
-		"cs", "install",
+		coursierCommand, "install",
 		"-q",
 		fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
 		fmt.Sprintf("%s:%s", c.OriginSDKName, c.VersionName),

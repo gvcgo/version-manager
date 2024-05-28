@@ -1,6 +1,8 @@
 package installer
 
 import (
+	"os"
+
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
@@ -28,6 +30,7 @@ func IsCoursierInstalled() bool {
 }
 
 func installPrequisite(sdkName string) {
+	os.Setenv(AddToPathTemporarillyEnvName, "1")
 	vName, vItem := download.GetLatestVersionBySDKName(sdkName)
 
 	sdkList := download.GetSDKList()

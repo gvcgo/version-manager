@@ -2,11 +2,19 @@ package installer
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/shell"
+	"github.com/gvcgo/version-manager/internal/utils"
+)
+
+const (
+	AddToPathTemporarillyEnvName string = "VMR_ADD_TO_PATH_TEMPORARILY"
 )
 
 type SDKInstaller interface {
@@ -53,6 +61,10 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 	return
 }
 
+func (i *Installer) GetSDKInstaller() (si SDKInstaller) {
+	return i.sdkInstaller
+}
+
 func (i *Installer) CreateSymlink() {
 	symbolPath := i.sdkInstaller.GetSymbolLinkPath()
 	ok, _ := gutils.PathIsExist(symbolPath)
@@ -67,6 +79,73 @@ func (i *Installer) CreateSymlink() {
 	}
 }
 
+func (i *Installer) collectEnvs(basePath string) map[string][]string {
+	result := make(map[string][]string)
+	if ok, _ := gutils.PathIsExist(basePath); ok {
+		binDirList := []download.DirPath{}
+		dd := i.installerConf.BinaryDirs
+		// aa := i.installerConf.AdditionalEnvs
+		if dd != nil {
+			switch runtime.GOOS {
+			case gutils.Darwin:
+				binDirList = i.installerConf.BinaryDirs.MacOS
+			case gutils.Linux:
+				binDirList = i.installerConf.BinaryDirs.Linux
+			case gutils.Windows:
+				binDirList = i.installerConf.BinaryDirs.Windows
+			default:
+			}
+		}
+		for _, dirPath := range binDirList {
+			pList := append([]string{basePath}, dirPath...)
+			p := filepath.Join(pList...)
+			if ok1, _ := gutils.PathIsExist(p); ok1 {
+				result["PATH"] = append(result["PATH"], p)
+			}
+		}
+
+		// for key, value := range aa {
+
+		// }
+	}
+	return result
+}
+
+func (i *Installer) addToPathTemporarilly() {
+	if !gconv.Bool(os.Getenv(AddToPathTemporarillyEnvName)) {
+		return
+	}
+	installDir := i.sdkInstaller.GetInstallDir()
+	envList := i.collectEnvs(installDir)
+	for key, value := range envList {
+		if key == "PATH" {
+			p := utils.JoinPath(value...)
+			newPathEnv := utils.JoinPath(p, os.Getenv("PATH"))
+			os.Setenv("PATH", newPathEnv)
+		}
+	}
+}
+
+func (i *Installer) SetEnvGlobally() {
+	symbolPath := i.sdkInstaller.GetSymbolLinkPath()
+	envList := i.collectEnvs(symbolPath)
+	for key, value := range envList {
+		if key == "PATH" {
+			i.Shell.SetPath(utils.JoinPath(value...))
+		} else {
+			i.Shell.SetEnv(key, utils.JoinPath(value...))
+		}
+	}
+}
+
+func (i *Installer) CollectEnvsForSession() {}
+
+func (i *Installer) IsInstalled() bool {
+	installDir := i.sdkInstaller.GetInstallDir()
+	entries, _ := os.ReadDir(installDir)
+	return len(entries) > 0
+}
+
 func (i *Installer) Install() {
 	// check prequisite.
 	switch i.Version.Installer {
@@ -76,8 +155,12 @@ func (i *Installer) Install() {
 		CheckAndInstallCoursier()
 	default:
 	}
-	i.sdkInstaller.Install()
-	i.CreateSymlink()
+	if !i.IsInstalled() {
+		i.sdkInstaller.Install()
+		i.CreateSymlink()
+		i.SetEnvGlobally()
+		i.addToPathTemporarilly()
+	}
 }
 
 func (i *Installer) Uninstall() {}
