@@ -1,20 +1,9 @@
 package installer
 
 import (
-	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 )
-
-func IsMinicondaInstalled() bool {
-	_, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
-	return err == nil
-}
-
-func IsCoursierInstalled() bool {
-	_, err := gutils.ExecuteSysCommand(true, "", "cs", "--help")
-	return err == nil
-}
 
 type SDKInstaller interface {
 	Initiate(originSDKName, versionName string, version download.Item)
@@ -59,6 +48,14 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 }
 
 func (i *Installer) Install() {
+	// check prequisite.
+	switch i.Version.Installer {
+	case download.Conda, download.CondaForge:
+		CheckAndInstallMiniconda()
+	case download.Coursier:
+		CheckAndInstallCoursier()
+	default:
+	}
 	i.sdkInstaller.Install()
 }
 
