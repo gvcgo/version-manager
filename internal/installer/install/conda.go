@@ -65,7 +65,7 @@ func (c *CondaInstaller) GetInstallDir() string {
 
 func (c *CondaInstaller) GetSymbolLinkPath() string {
 	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, c.SDKName)
+	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, c.SDKName))
 	os.MkdirAll(d, os.ModePerm)
 	return filepath.Join(d, c.SDKName)
 }

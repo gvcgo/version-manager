@@ -1,6 +1,9 @@
 package installer
 
 import (
+	"os"
+
+	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 )
@@ -47,6 +50,20 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 	return
 }
 
+func (i *Installer) CreateSymlink() {
+	symbolPath := i.sdkInstaller.GetSymbolLinkPath()
+	ok, _ := gutils.PathIsExist(symbolPath)
+	installDir := i.sdkInstaller.GetInstallDir()
+	ok1, _ := gutils.PathIsExist(installDir)
+
+	if ok && ok1 {
+		os.RemoveAll(symbolPath)
+	}
+	if ok1 {
+		os.Symlink(installDir, symbolPath)
+	}
+}
+
 func (i *Installer) Install() {
 	// check prequisite.
 	switch i.Version.Installer {
@@ -57,6 +74,7 @@ func (i *Installer) Install() {
 	default:
 	}
 	i.sdkInstaller.Install()
+	i.CreateSymlink()
 }
 
 func (i *Installer) Uninstall() {}

@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
 )
@@ -18,7 +19,7 @@ Automatically detects and installs prerequisites for the installer.
 
 func IsMinicondaInstalled() bool {
 	_, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
-	return err != nil
+	return err == nil
 }
 
 func IsCoursierInstalled() bool {
@@ -37,12 +38,14 @@ func installPrequisite(sdkName string) {
 
 func CheckAndInstallMiniconda() {
 	if !IsMinicondaInstalled() {
+		gprint.PrintInfo("Installing miniconda first: ")
 		installPrequisite(MinicondaSDKName)
 	}
 }
 
 func CheckAndInstallCoursier() {
 	if !IsCoursierInstalled() {
+		gprint.PrintInfo("Installing coursier first: ")
 		installPrequisite(CoursierSDKName)
 	}
 }

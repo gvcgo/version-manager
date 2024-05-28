@@ -56,7 +56,7 @@ func (c *CoursierInstaller) GetInstallDir() string {
 
 func (c *CoursierInstaller) GetSymbolLinkPath() string {
 	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, c.SDKName)
+	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, c.SDKName))
 	os.MkdirAll(d, os.ModePerm)
 	return filepath.Join(d, c.SDKName)
 }
