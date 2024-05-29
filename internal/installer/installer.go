@@ -155,7 +155,10 @@ func (i *Installer) SetEnvGlobally() {
 		if key == "PATH" {
 			i.Shell.SetPath(utils.JoinPath(value...))
 		} else {
-			i.Shell.SetEnv(key, utils.JoinPath(value...))
+			p := utils.JoinPath(value...)
+			if p != "" {
+				i.Shell.SetEnv(key, p)
+			}
 		}
 	}
 }
