@@ -104,6 +104,9 @@ install *.exe for windows
 2. elixir
 */
 func InstallExeForWindows(exePath, installDir string) (err error) {
+	homeDir, _ := os.UserHomeDir()
+	_, err = gutils.ExecuteSysCommand(true, homeDir,
+		"start", "/wait", exePath, "/S", fmt.Sprintf("/D=%s", installDir))
 	return
 }
 
