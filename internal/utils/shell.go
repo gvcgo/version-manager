@@ -23,3 +23,25 @@ func JoinPath(pathStr ...string) (s string) {
 	s = strings.Join(pathStr, seperator)
 	return
 }
+
+const (
+	LinuxInstallerApt string = "apt"
+	LinuxInstallerYum string = "yum"
+	LinuxInstallerDnf string = "dnf"
+)
+
+func DNForAPTonLinux() string {
+	_, err := gutils.ExecuteSysCommand(true, "", "apt", "--help")
+	if err == nil {
+		return LinuxInstallerApt
+	}
+	_, err = gutils.ExecuteSysCommand(true, "", "dnf", "--help")
+	if err == nil {
+		return LinuxInstallerDnf
+	}
+	_, err = gutils.ExecuteSysCommand(true, "", "yum", "--help")
+	if err == nil {
+		return LinuxInstallerYum
+	}
+	return ""
+}

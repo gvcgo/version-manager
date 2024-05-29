@@ -10,9 +10,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/tui/table"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 const (
@@ -82,12 +84,34 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 				// save filtered version.
 				item.Os = runtime.GOOS
 				item.Arch = runtime.GOARCH
-				// TODO: deb,rpm
-				filteredVersions[vName] = item
+
+				if sdkName == "vscode" && item.Os == gutils.Darwin {
+					item.Installer = Executable
+				}
+				if sdkName == "kubectl" {
+					item.Installer = Executable
+				}
+				if FilterVersionItem(item) {
+					filteredVersions[vName] = item
+				}
 			}
 		}
 	}
 	return
+}
+
+func FilterVersionItem(item Item) (ok bool) {
+	if item.Os == gutils.Linux && item.Installer != Unarchiver {
+		switch utils.DNForAPTonLinux() {
+		case utils.LinuxInstallerApt:
+			return strings.HasSuffix(item.Url, ".deb")
+		case utils.LinuxInstallerYum, utils.LinuxInstallerDnf:
+			return strings.HasSuffix(item.Url, ".rpm")
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func GetVersionsSortedRows(filteredVersions map[string]Item) (rows []table.Row) {

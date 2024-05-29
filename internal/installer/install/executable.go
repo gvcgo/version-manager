@@ -17,6 +17,9 @@ import (
 
 const (
 	MinicondaSDKName string = "miniconda"
+	ErlangSDKName    string = "erlang"
+	ElixirSDKName    string = "elixir"
+	VSCodeSDKName    string = "vscode"
 )
 
 /*
@@ -55,6 +58,25 @@ func InstallMiniconda(exePath, installDir string) (err error) {
 		}
 	}
 	_, err = gutils.ExecuteSysCommand(true, homeDir, commands...)
+	return
+}
+
+// vscode
+func InstallVSCode(pkgFilePath, installDir string) (err error) {
+	return
+}
+
+/*
+install *.exe for windows
+1. erlang
+2. elixir
+*/
+func InstallExeForWindows(exePath, installDir string) (err error) {
+	return
+}
+
+// Other standalone executables.
+func InstallStandAloneExecutables(exePath, installDir string) (err error) {
 	return
 }
 
@@ -121,9 +143,18 @@ func (ei *ExeInstaller) Install() {
 	ei.spinner.SetTitle(fmt.Sprintf("Installing %s", ei.OriginSDKName))
 	go ei.spinner.Run()
 	var err error
-	if ei.OriginSDKName == MinicondaSDKName {
+
+	switch ei.OriginSDKName {
+	case MinicondaSDKName:
 		err = InstallMiniconda(localPath, ei.GetInstallDir())
+	case ErlangSDKName, ElixirSDKName:
+		err = InstallExeForWindows(localPath, ei.GetInstallDir())
+	case VSCodeSDKName:
+		err = InstallVSCode(localPath, ei.GetInstallDir())
+	default:
+		err = InstallStandAloneExecutables(localPath, ei.GetInstallDir())
 	}
+
 	ei.spinner.Quit()
 	time.Sleep(time.Second * 2) // cursor fix.
 	if err != nil {
