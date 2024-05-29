@@ -22,6 +22,7 @@ const (
 	AddToPathTemporarillyEnvName string     = "VMR_ADD_TO_PATH_TEMPORARILY"
 	ModeGlobally                 InvokeMode = "globally"
 	ModeSessionly                InvokeMode = "sessionly"
+	ModeToLock                   InvokeMode = "to-lock"
 )
 
 type SDKInstaller interface {
@@ -139,7 +140,7 @@ func (i *Installer) collectEnvs(basePath string) map[string][]string {
 	return result
 }
 
-func (i *Installer) addToPathTemporarilly() {
+func (i *Installer) AddEnvsTemporarilly() {
 	if !gconv.Bool(os.Getenv(AddToPathTemporarillyEnvName)) {
 		return
 	}
@@ -203,13 +204,21 @@ func (i *Installer) Install() {
 	if i.Mode == ModeGlobally {
 		i.CreateSymlink()
 		i.SetEnvGlobally()
-		i.addToPathTemporarilly()
+		i.AddEnvsTemporarilly()
 	} else {
-		i.addToPathTemporarilly()
+		if i.Mode == ModeToLock {
+			i.writeLockFile()
+		}
+		i.AddEnvsTemporarilly()
 		t := terminal.NewPtyTerminal()
 		terminal.ModifyPathForPty(i.OriginSDKName)
 		t.Run()
 	}
+}
+
+func (i *Installer) writeLockFile() {
+	l := NewVLocker()
+	l.Save(i.OriginSDKName, i.VersionName)
 }
 
 // TODO: uninstall versions.
