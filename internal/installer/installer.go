@@ -1,20 +1,27 @@
 package installer
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/shell"
+	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
+type InvokeMode string
+
 const (
-	AddToPathTemporarillyEnvName string = "VMR_ADD_TO_PATH_TEMPORARILY"
+	AddToPathTemporarillyEnvName string     = "VMR_ADD_TO_PATH_TEMPORARILY"
+	ModeGlobally                 InvokeMode = "globally"
+	ModeSessionly                InvokeMode = "sessionly"
 )
 
 type SDKInstaller interface {
@@ -36,6 +43,7 @@ type Installer struct {
 	sdkInstaller  SDKInstaller
 	installerConf download.InstallerConfig
 	Shell         shell.Sheller
+	Mode          InvokeMode
 }
 
 func NewInstaller(originSDKName, versionName, intallSha256 string, version download.Item) (i *Installer) {
@@ -44,6 +52,7 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 		VersionName:   versionName,
 		Version:       version,
 		Shell:         shell.NewShell(),
+		Mode:          ModeGlobally,
 	}
 	switch version.Installer {
 	case download.Conda, download.CondaForge:
@@ -59,6 +68,10 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 	i.installerConf = download.GetSDKInstallationConfig(originSDKName, intallSha256)
 	i.sdkInstaller.SetInstallConf(i.installerConf)
 	return
+}
+
+func (i *Installer) SetInvokeMode(m InvokeMode) {
+	i.Mode = m
 }
 
 func (i *Installer) GetSDKInstaller() (si SDKInstaller) {
@@ -181,17 +194,26 @@ func (i *Installer) Install() {
 	default:
 	}
 
-	// TODO: sessionly, locked.
 	if !i.IsInstalled() {
 		i.sdkInstaller.Install()
+
+	} else {
+		gprint.PrintInfo(fmt.Sprintf("%s %s is already installed.", i.OriginSDKName, i.VersionName))
+	}
+	if i.Mode == ModeGlobally {
 		i.CreateSymlink()
 		i.SetEnvGlobally()
 		i.addToPathTemporarilly()
+	} else {
+		i.addToPathTemporarilly()
+		t := terminal.NewPtyTerminal()
+		terminal.ModifyPathForPty(i.OriginSDKName)
+		t.Run()
 	}
 }
 
+// TODO: uninstall versions.
 func (i *Installer) Uninstall() {}
 
-func (i *Installer) SetEnv() {}
-
+// TODO: unset envs.
 func (i *Installer) UnsetEnv() {}
