@@ -77,7 +77,7 @@ func (c *CoursierInstaller) Install() {
 		coursierCommand = "cs"
 	}
 	_, err := gutils.ExecuteSysCommand(
-		false, homeDir,
+		true, homeDir,
 		coursierCommand, "install",
 		"-q",
 		fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
