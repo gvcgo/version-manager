@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -13,6 +14,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 const (
@@ -63,6 +65,36 @@ func InstallMiniconda(exePath, installDir string) (err error) {
 
 // vscode
 func InstallVSCode(pkgFilePath, installDir string) (err error) {
+	homeDir, _ := os.UserHomeDir()
+	switch runtime.GOOS {
+	case gutils.Windows:
+		if strings.HasSuffix(pkgFilePath, ".exe") {
+			_, err = gutils.ExecuteSysCommand(true, homeDir,
+				pkgFilePath, "/VERYSILENT", "/MERGETASKS=!runcode")
+		}
+	case gutils.Linux:
+		if strings.HasSuffix(pkgFilePath, ".deb") {
+			_, err = gutils.ExecuteSysCommand(true, homeDir,
+				"sudo", "dpkg", "-i", pkgFilePath)
+		} else if strings.HasSuffix(pkgFilePath, ".rpm") {
+			_, err = gutils.ExecuteSysCommand(true, homeDir,
+				"sudo", "rpm", "-ivh", pkgFilePath)
+		}
+	case gutils.Darwin:
+		err = utils.Extract(pkgFilePath, cnf.GetTempDir())
+		if err != nil {
+			return
+		}
+		appName := "Visual Studio Code.app"
+		ff := utils.NewFinder(appName)
+		ff.Find(cnf.GetTempDir())
+		appPath := filepath.Join(ff.GetDirName(), appName)
+		if ok, _ := gutils.PathIsExist(appPath); ok {
+			utils.MoveFileOnUnixSudo(appPath, "/Applications")
+		}
+		os.RemoveAll(cnf.GetTempDir())
+	default:
+	}
 	return
 }
 

@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 
+	"github.com/gogf/gf/v2/os/genv"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 )
 
@@ -44,4 +47,13 @@ func DNForAPTonLinux() string {
 		return LinuxInstallerYum
 	}
 	return ""
+}
+
+func MoveFileOnUnixSudo(from, to string) error {
+	cmd := exec.Command("sudo", "mv", from, to)
+	cmd.Env = genv.All()
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	return cmd.Run()
 }
