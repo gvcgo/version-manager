@@ -23,7 +23,6 @@ const (
 Lock the SDK version for a project.
 */
 type VersionLocker struct {
-	versionInfo   string
 	VersionOfSDKs map[string]string
 }
 
@@ -56,14 +55,14 @@ func (v *VersionLocker) Load() {
 	}
 	if ok, _ := gutils.PathIsExist(fPath); ok {
 		data, _ := os.ReadFile(fPath)
-		v.versionInfo = strings.TrimSpace(string(data))
-		if v.versionInfo != "" && !strings.Contains(v.versionInfo, "{") {
-			sList := strings.Split(v.versionInfo, "@")
+		content := strings.TrimSpace(string(data))
+		if content != "" && !strings.Contains(content, "{") {
+			sList := strings.Split(content, "@")
 			if len(sList) == 2 {
 				v.VersionOfSDKs[sList[0]] = sList[1]
 			}
 		} else {
-			json.Unmarshal([]byte(v.versionInfo), &v.VersionOfSDKs)
+			json.Unmarshal([]byte(content), &v.VersionOfSDKs)
 		}
 	}
 }
@@ -99,11 +98,6 @@ func (v *VersionLocker) Save(sdkName, versionName string) {
 
 	data, _ := json.MarshalIndent(&v.VersionOfSDKs, "", "    ")
 	_ = os.WriteFile(lockFilePath, data, sh.ModePerm)
-}
-
-func (v *VersionLocker) Get() (vInfo string) {
-	v.Load()
-	return v.versionInfo
 }
 
 /*
