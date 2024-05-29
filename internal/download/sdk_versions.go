@@ -101,7 +101,7 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 }
 
 func FilterVersionItem(item Item) (ok bool) {
-	if item.Os == gutils.Linux && item.Installer != Unarchiver {
+	if item.Os == gutils.Linux && (item.Installer == Dpkg || item.Installer == Rpm) {
 		switch utils.DNForAPTonLinux() {
 		case utils.LinuxInstallerApt:
 			return strings.HasSuffix(item.Url, ".deb")
