@@ -1,6 +1,6 @@
 module github.com/gvcgo/version-manager
 
-go 1.22.0
+go 1.22.3
 
 require (
 	github.com/atotto/clipboard v0.1.4
