@@ -112,6 +112,14 @@ func InstallExeForWindows(exePath, installDir string) (err error) {
 
 // Other standalone executables.
 func InstallStandAloneExecutables(exePath, installDir string) (err error) {
+	fName := filepath.Base(exePath)
+	destPath := filepath.Join(installDir, fName)
+	if ok, _ := gutils.PathIsExist(exePath); ok {
+		err = gutils.CopyAFile(exePath, destPath)
+	}
+	if err == nil && runtime.GOOS != gutils.Windows {
+		gutils.ExecuteSysCommand(true, installDir, "chmod", "+x", destPath)
+	}
 	return
 }
 
@@ -168,6 +176,22 @@ func (ei *ExeInstaller) GetSymbolLinkPath() string {
 	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, ei.SDKName))
 	os.MkdirAll(d, os.ModePerm)
 	return filepath.Join(d, ei.SDKName)
+}
+
+func (ei *ExeInstaller) RenameFile() {
+	if ei.installConf.BinaryRename != nil {
+		installDir := ei.GetInstallDir()
+		dList, _ := os.ReadDir(installDir)
+		for _, dd := range dList {
+			if !dd.IsDir() && strings.Contains(dd.Name(), ei.installConf.BinaryRename.NameFlag) {
+				newName := filepath.Join(installDir, ei.installConf.BinaryRename.RenameTo)
+				if runtime.GOOS == "windows" {
+					newName += ".exe"
+				}
+				os.Rename(filepath.Join(installDir, dd.Name()), newName)
+			}
+		}
+	}
 }
 
 func (ei *ExeInstaller) Install() {
