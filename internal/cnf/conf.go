@@ -105,6 +105,8 @@ func NewVMRConf() (v *VMRConf) {
 	if v.VersionHostUrl != "" {
 		os.Setenv(VMRHostUrlEnv, v.VersionHostUrl)
 	}
+	// TODO: ProxyURI
+	// v.ProxyUri = "http://localhost:2023"
 	return v
 }
 

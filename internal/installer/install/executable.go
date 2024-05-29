@@ -113,6 +113,7 @@ func InstallExeForWindows(exePath, installDir string) (err error) {
 // Other standalone executables.
 func InstallStandAloneExecutables(exePath, installDir string) (err error) {
 	fName := filepath.Base(exePath)
+	os.MkdirAll(installDir, os.ModePerm)
 	destPath := filepath.Join(installDir, fName)
 	if ok, _ := gutils.PathIsExist(exePath); ok {
 		err = gutils.CopyAFile(exePath, destPath)
@@ -212,6 +213,7 @@ func (ei *ExeInstaller) Install() {
 		err = InstallVSCode(localPath, ei.GetInstallDir())
 	default:
 		err = InstallStandAloneExecutables(localPath, ei.GetInstallDir())
+		ei.RenameFile()
 	}
 
 	ei.spinner.Quit()

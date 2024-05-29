@@ -48,7 +48,10 @@ func (d *Downloader) Download(OriginSDKName, versionName string, version Item, f
 	if ok, _ := gutils.PathIsExist(fPath); ok {
 		return
 	}
-	d.Fetcher.SetUrl(cnf.GetReverseProxyUri() + d.Version.Url)
+	// TODO: Proxy
+	// d.Fetcher.SetUrl(cnf.GetReverseProxyUri() + d.Version.Url)
+	d.Fetcher.SetUrl(d.Version.Url)
+	d.Fetcher.Proxy = "http://localhost:2023"
 	d.Fetcher.Timeout = 30 * time.Minute
 	d.Fetcher.SetCheckSum(version.Sum, version.SumType)
 	d.Fetcher.SetFileContentLength(version.Size)
