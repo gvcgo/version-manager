@@ -10,13 +10,16 @@ import (
 
 const (
 	// tui key envent name.
-	KeyEventOpenHomePage     = "open-homepage"
-	KeyEventSeachVersionList = "search-version-list"
+	KeyEventOpenHomePage         = "open-homepage"
+	KeyEventSeachVersionList     = "search-version-list"
+	KeyEventShowLocalInstalled   = "show-installed-versions"
+	KeyEventRemoveLocalInstalled = "remove-installed-versions"
+	KeyEventClearLocalCached     = "clear-local-cached-files"
+	KeyEventBacktoPreviousPage   = "back-to-previous-page"
 )
 
 /*
 Show the SDK list supported by vmr.
-TODO: use download.
 */
 
 type SDKSearcher struct {
@@ -90,5 +93,27 @@ func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
 		HelpInfo: "search versions for selected sdk",
 	})
 
-	// TODO: Show local installed.
+	ll.SetKeyEventForTable("l", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventShowLocalInstalled
+			return tea.Quit
+		},
+		HelpInfo: "show local installed versions",
+	})
+
+	ll.SetKeyEventForTable("r", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventRemoveLocalInstalled
+			return tea.Quit
+		},
+		HelpInfo: "remove all local installed versions",
+	})
+
+	ll.SetKeyEventForTable("c", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventClearLocalCached
+			return tea.Quit
+		},
+		HelpInfo: "clear all local cached files",
+	})
 }

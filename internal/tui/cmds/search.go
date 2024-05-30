@@ -18,7 +18,6 @@ const (
 
 /*
 Search version list for SDK.
-TODO: use download.
 */
 
 type VersionSearcher struct {
@@ -78,12 +77,36 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 	return
 }
 
-// TODO: install, switch-to, session-only, lock-version
 func (s *VersionSearcher) RegisterKeyEvents(ll *table.List) {
 	ll.SetKeyEventForTable("i", table.KeyEvent{
 		Event: func(key string, l *table.List) tea.Cmd {
 			l.NextEvent = KeyEventInstallGlobally
 			return tea.Quit
 		},
+		HelpInfo: "install selected version globally",
+	})
+
+	ll.SetKeyEventForTable("s", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventUseVersionGlobally
+			return tea.Quit
+		},
+		HelpInfo: "use selected version only in current session",
+	})
+
+	ll.SetKeyEventForTable("l", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventLockVersion
+			return tea.Quit
+		},
+		HelpInfo: "lock selected version for current project",
+	})
+
+	ll.SetKeyEventForTable("b", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventBacktoPreviousPage
+			return tea.Quit
+		},
+		HelpInfo: "back to previous page",
 	})
 }

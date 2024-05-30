@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -227,8 +228,11 @@ func (i *Installer) Uninstall() {
 	ivFinder := NewIVFinder(i.OriginSDKName)
 	_, current := ivFinder.FindAll()
 	installDir := i.sdkInstaller.GetInstallDir()
+	installDir = strings.TrimSuffix(installDir, "<current>")
 	os.RemoveAll(installDir)
 	if current == i.VersionName {
+		symbolPath := i.sdkInstaller.GetSymbolLinkPath()
+		os.RemoveAll(symbolPath)
 		i.UnsetEnv()
 	}
 }

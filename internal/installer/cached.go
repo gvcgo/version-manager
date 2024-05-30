@@ -3,6 +3,7 @@ package installer
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gvcgo/version-manager/internal/cnf"
 )
@@ -28,6 +29,7 @@ func NewCachedFileFinder(sdkName string, versionName ...string) *CachedFileFinde
 
 func (cf *CachedFileFinder) Delete() {
 	cacheDir := cnf.GetCacheDir()
+
 	if cf.VersionName == "" {
 		cachedSDKName := filepath.Join(cacheDir, cf.SDKName)
 		dList, _ := os.ReadDir(cachedSDKName)
@@ -39,6 +41,7 @@ func (cf *CachedFileFinder) Delete() {
 
 	} else {
 		dd := filepath.Join(cacheDir, cf.SDKName, cf.VersionName)
+		dd = strings.TrimSuffix(dd, "<current>")
 		os.RemoveAll(dd)
 	}
 }
