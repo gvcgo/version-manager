@@ -69,6 +69,10 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: "installer", Width: w},
 	})
 	rows := download.GetVersionsSortedRows(s.filteredVersions)
+	if len(rows) == 0 {
+		gprint.PrintWarning("No versions found for current platform.")
+		return
+	}
 	ll.SetRows(rows)
 	ll.Run()
 

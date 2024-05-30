@@ -2,6 +2,7 @@ package cmds
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
@@ -62,6 +63,10 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: "homepage", Width: w},
 	})
 	rows := download.GetSDKSortedRows(v.SdkList)
+	if len(rows) == 0 {
+		gprint.PrintWarning("no sdk found!")
+		return
+	}
 	ll.SetRows(rows)
 	ll.Run()
 
