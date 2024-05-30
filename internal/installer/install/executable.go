@@ -166,9 +166,7 @@ func (ei *ExeInstaller) FormatSDKName() {
 }
 
 func (ei *ExeInstaller) GetInstallDir() string {
-	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, ei.SDKName))
-	os.MkdirAll(d, os.ModePerm)
+	d := GetSDKVersionDir(ei.SDKName)
 	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, ei.OriginSDKName, ei.VersionName))
 }
 

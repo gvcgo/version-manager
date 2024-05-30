@@ -54,9 +54,7 @@ func (a *ArchiverInstaller) GetInstallDir() string {
 }
 
 func (a *ArchiverInstaller) GetSymbolLinkPath() string {
-	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, a.SDKName))
-	os.MkdirAll(d, os.ModePerm)
+	d := GetSDKVersionDir(a.SDKName)
 	return filepath.Join(d, a.SDKName)
 }
 

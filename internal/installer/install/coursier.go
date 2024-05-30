@@ -9,7 +9,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/download"
 )
 
@@ -57,9 +56,7 @@ func (c *CoursierInstaller) GetInstallDir() string {
 }
 
 func (c *CoursierInstaller) GetSymbolLinkPath() string {
-	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, c.SDKName))
-	os.MkdirAll(d, os.ModePerm)
+	d := GetSDKVersionDir(c.SDKName)
 	return filepath.Join(d, c.SDKName)
 }
 
