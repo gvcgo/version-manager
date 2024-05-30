@@ -9,11 +9,12 @@ require (
 	github.com/charmbracelet/lipgloss v0.8.0
 	github.com/creack/pty v1.1.21
 	github.com/creack/termios v0.0.0-20160714173321-88d0029e36a1
+	github.com/erikgeiser/promptkit v0.9.0
 	github.com/gogf/gf/v2 v2.6.1
 	github.com/gvcgo/goutils v0.9.8
 	github.com/mattn/go-runewidth v0.0.15
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b
+	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
 	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/sys v0.18.0

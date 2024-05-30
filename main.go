@@ -22,6 +22,9 @@
 package main
 
 import (
+	"os"
+
+	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/shell"
 	"github.com/gvcgo/version-manager/internal/tui/cmds"
 )
@@ -58,9 +61,18 @@ func main() {
 	// ei.Initiate(sdkName, vName, vItem)
 	// ei.Install()
 
+	// promptStr := gprint.BrownStr("Are you ready?")
+	// input := confirmation.New(promptStr, confirmation.No)
+
+	// ready, _ := input.RunPrompt()
+
+	// fmt.Println(ready)
+
 	// test vmr
+
 	sh := shell.NewShell()
 	sh.WriteVMEnvToShell()
+	os.Setenv(cnf.VMRLocalProxyEnv, "http://localhost:2023")
 	ll := cmds.NewTUI()
 	ll.ListSDKName()
 }

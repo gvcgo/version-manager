@@ -2,12 +2,14 @@ package table
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/gogf/gf/v2/util/gutil"
 )
 
 type ListType string
@@ -191,7 +193,17 @@ func (l *List) renderHelpInfo() (count int, s string) {
 		lines = append(lines, fmt.Sprintf(pattern, "↓/j", "scroll down"))
 		lines = append(lines, fmt.Sprintf(pattern, "g", "goto the first line"))
 		lines = append(lines, fmt.Sprintf(pattern, "G", "goto the last line"))
-		for key, event := range l.TableKeyEvent {
+
+		keyList := []string{}
+		for key := range l.TableKeyEvent {
+			keyList = append(keyList, key)
+		}
+		sort.Slice(keyList, func(i, j int) bool {
+			return gutil.ComparatorString(keyList[i], keyList[j]) <= 0
+		})
+
+		for _, key := range keyList {
+			event := l.TableKeyEvent[key]
 			lines = append(lines, fmt.Sprintf(pattern, key, event.HelpInfo))
 		}
 	}

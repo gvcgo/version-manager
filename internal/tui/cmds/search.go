@@ -41,6 +41,7 @@ func (s *VersionSearcher) GetVersionByVersionName(vName string) (item download.I
 }
 
 func (s *VersionSearcher) Search(sdkName, newSha256 string) (nextEvent, selectedItem string) {
+	s.SDKName = sdkName
 	s.filteredVersions = download.GetVersionList(sdkName, newSha256)
 	if s.ToShowList {
 		nextEvent, selectedItem = s.Show()

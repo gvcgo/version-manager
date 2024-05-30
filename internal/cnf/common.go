@@ -28,7 +28,7 @@ func GetSDKListFileUrl() string {
 		host = DefaultHostUrl
 	}
 	u, _ := url.JoinPath(host, SDKNameListFileUrl)
-	u = GetReverseProxyUri() + u
+	// u = GetReverseProxyUri() + u
 	return u
 }
 
@@ -39,7 +39,7 @@ func GetVersionFileUrlBySDKName(sdkName string) string {
 		host = DefaultHostUrl
 	}
 	u, _ := url.JoinPath(host, fmt.Sprintf(VersionFileUrlPattern, sdkName))
-	u = GetReverseProxyUri() + u
+	// u = GetReverseProxyUri() + u
 	return u
 }
 
@@ -50,19 +50,19 @@ func GetSDKInstallationConfFileUrlBySDKName(sdkName string) string {
 		host = DefaultHostUrl
 	}
 	u, _ := url.JoinPath(host, fmt.Sprintf(SDKInstallationUrlPattern, sdkName))
-	u = GetReverseProxyUri() + u
+	// u = GetReverseProxyUri() + u
 	return u
 }
 
 // Prepares request.Fetcher for URL.
-func GetFetcher(dUrl string) (ff *request.Fetcher) {
+func GetFetcher(dUrl string) (fetcher *request.Fetcher) {
 	reverseProxy := GetReverseProxyUri()
 	localProxy := os.Getenv(VMRLocalProxyEnv)
 	if localProxy == "" {
 		dUrl = reverseProxy + dUrl
 	}
-	ff = request.NewFetcher()
-	ff.SetUrl(dUrl)
-	ff.Proxy = localProxy
+	fetcher = request.NewFetcher()
+	fetcher.SetUrl(dUrl)
+	fetcher.Proxy = localProxy
 	return
 }
