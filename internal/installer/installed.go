@@ -50,18 +50,31 @@ func (i *InstalledVersionFinder) FindAll() (r []string, current string) {
 		return
 	}
 	symbolPath := sdkInstaller.GetSymbolLinkPath()
-	versionDIr := filepath.Dir(symbolPath)
-	if ok, _ := gutils.PathIsExist(versionDIr); !ok {
+	versionDir := filepath.Dir(symbolPath)
+	if ok, _ := gutils.PathIsExist(versionDir); !ok {
 		return
 	}
 	i.findCurrentVersion(symbolPath)
 
 	namePrefix := fmt.Sprintf("%s-", i.SDKName)
-	dList, _ := os.ReadDir(versionDIr)
+	dList, _ := os.ReadDir(versionDir)
 	for _, d := range dList {
 		if d.IsDir() && strings.HasPrefix(d.Name(), namePrefix) {
 			i.InstalledVersions = append(i.InstalledVersions, strings.TrimPrefix(d.Name(), namePrefix))
 		}
 	}
 	return i.InstalledVersions, i.CurrentVersion
+}
+
+func (i *InstalledVersionFinder) UninstallAllVersions() {
+	sdkInstaller := i.Installer.GetSDKInstaller()
+	if sdkInstaller == nil {
+		return
+	}
+	versionDir := filepath.Dir(sdkInstaller.GetSymbolLinkPath())
+	if ok, _ := gutils.PathIsExist(versionDir); !ok {
+		return
+	}
+	os.RemoveAll(versionDir)
+	i.Installer.UnsetEnv()
 }

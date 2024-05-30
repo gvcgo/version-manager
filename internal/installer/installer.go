@@ -223,8 +223,27 @@ func (i *Installer) writeLockFile() {
 	l.Save(i.OriginSDKName, i.VersionName)
 }
 
-// TODO: uninstall versions.
-func (i *Installer) Uninstall() {}
+func (i *Installer) Uninstall() {
+	ivFinder := NewIVFinder(i.OriginSDKName)
+	_, current := ivFinder.FindAll()
+	installDir := i.sdkInstaller.GetInstallDir()
+	os.RemoveAll(installDir)
+	if current == i.VersionName {
+		i.UnsetEnv()
+	}
+}
 
-// TODO: unset envs.
-func (i *Installer) UnsetEnv() {}
+func (i *Installer) UnsetEnv() {
+	symbolPath := i.sdkInstaller.GetSymbolLinkPath()
+	envList := i.CollectEnvs(symbolPath)
+	for key, value := range envList {
+		if key == "PATH" {
+			i.Shell.UnsetPath(utils.JoinPath(value...))
+		} else {
+			p := utils.JoinPath(value...)
+			if p != "" {
+				i.Shell.UnsetEnv(key)
+			}
+		}
+	}
+}
