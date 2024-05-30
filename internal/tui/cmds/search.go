@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	KeyEventInstallGlobally     string = "install-globally"
 	KeyEventUseVersionGlobally  string = "use-version-globally"
 	KeyEventUseVersionSessionly string = "use-version-sessionly"
 	KeyEventLockVersion         string = "lock-version"
@@ -84,7 +83,7 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 func (s *VersionSearcher) RegisterKeyEvents(ll *table.List) {
 	ll.SetKeyEventForTable("i", table.KeyEvent{
 		Event: func(key string, l *table.List) tea.Cmd {
-			l.NextEvent = KeyEventInstallGlobally
+			l.NextEvent = KeyEventUseVersionGlobally
 			return tea.Quit
 		},
 		HelpInfo: "install selected version globally",
@@ -92,7 +91,7 @@ func (s *VersionSearcher) RegisterKeyEvents(ll *table.List) {
 
 	ll.SetKeyEventForTable("s", table.KeyEvent{
 		Event: func(key string, l *table.List) tea.Cmd {
-			l.NextEvent = KeyEventUseVersionGlobally
+			l.NextEvent = KeyEventUseVersionSessionly
 			return tea.Quit
 		},
 		HelpInfo: "use selected version only in current session",

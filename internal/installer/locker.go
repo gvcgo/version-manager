@@ -112,8 +112,9 @@ func (v *VersionLocker) HookForCdCommand() {
 	t := terminal.NewPtyTerminal()
 	for sdkName, versionName := range v.VersionOfSDKs {
 		ins := NewInstaller(sdkName, versionName, "", download.Item{})
-		ins.AddEnvsTemporarilly()
 		terminal.ModifyPathForPty(sdkName)
+		// follow the order.
+		ins.AddEnvsTemporarilly()
 	}
 	t.Run()
 }

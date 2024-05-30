@@ -201,9 +201,10 @@ func (i *Installer) Install() {
 		if handler, ok := post.PostInstallHandlers[i.OriginSDKName]; ok {
 			handler(i.VersionName, i.Version)
 		}
-	} else {
+	} else if i.Mode == ModeGlobally {
 		gprint.PrintInfo(fmt.Sprintf("%s %s is already installed.", i.OriginSDKName, i.VersionName))
 	}
+
 	if i.Mode == ModeGlobally {
 		i.CreateSymlink()
 		i.SetEnvGlobally()
@@ -212,9 +213,13 @@ func (i *Installer) Install() {
 		if i.Mode == ModeToLock {
 			i.writeLockFile()
 		}
-		i.AddEnvsTemporarilly()
-		t := terminal.NewPtyTerminal()
+
 		terminal.ModifyPathForPty(i.OriginSDKName)
+		// Enable temporary envs.
+		os.Setenv(AddToPathTemporarillyEnvName, "1")
+		i.AddEnvsTemporarilly()
+
+		t := terminal.NewPtyTerminal()
 		t.Run()
 	}
 }

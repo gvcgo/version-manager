@@ -44,12 +44,13 @@ func (v *VmrTUI) SearchVersions(sdkName string, sdkItem download.SDK) {
 	switch lastPressedKy {
 	case KeyEventBacktoPreviousPage:
 		v.ListSDKName()
-	case KeyEventInstallGlobally:
+	case KeyEventUseVersionGlobally:
 		vItem := v.VList.GetVersionByVersionName(versionName)
 		ins := installer.NewInstaller(sdkName, versionName, sdkItem.InstallConfSha256, vItem)
 		ins.SetInvokeMode(installer.ModeGlobally)
 		ins.Install()
 	case KeyEventUseVersionSessionly:
+		// TODO: to fix.
 		vItem := v.VList.GetVersionByVersionName(versionName)
 		ins := installer.NewInstaller(sdkName, versionName, sdkItem.InstallConfSha256, vItem)
 		ins.SetInvokeMode(installer.ModeSessionly)
