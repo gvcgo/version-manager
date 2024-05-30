@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -69,8 +68,8 @@ func GetSDKInstallationConfig(sdkName, newSha256 string) (ic InstallerConfig) {
 	}
 
 	dUrl := cnf.GetSDKInstallationConfFileUrlBySDKName(sdkName)
-	fetcher := request.NewFetcher()
-	fetcher.SetUrl(dUrl)
+	fetcher := cnf.GetFetcher(dUrl)
+	// fetcher.SetUrl(dUrl)
 	fetcher.Timeout = 10 * time.Second
 	if resp, code := fetcher.GetString(); code == 200 {
 		toml.Unmarshal([]byte(resp), &ic)

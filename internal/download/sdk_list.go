@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 )
@@ -23,13 +22,10 @@ type SDKList map[string]SDK
 
 func GetSDKList() (ss SDKList) {
 	ss = make(SDKList)
-	ff := request.NewFetcher()
-
 	dUrl := cnf.GetSDKListFileUrl()
-	ff.SetUrl(dUrl)
-	ff.Timeout = 10 * time.Second
-
-	resp, _ := ff.GetString()
+	fetcher := cnf.GetFetcher(dUrl)
+	fetcher.Timeout = 10 * time.Second
+	resp, _ := fetcher.GetString()
 	json.Unmarshal([]byte(resp), &ss)
 	return
 }

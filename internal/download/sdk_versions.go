@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 	"github.com/gvcgo/version-manager/internal/utils"
@@ -60,16 +59,14 @@ func CheckSumForVersionFile(sdkName, newSha256 string) (ok bool, fPath string) {
 
 func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item) {
 	dUrl := cnf.GetVersionFileUrlBySDKName(sdkName)
-
-	ff := request.NewFetcher()
-	ff.SetUrl(dUrl)
-	ff.Timeout = time.Minute
+	fetcher := cnf.GetFetcher(dUrl)
+	fetcher.Timeout = time.Minute
 
 	var content []byte
 	if ok, localFile := CheckSumForVersionFile(sdkName, newSha256); ok {
 		content, _ = os.ReadFile(localFile)
 	} else {
-		resp, _ := ff.GetString()
+		resp, _ := fetcher.GetString()
 		content = []byte(resp)
 		// cache version files.
 		os.WriteFile(localFile, content, os.ModePerm)
