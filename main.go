@@ -61,11 +61,13 @@ func main() {
 	// ei.Initiate(sdkName, vName, vItem)
 	// ei.Install()
 
-	// promptStr := gprint.BrownStr("Are you ready?")
-	// input := confirmation.New(promptStr, confirmation.No)
-
+	// input := confirmation.New("Do you want to try out promptkit?",
+	// 	confirmation.NewValue(true))
+	// input.Template = confirmation.TemplateYN
+	// input.ResultTemplate = confirmation.ResultTemplateYN
+	// input.KeyMap.SelectYes = append(input.KeyMap.SelectYes, "+")
+	// input.KeyMap.SelectNo = append(input.KeyMap.SelectNo, "-")
 	// ready, _ := input.RunPrompt()
-
 	// fmt.Println(ready)
 
 	// test vmr

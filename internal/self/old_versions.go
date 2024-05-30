@@ -43,15 +43,20 @@ func DetectAndRemoveOldVersions() {
 	}
 
 	// confirm to remove the old versions.
-	fmt.Println(gprint.RedStr("An old version of VMR is detected!!!"))
+	fmt.Println(gprint.RedStr("An old version of VMR is detected!"))
 	promptStr := gprint.YellowStr("Do you wanna remove the old VMR and all the SDKs installed by it?")
-	input := confirmation.New(promptStr, confirmation.No)
+	input := confirmation.New(promptStr, confirmation.NewValue(false))
+	input.Template = confirmation.TemplateYN
+	input.ResultTemplate = confirmation.ResultTemplateYN
+	input.KeyMap.SelectYes = append(input.KeyMap.SelectYes, "+")
+	input.KeyMap.SelectNo = append(input.KeyMap.SelectNo, "-")
 	ok, _ := input.RunPrompt()
 	if !ok {
 		fmt.Println(gprint.CyanStr("Installation of new version for VMR is aborted."))
 		os.Exit(0)
 	}
 
+	// remove the old VMR and all the SDKs installed by it.
 	oldConfig := &OldConfig{}
 	oldContent, _ := os.ReadFile(oldConfPath)
 	json.Unmarshal(oldContent, oldConfig)

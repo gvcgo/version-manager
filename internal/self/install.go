@@ -20,6 +20,11 @@ func InstallSelf() {
 	// Handle old versions.
 	DetectAndRemoveOldVersions()
 
+	/*
+		------------------
+		install vmr.
+		------------------
+	*/
 	excutablePath, _ := os.Executable()
 	vmrWorkDir := cnf.GetVMRWorkDir()
 
@@ -45,7 +50,7 @@ func InstallSelf() {
 	// Set your sdk installation directory.
 	fmt.Println(gprint.YellowStr(`Please set the sdk installation directory for VMR.`))
 	fmt.Println(gprint.YellowStr("The sdk installation directory is used to store the SDKs Installed by VMR."))
-	fmt.Println(gprint.YellowStr("If you left it as blank, the the sdk installation directory will be '$HOME/.vmr/'."))
+	fmt.Println(gprint.YellowStr("If you left it as blank, the sdk installation directory will be '$HOME/.vmr/'."))
 	fmt.Println("")
 	ipt := input.NewInput(input.WithPlaceholder("$HOME/.vm/"), input.WithPrompt("SDK Installation Dir: "))
 	ipt.Run()
