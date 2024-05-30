@@ -11,6 +11,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
+	"github.com/gvcgo/version-manager/internal/installer/post"
 	"github.com/gvcgo/version-manager/internal/shell"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/utils"
@@ -197,7 +198,10 @@ func (i *Installer) Install() {
 
 	if !i.IsInstalled() {
 		i.sdkInstaller.Install()
-
+		// post-install handler.
+		if handler, ok := post.PostInstallHandlers[i.OriginSDKName]; ok {
+			handler(i.VersionName, i.Version)
+		}
 	} else {
 		gprint.PrintInfo(fmt.Sprintf("%s %s is already installed.", i.OriginSDKName, i.VersionName))
 	}
