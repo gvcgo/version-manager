@@ -90,8 +90,8 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 					item.Installer = Executable
 				}
 
-				// php from github
-				if sdkName == "php" && item.Url != "" {
+				// filter: php from github
+				if sdkName == "php" && item.Url != "" && item.Os != gutils.Windows {
 					continue INNER
 				}
 				if FilterVersionItem(item) {
