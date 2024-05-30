@@ -173,9 +173,7 @@ func (ei *ExeInstaller) GetInstallDir() string {
 }
 
 func (ei *ExeInstaller) GetSymbolLinkPath() string {
-	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, ei.SDKName))
-	os.MkdirAll(d, os.ModePerm)
+	d := GetSDKVersionDir(ei.SDKName)
 	return filepath.Join(d, ei.SDKName)
 }
 

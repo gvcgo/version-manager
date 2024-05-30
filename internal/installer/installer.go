@@ -94,7 +94,7 @@ func (i *Installer) CreateSymlink() {
 	}
 }
 
-func (i *Installer) collectEnvs(basePath string) map[string][]string {
+func (i *Installer) CollectEnvs(basePath string) map[string][]string {
 	result := make(map[string][]string)
 	if ok, _ := gutils.PathIsExist(basePath); ok {
 		binDirList := []download.DirPath{}
@@ -146,7 +146,7 @@ func (i *Installer) AddEnvsTemporarilly() {
 		return
 	}
 	installDir := i.sdkInstaller.GetInstallDir()
-	envList := i.collectEnvs(installDir)
+	envList := i.CollectEnvs(installDir)
 	for key, value := range envList {
 		if key == "PATH" {
 			p := utils.JoinPath(value...)
@@ -165,7 +165,7 @@ func (i *Installer) AddEnvsTemporarilly() {
 
 func (i *Installer) SetEnvGlobally() {
 	symbolPath := i.sdkInstaller.GetSymbolLinkPath()
-	envList := i.collectEnvs(symbolPath)
+	envList := i.CollectEnvs(symbolPath)
 	for key, value := range envList {
 		if key == "PATH" {
 			i.Shell.SetPath(utils.JoinPath(value...))
@@ -177,8 +177,6 @@ func (i *Installer) SetEnvGlobally() {
 		}
 	}
 }
-
-func (i *Installer) CollectEnvsForSession() {}
 
 func (i *Installer) IsInstalled() bool {
 	installDir := i.sdkInstaller.GetInstallDir()

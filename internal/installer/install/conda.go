@@ -14,9 +14,7 @@ import (
 )
 
 const (
-	VersionInstallDirPattern string = "%s-%s"
-	VerisonDirPattern        string = "%s_versions"
-	CondaPathEnvName         string = "VMR_CONDA_PATH"
+	CondaPathEnvName string = "VMR_CONDA_PATH"
 )
 
 /*
@@ -58,9 +56,7 @@ func (c *CondaInstaller) FormatSDKName() {
 }
 
 func (c *CondaInstaller) GetInstallDir() string {
-	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, c.SDKName))
-	os.MkdirAll(d, os.ModePerm)
+	d := GetSDKVersionDir(c.SDKName)
 	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, c.OriginSDKName, c.VersionName))
 }
 
