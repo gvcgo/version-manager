@@ -76,6 +76,7 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 	filteredVersions = make(map[string]Item)
 	json.Unmarshal(content, &rawVersionList)
 	for vName, vList := range rawVersionList {
+	INNER:
 		for _, item := range vList {
 			if (item.Os == runtime.GOOS || item.Os == "any") && (item.Arch == runtime.GOARCH || item.Arch == "any") {
 				// save filtered version.
@@ -87,6 +88,11 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 				}
 				if sdkName == "kubectl" {
 					item.Installer = Executable
+				}
+
+				// php from github
+				if sdkName == "php" && item.Url != "" {
+					continue INNER
 				}
 				if FilterVersionItem(item) {
 					filteredVersions[vName] = item
