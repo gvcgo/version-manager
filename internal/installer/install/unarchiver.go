@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -81,6 +82,15 @@ func (a *ArchiverInstaller) prepareDirFinder() {
 	a.dirFinder.SetFlagDirExcepted(a.installConf.FlagDirExcepted)
 }
 
+func (a *ArchiverInstaller) handleArchivedFile(fPath string) (newPath string) {
+	if strings.Contains(fPath, "git-for-windows") && strings.HasSuffix(fPath, ".7z.exe") {
+		newPath = strings.TrimSuffix(fPath, ".exe")
+		os.Rename(fPath, newPath)
+		return newPath
+	}
+	return fPath
+}
+
 func (a *ArchiverInstaller) Install() {
 	if a.Version.Url == "" {
 		return
@@ -92,6 +102,8 @@ func (a *ArchiverInstaller) Install() {
 	if ok, _ := gutils.PathIsExist(fPath); !ok || fPath == "" {
 		return
 	}
+
+	fPath = a.handleArchivedFile(fPath)
 
 	// Decompress archived file to temp dir.
 	tempDir := cnf.GetTempDir()
