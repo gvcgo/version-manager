@@ -30,6 +30,7 @@ func IsCoursierInstalled() bool {
 }
 
 func installPrequisite(sdkName string) {
+	// add envs temporarily, so the following command will easilly find prequisites.
 	os.Setenv(AddToPathTemporarillyEnvName, "1")
 	vName, vItem := download.GetLatestVersionBySDKName(sdkName)
 

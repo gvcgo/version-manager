@@ -1,11 +1,8 @@
 package cnf
 
 import (
-	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
 	toml "github.com/pelletier/go-toml/v2"
 )
@@ -32,8 +29,14 @@ const (
 	VMRSdkInstallationDirEnv string = "VMR_SDK_INSTALLATION_DIR"
 	VMRHostUrlEnv            string = "VMR_HOST"
 	VMRReverseProxyEnv       string = "VMR_REVERSE_PROXY"
+	VMRLocalProxyEnv         string = "VMR_LOCAL_PROXY"
 )
 
+/*
+vmr work dir:
+
+where vmr is installed.
+*/
 func GetVMRWorkDir() string {
 	homeDir, _ := os.UserHomeDir()
 	p := filepath.Join(homeDir, VMRWorkDirName)
@@ -41,17 +44,18 @@ func GetVMRWorkDir() string {
 	return p
 }
 
+/*
+vmr conf file path.
+*/
 func GetVMRConfFilePath() string {
 	return filepath.Join(GetVMRWorkDir(), "conf.toml")
 }
 
-func GetCacheDir() string {
-	sdkInstallationDir := filepath.Dir(GetVersionsDir())
-	p := filepath.Join(sdkInstallationDir, "cache")
-	os.MkdirAll(p, os.ModePerm)
-	return p
-}
+/*
+versions dir:
 
+where the versions are installed.
+*/
 func GetVersionsDir() string {
 	sdkInstallationDir := os.Getenv(VMRSdkInstallationDirEnv)
 	if sdkInstallationDir != "" {
@@ -67,6 +71,18 @@ func GetVersionsDir() string {
 		os.MkdirAll(vp, os.ModePerm)
 		return vp
 	}
+}
+
+/*
+cache file dir:
+
+where the downloaded files are stored.
+*/
+func GetCacheDir() string {
+	sdkInstallationDir := filepath.Dir(GetVersionsDir())
+	p := filepath.Join(sdkInstallationDir, "cache")
+	os.MkdirAll(p, os.ModePerm)
+	return p
 }
 
 /*
@@ -88,12 +104,16 @@ func GetSDKInstallationConfDir() string {
 	return icd
 }
 
+/*
+==============================
+vmr config file.
+==============================
+*/
 type VMRConf struct {
-	ProxyUri            string `json,toml:"proxy_uri"`
-	ReverseProxy        string `json,toml:"reverse_proxy"`
-	SDKIntallationDir   string `json,toml:"sdk_installation_dir"`
-	VersionHostUrl      string `json,toml:"version_host_url"`
-	InstallationHostUrl string `json,toml:"installation_host_url"`
+	ProxyUri          string `json,toml:"proxy_uri"`
+	ReverseProxy      string `json,toml:"reverse_proxy"`
+	SDKIntallationDir string `json,toml:"sdk_installation_dir"`
+	VersionHostUrl    string `json,toml:"version_host_url"`
 }
 
 func NewVMRConf() (v *VMRConf) {
@@ -105,8 +125,9 @@ func NewVMRConf() (v *VMRConf) {
 	if v.VersionHostUrl != "" {
 		os.Setenv(VMRHostUrlEnv, v.VersionHostUrl)
 	}
-	// TODO: ProxyURI
-	// v.ProxyUri = "http://localhost:2023"
+	if v.ProxyUri != "" {
+		os.Setenv(VMRLocalProxyEnv, v.ProxyUri)
+	}
 	return v
 }
 
@@ -142,47 +163,11 @@ func (v *VMRConf) SetReverseProxy(sUri string) {
 	v.Save()
 }
 
-// reverse proxy
-func GetReverseProxyUri() string {
-	rp := os.Getenv(VMRReverseProxyEnv)
-	if rp == "" {
-		rp = DefaultReverseProxy
+func (v *VMRConf) SetVersionHostUrl(hUrl string) {
+	if hUrl == "" {
+		return
 	}
-	if !strings.HasSuffix(rp, "/") {
-		rp = rp + "/"
-	}
-	return rp
-}
-
-// sdk-list.version.json
-func GetSDKListFileUrl() string {
-	host := os.Getenv(VMRHostUrlEnv)
-	if host == "" {
-		host = DefaultHostUrl
-	}
-	u, _ := url.JoinPath(host, SDKNameListFileUrl)
-	u = GetReverseProxyUri() + u
-	return u
-}
-
-// {sdkname}.version.json file
-func GetVersionFileUrlBySDKName(sdkName string) string {
-	host := os.Getenv(VMRHostUrlEnv)
-	if host == "" {
-		host = DefaultHostUrl
-	}
-	u, _ := url.JoinPath(host, fmt.Sprintf(VersionFileUrlPattern, sdkName))
-	u = GetReverseProxyUri() + u
-	return u
-}
-
-// install/{sdkname}.toml file
-func GetSDKInstallationConfFileUrlBySDKName(sdkName string) string {
-	host := os.Getenv(VMRHostUrlEnv)
-	if host == "" {
-		host = DefaultHostUrl
-	}
-	u, _ := url.JoinPath(host, fmt.Sprintf(SDKInstallationUrlPattern, sdkName))
-	u = GetReverseProxyUri() + u
-	return u
+	v.Load()
+	v.VersionHostUrl = hUrl
+	v.Save()
 }
