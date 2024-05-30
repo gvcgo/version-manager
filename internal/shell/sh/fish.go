@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/internal/cnf"
 )
 
 /*
@@ -23,7 +23,7 @@ function _vmr_cdhook --on-variable="PWD" --description "version manager cd hook"
 end
 # cd hook end
 
-fish_add_path --global %s %s/bin
+fish_add_path --global %s
 `
 
 /*
@@ -50,17 +50,17 @@ func (f *FishShell) ConfPath() string {
 }
 
 func (f *FishShell) VMEnvConfPath() string {
-	installPath := conf.GetVersionManagerWorkDir()
+	installPath := cnf.GetVMRWorkDir()
 	return filepath.Join(installPath, fmt.Sprintf("%s.fish", VMEnvFileName))
 }
 
 func (f *FishShell) WriteVMEnvToShell() {
-	installPath := conf.GetVersionManagerWorkDir()
+	installPath := cnf.GetVMRWorkDir()
 	vmEnvConfPath := f.VMEnvConfPath()
 
 	content, _ := os.ReadFile(vmEnvConfPath)
 	oldEnvStr := strings.TrimSpace(string(content))
-	envStr := fmt.Sprintf(vmEnvFish, FormatPathString(installPath), FormatPathString(installPath))
+	envStr := fmt.Sprintf(vmEnvFish, FormatPathString(installPath))
 	if !strings.Contains(oldEnvStr, envStr) {
 		if oldEnvStr != "" {
 			envStr = envStr + "\n" + oldEnvStr

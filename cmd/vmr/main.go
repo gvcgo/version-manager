@@ -22,8 +22,8 @@
 package main
 
 import (
-	"github.com/gvcgo/version-manager/cmd/vmr/internal/cli"
-	_ "github.com/gvcgo/version-manager/pkgs/conf"
+	"github.com/gvcgo/version-manager/cmd/vmr/cli"
+	_ "github.com/gvcgo/version-manager/internal/cnf"
 )
 
 var (
@@ -35,7 +35,7 @@ var (
 To be compiled.
 */
 func main() {
-	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
+	// os.Setenv(cnf.VMRReverseProxyEnv, "https://gvc.1710717.xyz/proxy/")
 	cmd := cli.New(GitTag, GitHash)
 	cmd.Run()
 }

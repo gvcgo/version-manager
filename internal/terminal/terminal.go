@@ -9,9 +9,9 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"github.com/gvcgo/version-manager/internal/terminal/term"
-	"github.com/gvcgo/version-manager/pkgs/conf"
 )
 
 /*
@@ -40,15 +40,14 @@ Remove default global envs for an SDK.
 */
 func ModifyPathForPty(appName string) {
 	pathStr := os.Getenv("PATH")
-	symbolicPath := filepath.Join(conf.GetVMVersionsDir(appName), appName)
-	binPath := conf.GetAppBinDir()
+	symbolicPath := filepath.Join(install.GetSDKVersionDir(appName), appName)
 	sep := ":"
 	if runtime.GOOS == gutils.Windows {
 		sep = ";"
 	}
 	eList := []string{}
 	for _, pStr := range strings.Split(pathStr, sep) {
-		if pStr == binPath || pStr == symbolicPath {
+		if pStr == symbolicPath {
 			continue
 		}
 		eList = append(eList, pStr)
@@ -101,4 +100,9 @@ func (p *PtyTerminal) Run() {
 		gprint.PrintError("no pty found")
 	}
 	os.Exit(0)
+}
+
+func GetTerminalSize() (height, width int, err error) {
+	t := term.NewTerminal()
+	return t.Size()
 }

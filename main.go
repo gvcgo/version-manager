@@ -22,9 +22,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"os/exec"
+
+	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/shell"
+	"github.com/gvcgo/version-manager/internal/tui/cmds"
 )
 
 func main() {
@@ -36,16 +38,43 @@ func main() {
 	// pt.Run()
 	// fmt.Println("----hello")
 
-	c := exec.Command("zsh", `cd`, `~`)
+	// c := exec.Command("zsh", `cd`, `~`)
 
-	c.Env = os.Environ()
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	err := c.Run()
-	fmt.Println(err)
+	// c.Env = os.Environ()
+	// c.Stdin = os.Stdin
+	// c.Stdout = os.Stdout
+	// err := c.Run()
+	// fmt.Println(err)
 
 	// _, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
 	// fmt.Println(err)
 	// l, _ := os.Readlink(filepath.Join(conf.GetVMVersionsDir("python"), "python"))
 	// fmt.Println(l)
+
+	// l := table.NewList()
+	// l.Run()
+	// cmds.ShowSDKNameList()
+
+	// sdkName := "miniconda"
+	// vName, vItem := download.GetLatestVersionBySDKName(sdkName)
+	// ei := install.NewExeInstaller()
+	// ei.Initiate(sdkName, vName, vItem)
+	// ei.Install()
+
+	// input := confirmation.New("Do you want to try out promptkit?",
+	// 	confirmation.NewValue(true))
+	// input.Template = confirmation.TemplateYN
+	// input.ResultTemplate = confirmation.ResultTemplateYN
+	// input.KeyMap.SelectYes = append(input.KeyMap.SelectYes, "+")
+	// input.KeyMap.SelectNo = append(input.KeyMap.SelectNo, "-")
+	// ready, _ := input.RunPrompt()
+	// fmt.Println(ready)
+
+	// test vmr
+
+	sh := shell.NewShell()
+	sh.WriteVMEnvToShell()
+	os.Setenv(cnf.VMRLocalProxyEnv, "http://localhost:2023")
+	ll := cmds.NewTUI()
+	ll.ListSDKName()
 }
