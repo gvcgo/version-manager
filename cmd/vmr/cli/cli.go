@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/internal/tui/cmds"
 	"github.com/spf13/cobra"
 )
@@ -57,4 +58,10 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(setReverseProxyCmd)
 	c.rootCmd.AddCommand(useHookCmd)
 	c.rootCmd.AddCommand(installSelfCmd)
+}
+
+func (c *Cli) Run() {
+	if err := c.rootCmd.Execute(); err != nil {
+		gprint.PrintError("%+v", err)
+	}
 }
