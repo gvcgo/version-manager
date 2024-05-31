@@ -47,6 +47,9 @@ func InstallSelf() {
 	// Generate update script.
 	SetUpdateScript()
 
+	// Generate uninstall script.
+	SetUninstallScript()
+
 	// Set your sdk installation directory.
 	fmt.Println(gprint.YellowStr(`Please set the sdk installation directory for VMR.`))
 	fmt.Println(gprint.YellowStr("The sdk installation directory is used to store the SDKs Installed by VMR."))

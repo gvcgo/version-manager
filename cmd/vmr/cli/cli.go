@@ -58,6 +58,7 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(setReverseProxyCmd)
 	c.rootCmd.AddCommand(useHookCmd)
 	c.rootCmd.AddCommand(installSelfCmd)
+	c.rootCmd.AddCommand(unInstallSelfCmd)
 }
 
 func (c *Cli) Run() {

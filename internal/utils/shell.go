@@ -58,7 +58,7 @@ func MoveFileOnUnixSudo(from, to string) error {
 	return cmd.Run()
 }
 
-// TODO: Create symbolic links for directories.
+// Create symbolic links for directories.
 func CreateSymLink(oldname, newname string) (err error) {
 	if runtime.GOOS != gutils.Windows {
 		err = os.Symlink(oldname, newname)

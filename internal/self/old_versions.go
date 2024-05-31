@@ -11,6 +11,7 @@ import (
 	"github.com/erikgeiser/promptkit/confirmation"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/shell"
 )
 
@@ -91,7 +92,48 @@ func DetectAndRemoveOldVersions() {
 	os.RemoveAll(oldWorkDir)
 }
 
+var NewShellRC = `
+# vm_envs start
+if [ -z $VM_DISABLE ]; then
+    . ~/.vmr/vmr.sh
+fi
+# vm_envs end`
+
+var NewShellRCFish = `# vm_envs start
+if not test $VM_DISABLE 
+    . ~/.vmr/vmr.fish
+end
+# vm_envs end`
+
 /*
-TODO:
 Preparation for removing the current version of VMR.
 */
+func RemoveCurrentVersion() {
+	versionDir := cnf.GetVersionsDir()
+	cacheDir := cnf.GetCacheDir()
+	os.RemoveAll(versionDir)
+	os.RemoveAll(cacheDir)
+
+	sdkInstallDir := filepath.Dir(versionDir)
+
+	if runtime.GOOS == gutils.Windows && sdkInstallDir != "" {
+		sh := shell.NewShell()
+		pathEnv := os.Getenv("PATH")
+		for _, p := range strings.Split(pathEnv, ";") {
+			if strings.HasPrefix(p, sdkInstallDir) || strings.HasPrefix(p, cnf.GetVMRWorkDir()) {
+				sh.UnsetPath(p)
+			}
+		}
+	} else {
+		sh := shell.NewShell()
+		shellConf := sh.ConfPath()
+		content, _ := os.ReadFile(shellConf)
+		if len(content) > 0 {
+			s := strings.ReplaceAll(string(content), NewShellRC, "")
+			s = strings.ReplaceAll(s, NewShellRCFish, "")
+			os.WriteFile(shellConf, []byte(s), os.ModePerm)
+		}
+	}
+
+	os.RemoveAll(cnf.GetVMRWorkDir())
+}
