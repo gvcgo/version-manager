@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -43,6 +44,9 @@ func InstallSelf() {
 
 	sh := shell.NewShell()
 	sh.WriteVMEnvToShell()
+	if runtime.GOOS == gutils.Windows {
+		sh.SetPath(cnf.GetVMRWorkDir())
+	}
 
 	// Generate update script.
 	SetUpdateScript()
@@ -58,7 +62,7 @@ func InstallSelf() {
 	fmt.Println(gprint.YellowStr("The sdk installation directory is used to store the SDKs Installed by VMR."))
 	fmt.Println(gprint.YellowStr("If you left it as blank, the sdk installation directory will be '$HOME/.vmr/'."))
 	fmt.Println("")
-	ipt := input.NewInput(input.WithPlaceholder("$HOME/.vm/"), input.WithPrompt("[SDK Installation Dir]: "))
+	ipt := input.NewInput(input.WithPrompt("[SDK Installation Dir]: "))
 	ipt.Run()
 	appDir := ipt.Value()
 	if appDir == "" {
