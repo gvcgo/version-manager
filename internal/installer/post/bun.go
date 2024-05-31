@@ -28,7 +28,7 @@ func PostInstallForBun(versionName string, version download.Item) {
 	bunInstallDir := filepath.Join(d, fmt.Sprintf("%s-%s", BunSdkName, versionName))
 	binPath := filepath.Join(bunInstallDir, "bun")
 	if runtime.GOOS == "windows" {
-		binPath = filepath.Join(bunInstallDir, "bun.exe")
+		binPath = binPath + ".exe"
 	}
 	if ok, _ := gutils.PathIsExist(binPath); !ok {
 		return
@@ -36,7 +36,7 @@ func PostInstallForBun(versionName string, version download.Item) {
 	symbolPath := filepath.Join(bunInstallDir, "bunx")
 	if runtime.GOOS == "windows" {
 		symbolPath = filepath.Join(bunInstallDir, "bunx.exe")
-		os.Link(binPath, symbolPath)
+		gutils.CopyAFile(binPath, symbolPath)
 		return
 	}
 	os.Symlink(binPath, symbolPath)
