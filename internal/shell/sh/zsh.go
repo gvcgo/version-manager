@@ -17,7 +17,7 @@ In cdhook, it will cd to the target directory and then try to execute "vmr use -
 The command "vmr use -E" will automatically find the .vmr.lock file, and add corresponding versions of an SDK to the envs.
 */
 const vmEnvZsh = `# cd hook start
-if [ -z $(alias|grep cdhook) ]; then
+if [ -z "$(alias|grep cdhook)" ]; then
 	cdhook() {
 		if [ -d "$1" ];then
 			cd "$1"
@@ -38,7 +38,7 @@ $VM_DISABLE is an env for the Session Mode of vmr.
 It will stop the Shell from loading the envs for SDKs repeatedly.
 */
 const shellContent = `# vm_envs start
-if [ -z $%s ]; then
+if [ -z "$%s" ]; then
     . %s
 fi
 # vm_envs end

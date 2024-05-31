@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"github.com/gvcgo/version-manager/internal/terminal"
 )
@@ -108,13 +110,35 @@ func (v *VersionLocker) HookForCdCommand() {
 	if len(v.VersionOfSDKs) == 0 {
 		os.Exit(0)
 	}
-	os.Setenv(AddToPathTemporarillyEnvName, "1")
 	t := terminal.NewPtyTerminal()
+	os.Setenv(AddToPathTemporarillyEnvName, "1")
+	// TODO: bug??
 	for sdkName, versionName := range v.VersionOfSDKs {
+		RemoveGlobalSDKPathTemporarily(sdkName)
 		ins := NewInstaller(sdkName, versionName, "", download.Item{})
-		terminal.ModifyPathForPty(sdkName)
 		// follow the order.
 		ins.AddEnvsTemporarilly()
 	}
 	t.Run()
+}
+
+/*
+Remove the global SDK path from envs.
+Otherwise, it will shadow the hooked ones.
+*/
+func RemoveGlobalSDKPathTemporarily(sdkName string) {
+	pathStr := os.Getenv("PATH")
+	symbolicPath := filepath.Join(install.GetSDKVersionDir(sdkName), sdkName)
+	sep := ":"
+	if runtime.GOOS == gutils.Windows {
+		sep = ";"
+	}
+	eList := []string{}
+	for _, pStr := range strings.Split(pathStr, sep) {
+		if strings.HasPrefix(pStr, symbolicPath) {
+			continue
+		}
+		eList = append(eList, pStr)
+	}
+	os.Setenv("PATH", strings.Join(eList, sep))
 }

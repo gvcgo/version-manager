@@ -215,7 +215,8 @@ func (i *Installer) Install() {
 			i.writeLockFile()
 		}
 
-		terminal.ModifyPathForPty(i.OriginSDKName)
+		// terminal.ModifyPathForPty(i.OriginSDKName)
+		RemoveGlobalSDKPathTemporarily(i.OriginSDKName)
 		// Enable temporary envs.
 		os.Setenv(AddToPathTemporarillyEnvName, "1")
 		i.AddEnvsTemporarilly()
