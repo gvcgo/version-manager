@@ -57,3 +57,22 @@ func MoveFileOnUnixSudo(from, to string) error {
 	cmd.Stdin = os.Stdin
 	return cmd.Run()
 }
+
+// Create symbolic links for directories.
+func CreateSymLink(oldname, newname string) (err error) {
+	if runtime.GOOS != gutils.Windows {
+		err = os.Symlink(oldname, newname)
+	} else {
+		// Windows
+		cmds := []string{
+			"powershell",
+			"mklink",
+			"/D",
+			newname,
+			oldname,
+		}
+		homeDir, _ := os.UserHomeDir()
+		_, err = gutils.ExecuteSysCommand(true, homeDir, cmds...)
+	}
+	return
+}

@@ -25,8 +25,6 @@ const (
 )
 
 /*
-TODO: Rename executable files.
-
 Install miniconda.
 */
 func InstallMiniconda(exePath, installDir string) (err error) {

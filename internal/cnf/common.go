@@ -58,11 +58,13 @@ func GetSDKInstallationConfFileUrlBySDKName(sdkName string) string {
 func GetFetcher(dUrl string) (fetcher *request.Fetcher) {
 	reverseProxy := GetReverseProxyUri()
 	localProxy := os.Getenv(VMRLocalProxyEnv)
-	if localProxy == "" {
+	if localProxy == "" && !strings.Contains(dUrl, "gitee.com") {
 		dUrl = reverseProxy + dUrl
 	}
 	fetcher = request.NewFetcher()
 	fetcher.SetUrl(dUrl)
-	fetcher.Proxy = localProxy
+	if !strings.Contains(dUrl, "gitee.com") {
+		fetcher.Proxy = localProxy
+	}
 	return
 }

@@ -1,6 +1,8 @@
 package cmds
 
 import (
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/request"
@@ -76,7 +78,7 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 	ll.SetRows(rows)
 	ll.Run()
 
-	selectedItem = ll.GetSelected()
+	selectedItem = strings.TrimSuffix(ll.GetSelected(), "-lts")
 	nextEvent = ll.NextEvent
 	return
 }

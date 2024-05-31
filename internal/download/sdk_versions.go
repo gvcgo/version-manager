@@ -119,6 +119,9 @@ func FilterVersionItem(item Item) (ok bool) {
 
 func GetVersionsSortedRows(filteredVersions map[string]Item) (rows []table.Row) {
 	for vName, vItem := range filteredVersions {
+		if vItem.LTS != "" {
+			vName += "-lts"
+		}
 		rows = append(rows, table.Row{
 			vName,
 			vItem.Installer,
@@ -134,7 +137,7 @@ func getLatestVersion(sdkName, newSha256 string) (vName string, version Item, ok
 		return
 	}
 	rows := GetVersionsSortedRows(fvs)
-	vName = rows[0][0]
+	vName = strings.TrimSuffix(rows[0][0], "-lts")
 	version = fvs[vName]
 	ok = true
 	return

@@ -10,5 +10,3 @@ type Sheller interface {
 	SetPath(path string)
 	UnsetPath(path string)
 }
-
-// TODO: Read vm_env.sh to vmr.sh
