@@ -19,7 +19,7 @@ const (
 )
 
 /*
-post-installation handler for Bun.
+post-installation handler for Zig.
 */
 func PostInstallForZig(versionName string, version download.Item) {
 	versionDir := cnf.GetVersionsDir()
