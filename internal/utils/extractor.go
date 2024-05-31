@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 
 	Arch "github.com/gvcgo/goutils/pkgs/archiver"
@@ -44,6 +45,7 @@ func Extract(srcFile, destDir string) (err error) {
 		os.MkdirAll(destDir, os.ModePerm)
 	}
 
+	gprint.PrintInfo("Extracting files, please wait...")
 	// err = archiver.Unarchive(srcFile, destDir)
 	if arch, err1 := Arch.NewArchiver(srcFile, destDir, UseArchiver(srcFile)); err1 == nil {
 		_, err = arch.UnArchive()

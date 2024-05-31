@@ -20,7 +20,7 @@ type OldConfig struct {
 	AppInstallationDir string `json:"app_installation_dir"`
 }
 
-var ShellRC string = `# vm_envs start
+var OldShellRC string = `# vm_envs start
 if [ -z $VM_DISABLE ]; then
     . ~/.vm/vmr.sh
 fi
@@ -83,10 +83,15 @@ func DetectAndRemoveOldVersions() {
 		shellConf := sh.ConfPath()
 		content, _ := os.ReadFile(shellConf)
 		if len(content) > 0 {
-			s := strings.ReplaceAll(string(content), ShellRC, "")
+			s := strings.ReplaceAll(string(content), OldShellRC, "")
 			os.WriteFile(shellConf, []byte(s), os.ModePerm)
 		}
 	}
 
 	os.RemoveAll(oldWorkDir)
 }
+
+/*
+TODO:
+Preparation for removing the current version of VMR.
+*/

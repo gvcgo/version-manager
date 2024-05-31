@@ -91,7 +91,8 @@ func (i *Installer) CreateSymlink() {
 		os.RemoveAll(symbolPath)
 	}
 	if ok1 {
-		os.Symlink(installDir, symbolPath)
+		// os.Symlink(installDir, symbolPath)
+		utils.CreateSymLink(installDir, symbolPath)
 	}
 }
 
