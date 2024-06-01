@@ -2,11 +2,18 @@ package download
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/tui/table"
+	"github.com/gvcgo/version-manager/internal/utils"
+)
+
+const (
+	SDKListFileName string = "sdk_list.json"
 )
 
 /*
@@ -23,10 +30,23 @@ type SDKList map[string]SDK
 func GetSDKList() (ss SDKList) {
 	ss = make(SDKList)
 	dUrl := cnf.GetSDKListFileUrl()
-	fetcher := cnf.GetFetcher(dUrl)
-	fetcher.Timeout = 10 * time.Second
-	resp, _ := fetcher.GetString()
-	json.Unmarshal([]byte(resp), &ss)
+
+	fPath := filepath.Join(cnf.GetCacheDir(), SDKListFileName)
+	lastModifiedTime := utils.GetFileLastModifiedTime(fPath)
+	timelag := time.Now().Unix() - lastModifiedTime
+
+	if timelag > 1800 {
+		// over half an hour, then download again.
+		fetcher := cnf.GetFetcher(dUrl)
+		fetcher.Timeout = 10 * time.Second
+		resp, _ := fetcher.GetString()
+		os.WriteFile(fPath, []byte(resp), os.ModePerm)
+		json.Unmarshal([]byte(resp), &ss)
+	} else {
+		// otherwise, read from the cached file.
+		content, _ := os.ReadFile(fPath)
+		json.Unmarshal(content, &ss)
+	}
 	return
 }
 
