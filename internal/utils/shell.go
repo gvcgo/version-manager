@@ -65,9 +65,10 @@ func CreateSymLink(oldname, newname string) (err error) {
 	} else {
 		// Windows
 		cmds := []string{
-			"powershell",
+			"cmd",
+			"/c",
 			"mklink",
-			"/D",
+			"/j",
 			newname,
 			oldname,
 		}
