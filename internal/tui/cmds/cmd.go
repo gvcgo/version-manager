@@ -76,6 +76,14 @@ func (v *VmrTUI) ShowLocalInstalled(sdkName string) {
 	case KeyEventRemoveAnInstalledVersion:
 		// remove the selected version.
 		v.RemoveSelectedVersion(sdkName, selectedVersion)
+	case KeyEventLockVersion:
+		if v.VList == nil {
+			v.VList = NewVersionSearcher()
+		}
+		vItem := v.VList.GetVersionByVersionName(selectedVersion)
+		ins := installer.NewInstaller(sdkName, selectedVersion, "", vItem)
+		ins.SetInvokeMode(installer.ModeToLock)
+		ins.Install()
 	}
 }
 

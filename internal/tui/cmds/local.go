@@ -95,4 +95,12 @@ func (l *LocalInstalled) RegisterKeyEvents(ll *table.List) {
 		},
 		HelpInfo: "back to previous page",
 	})
+
+	ll.SetKeyEventForTable("l", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventLockVersion
+			return tea.Quit
+		},
+		HelpInfo: "lock the selected version for curret project",
+	})
 }
