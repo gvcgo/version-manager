@@ -17,5 +17,5 @@ func GetFileLastModifiedTime(fPath string) int64 {
 	if info == nil {
 		return 0
 	}
-	return info.LastAccessTime.Nanoseconds() / int64(time.Second)
+	return info.LastWriteTime.Nanoseconds() / int64(time.Second)
 }
