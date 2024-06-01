@@ -149,6 +149,7 @@ func (i *Installer) AddEnvsTemporarilly() {
 	}
 	installDir := i.sdkInstaller.GetInstallDir()
 	envList := i.CollectEnvs(installDir)
+	// fmt.Printf("%s envsList: %+v\n", i.OriginSDKName, envList)
 	for key, value := range envList {
 		if key == "PATH" {
 			p := utils.JoinPath(value...)
