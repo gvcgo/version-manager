@@ -16,6 +16,13 @@
 - [Features](#features)
 - [Contributors](#contributors)
 
+
+------
+**v0.6.1 Preview** is Now Available!
+
+Please see [release](https://github.com/gvcgo/version-manager/releases/tag/v0.6.1) for surprise.
+
+------
 <!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
 <div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_new.gif"></div>
 
@@ -24,9 +31,9 @@
 
 ### version-manager(vmr)
 
-**vmr** is a simple, cross-platform, and well-tested version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
+**vmr** is a simple, cross-platform, and well-desined version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
 
-Maybe you've already heard of **fnm**, **sdkman**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems, and makes things look complicated. Therefore, **vmr** comes.
+Maybe you've already heard of **fnm**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems, and makes things look complicated. Therefore, **vmr** comes.
 
 [youtube video demo](https://www.youtube.com/watch?v=CFIxPfBn8QY&t=626s)
 
