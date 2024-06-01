@@ -18,7 +18,7 @@
 
 
 ------
-**v0.6.1 Preview** is Now Available!
+🔥🔥🔥 **v0.6.1 Preview** is Now Available!
 
 Please see [release](https://github.com/gvcgo/version-manager/releases/tag/v0.6.1) for surprise.
 

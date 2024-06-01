@@ -17,7 +17,7 @@
 - [贡献者](#贡献者)
 
 ------
-**v0.6.1 Preview** 已发布!
+🔥🔥🔥 **v0.6.1 Preview** 已发布!
 
 请前往[release](https://github.com/gvcgo/version-manager/releases/tag/v0.6.1)查看惊喜！
 
