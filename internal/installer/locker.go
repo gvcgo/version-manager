@@ -67,6 +67,13 @@ func (v *VersionLocker) Load() {
 			json.Unmarshal([]byte(content), &v.VersionOfSDKs)
 		}
 	}
+
+	// for old .vmr.lock file.
+	for key, value := range v.VersionOfSDKs {
+		if key == "nodejs" || key == "node.js" {
+			v.VersionOfSDKs["node"] = value
+		}
+	}
 }
 
 /*
