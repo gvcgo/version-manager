@@ -81,6 +81,8 @@ func InstallVSCode(pkgFilePath, installDir string) (err error) {
 	case gutils.Darwin:
 		err = utils.Extract(pkgFilePath, cnf.GetTempDir())
 		if err != nil {
+			gprint.PrintError("extract vscode failed: %v", err)
+			os.RemoveAll(pkgFilePath)
 			return
 		}
 		appName := "Visual Studio Code.app"
