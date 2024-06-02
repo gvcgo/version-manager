@@ -35,7 +35,8 @@ func GetSDKList() (ss SDKList) {
 	lastModifiedTime := utils.GetFileLastModifiedTime(fPath)
 	timelag := time.Now().Unix() - lastModifiedTime
 
-	if timelag > 1800 {
+	content, _ := os.ReadFile(fPath)
+	if timelag > 1800 || len(content) < 20 {
 		// over half an hour, then download again.
 		fetcher := cnf.GetFetcher(dUrl)
 		fetcher.Timeout = 10 * time.Second
@@ -44,7 +45,6 @@ func GetSDKList() (ss SDKList) {
 		json.Unmarshal([]byte(resp), &ss)
 	} else {
 		// otherwise, read from the cached file.
-		content, _ := os.ReadFile(fPath)
 		json.Unmarshal(content, &ss)
 	}
 	return
