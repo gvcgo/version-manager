@@ -207,7 +207,7 @@ func (l *List) renderHelpInfo() (count int, s string) {
 			lines = append(lines, fmt.Sprintf(pattern, key, event.HelpInfo))
 		}
 	}
-	lines = append(lines, "See docs: https://gvcgo.github.io/vmrdocs/")
+	lines = append(lines, "See docs: https://gvcgo.github.io/vdocs/")
 	return len(lines), JoinVertical(lipgloss.Left, lines...)
 }
 
