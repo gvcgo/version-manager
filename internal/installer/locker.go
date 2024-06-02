@@ -119,7 +119,6 @@ func (v *VersionLocker) HookForCdCommand() {
 	}
 	t := terminal.NewPtyTerminal()
 	os.Setenv(AddToPathTemporarillyEnvName, "1")
-	// TODO: bug??
 	for sdkName, versionName := range v.VersionOfSDKs {
 		RemoveGlobalSDKPathTemporarily(sdkName)
 		ins := NewInstaller(sdkName, versionName, "", download.Item{})
