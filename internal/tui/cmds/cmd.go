@@ -63,6 +63,9 @@ func (v *VmrTUI) SearchVersions(sdkName string, sdkItem download.SDK) {
 }
 
 func (v *VmrTUI) ShowLocalInstalled(sdkName string) {
+	if v.VList == nil {
+		v.VList = NewVersionSearcher()
+	}
 	li := NewLocalInstalled()
 	li.Search(sdkName)
 	nextEvent, selectedVersion := li.Show()
@@ -83,6 +86,16 @@ func (v *VmrTUI) ShowLocalInstalled(sdkName string) {
 		vItem := v.VList.GetVersionByVersionName(selectedVersion)
 		ins := installer.NewInstaller(sdkName, selectedVersion, "", vItem)
 		ins.SetInvokeMode(installer.ModeToLock)
+		ins.Install()
+	case KeyEventUseVersionGlobally:
+		vItem := v.VList.GetVersionByVersionName(selectedVersion)
+		ins := installer.NewInstaller(sdkName, selectedVersion, "", vItem)
+		ins.SetInvokeMode(installer.ModeGlobally)
+		ins.Install()
+	case KeyEventUseVersionSessionly:
+		vItem := v.VList.GetVersionByVersionName(selectedVersion)
+		ins := installer.NewInstaller(sdkName, selectedVersion, "", vItem)
+		ins.SetInvokeMode(installer.ModeSessionly)
 		ins.Install()
 	}
 }

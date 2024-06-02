@@ -86,7 +86,7 @@ func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
 			l.NextEvent = KeyEventOpenHomePage
 			return nil
 		},
-		HelpInfo: "open homepage",
+		HelpInfo: "open homepage of the selected sdk",
 	})
 
 	// Search version list.
@@ -95,7 +95,7 @@ func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
 			l.NextEvent = KeyEventSeachVersionList
 			return tea.Quit
 		},
-		HelpInfo: "search versions for selected sdk",
+		HelpInfo: "search available versions for selected sdk",
 	})
 
 	ll.SetKeyEventForTable("l", table.KeyEvent{
@@ -103,7 +103,7 @@ func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
 			l.NextEvent = KeyEventShowLocalInstalled
 			return tea.Quit
 		},
-		HelpInfo: "show local installed versions",
+		HelpInfo: "show local installed versions of the selected sdk",
 	})
 
 	ll.SetKeyEventForTable("r", table.KeyEvent{
@@ -111,7 +111,7 @@ func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
 			l.NextEvent = KeyEventRemoveLocalInstalled
 			return tea.Quit
 		},
-		HelpInfo: "remove all local installed versions",
+		HelpInfo: "remove all local installed versions of the selected sdk",
 	})
 
 	ll.SetKeyEventForTable("c", table.KeyEvent{
@@ -119,6 +119,6 @@ func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
 			l.NextEvent = KeyEventClearLocalCached
 			return tea.Quit
 		},
-		HelpInfo: "clear all local cached files",
+		HelpInfo: "clear all local cached files of the selected sdk",
 	})
 }

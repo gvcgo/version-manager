@@ -103,4 +103,20 @@ func (l *LocalInstalled) RegisterKeyEvents(ll *table.List) {
 		},
 		HelpInfo: "lock the selected version for curret project",
 	})
+
+	ll.SetKeyEventForTable("u", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventUseVersionGlobally
+			return tea.Quit
+		},
+		HelpInfo: "switch to the selected version globally",
+	})
+
+	ll.SetKeyEventForTable("s", table.KeyEvent{
+		Event: func(key string, l *table.List) tea.Cmd {
+			l.NextEvent = KeyEventUseVersionSessionly
+			return tea.Quit
+		},
+		HelpInfo: "switch to the selected version only in current session",
+	})
 }
