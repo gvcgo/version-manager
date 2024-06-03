@@ -16,46 +16,40 @@
 - [Features](#features)
 - [Contributors](#contributors)
 
-
 ------
-🔥🔥🔥 **v0.6.1 Preview** is Now Available!
 
-Please see [release](https://github.com/gvcgo/version-manager/releases/tag/v0.6.1) for surprise.
-
-------
-<!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
-<div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_new.gif"></div>
+<div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_preview.gif"></div>
 
 ------
 <p id="1"></p>  
 
 ### version-manager(vmr)
 
-**vmr** is a simple, cross-platform, and well-desined version manager for programming **languages** and **tools**. It is totally created for general purpose. You don't need any plugins, but just vm. Then everything can be managed.
+🔥🔥🔥**VMR** is a **simple**, **cross-platform**, and **well-designed** version manager for multiple sdks and tools. It is totally created for general purpose.
 
-Maybe you've already heard of **fnm**, **gvm**, **nvm**, **pyenv**, **phpenv**, etc. However, none of them can manage multiple programming languages. Managers like **asdf-vm** support multiple languages, but only works on unix-like systems, and makes things look complicated. Therefore, **vmr** comes.
+Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none of them can manage multiple programming languages. Managers like asdf-vm support multiple languages, but only works on unix-like systems, and annoyingly makes things look complicated. Therefore, **VMR** comes.
 
-[youtube video demo](https://www.youtube.com/watch?v=CFIxPfBn8QY&t=626s)
-
-[See docs for details](https://gvcgo.github.io/vmrdocs/#/) 
+[See docs for details](https://gvcgo.github.io/vdocs/#/) 
 
 ------
 
 ### Features
-- Cross-platform, supports Windows, Linux, MacOS.
-- Supports multiple languages and tools.
-- Nicer TUI, reduces user input, while maintaining the flexibility.
-- Supports locking SDK version for each project.
-- Supports reverse proxy settings and multi-threaded downloads, improve your download experience.
-- Version crawler and main project are separated to ensure faster response and higher stability.
-- No need for plugins, just out of the box.
-- Installs SDKs in local disk instead of docker containers.
-- Easy to use, you only need to focus on about 6 subcommands of VMR.
+
+- Cross-platform, supports **Windows**, **Linux**, **MacOS**.
+- Supports **multiple languages and tools**.
+- Nicer TUI, inpsired by lazygit, more intuitive, **no need to remember any commands**.
+- Supports **locking SDK version for each project**.
+- Supports **Reverse Proxy**/**Local Proxy**, improve your download experience.
+- Well-designed, **faster** response and **higher** stability.
+- **No plugins** needed, just out of the box.
+- Installs SDKs **in local disk** instead of docker containers.
+- **High extendability**, even for thousands of applications(through **conda**).
 
 ------
 
 ### Contributors
 > Thanks to the following people who have contributed to this project.
+
 <a href="https://github.com/gvcgo/version-manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
