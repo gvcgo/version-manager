@@ -12,10 +12,12 @@
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmecn.md) | [en](https://github.com/gvcgo/version-manager)
 
-- [VMR简介](#vmr简介)
-- [功能特点](#功能特点)
-- [贡献者](#贡献者)
+- [](#)
+  - [VMR简介](#vmr简介)
+  - [功能特点](#功能特点)
+  - [贡献者](#贡献者)
 
+ <div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_wordcloud.png"></div>
 ------
 
 <!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
