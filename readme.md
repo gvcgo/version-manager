@@ -16,7 +16,7 @@
 - [Features](#features)
 - [Contributors](#contributors)
 
- <div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_wordcloud.png"></div>
+ <div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_wordcloud.png" width="70%"></div>
 
 ------
 
