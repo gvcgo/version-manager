@@ -18,6 +18,11 @@ func (v *VmrTUI) ListSDKName() {
 	v.SList = NewSDKSearcher()
 	nextEvent, sdkName := v.SList.Show()
 
+	if nextEvent == KeyEventWhatsInstalled {
+		// show SDKs already installed by vmr.
+		nextEvent, sdkName = v.SList.ShowInstalledOnly()
+	}
+
 	switch nextEvent {
 	case KeyEventSeachVersionList:
 		// search version list for selected sdkname.

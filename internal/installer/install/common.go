@@ -20,6 +20,21 @@ func GetSDKVersionDir(sdkName string) string {
 	return d
 }
 
+func IsSDKInstalledByVMR(sdkName string) bool {
+	vd := GetSDKVersionDir(sdkName)
+	dList, _ := os.ReadDir(vd)
+	count := 0
+	for _, d := range dList {
+		if d.IsDir() {
+			count++
+		}
+	}
+	if count == 0 {
+		os.RemoveAll(vd)
+	}
+	return count > 0
+}
+
 /*
 ============================
 Installation configs.
