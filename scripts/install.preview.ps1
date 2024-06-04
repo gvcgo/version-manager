@@ -29,7 +29,7 @@ if ( "$sysType" -match "arm" )
     $arch="arm64"
 }
 
-$version="v0.6.1"
+$version="v0.6.2"
 
 $filename="vmr_windows-" + $arch + ".zip"
 $download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
