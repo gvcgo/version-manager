@@ -78,6 +78,9 @@ func GetVersionList(sdkName, newSha256 string) (filteredVersions map[string]Item
 	for vName, vList := range rawVersionList {
 	INNER:
 		for _, item := range vList {
+			if item.Os == "unix" && (runtime.GOOS != gutils.Windows) {
+				item.Os = runtime.GOOS
+			}
 			if (item.Os == runtime.GOOS || item.Os == "any") && (item.Arch == runtime.GOARCH || item.Arch == "any") {
 				// save filtered version.
 				item.Os = runtime.GOOS

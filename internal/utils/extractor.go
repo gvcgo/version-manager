@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,15 +13,48 @@ import (
 	Arch "github.com/gvcgo/goutils/pkgs/archiver"
 )
 
-func UnzipForWindows(zipFilePath, dstDir string) error {
-	// expand -r file.zip C:\Users\username\Desktop\extracted
-	_, err := gutils.ExecuteSysCommand(true, "",
-		"powershell",
-		"expand",
-		"-r",
-		zipFilePath,
-		dstDir)
-	return err
+func Untar(srcPath, dstDir string) (err error) {
+	_, err = gutils.ExecuteSysCommand(
+		true,
+		"",
+		"tar",
+		"-xf",
+		srcPath,
+		"-C",
+		dstDir,
+	)
+	return
+}
+
+func Unzip(srcPath, dstDir string) (err error) {
+	if runtime.GOOS == gutils.Windows {
+		// expand -r file.zip C:\Users\username\Desktop\extracted
+		_, err = gutils.ExecuteSysCommand(true, "",
+			"powershell",
+			"expand",
+			"-r",
+			srcPath,
+			dstDir)
+	} else {
+		// unzip file.zip -d extracted
+		_, err = gutils.ExecuteSysCommand(true, "",
+			"unzip",
+			srcPath,
+			"-d",
+			dstDir)
+	}
+	return
+}
+
+func DecompressBySystemCommand(srcPath, dstDir string) (err error) {
+	if strings.HasSuffix(srcPath, ".zip") {
+		err = Unzip(srcPath, dstDir)
+	} else if strings.HasSuffix(srcPath, ".tar") || strings.Contains(srcPath, ".tar.") {
+		err = Untar(srcPath, dstDir)
+	} else {
+		err = fmt.Errorf("unsupported by system command")
+	}
+	return
 }
 
 // use archiver or xtract.
@@ -46,11 +80,18 @@ func Extract(srcFile, destDir string) (err error) {
 	}
 
 	gprint.PrintInfo("Extracting files, please wait...")
-	// err = archiver.Unarchive(srcFile, destDir)
+
+	// try to use system unzip or tar.
+	if err = DecompressBySystemCommand(srcFile, destDir); err == nil {
+		return err
+	}
+
+	fmt.Println("-----", err)
+
 	if arch, err1 := Arch.NewArchiver(srcFile, destDir, UseArchiver(srcFile)); err1 == nil {
 		_, err = arch.UnArchive()
-		if err != nil && runtime.GOOS == gutils.Windows && strings.HasSuffix(srcFile, ".zip") {
-			err = UnzipForWindows(srcFile, destDir)
+		if err != nil {
+			return
 		}
 
 		// for odin.

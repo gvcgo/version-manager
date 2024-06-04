@@ -77,4 +77,15 @@ func main() {
 	os.Setenv(cnf.VMRLocalProxyEnv, "http://localhost:2023")
 	ll := cmds.NewTUI()
 	ll.ListSDKName()
+
+	// _, err := gutils.ExecuteSysCommand(
+	// 	true,
+	// 	"",
+	// 	"tar",
+	// 	"-xf",
+	// 	"/home/moqsien/.vmr/cache/jdk/21.0.3.0_12/_bellsoft-jdk21.0.3+12-linux-amd64-full.tar.gz",
+	// 	"-C",
+	// 	"/home/moqsien/.vmr/cache/jdk/21.0.3.0_12/",
+	// )
+	// fmt.Println(err)
 }
