@@ -20,8 +20,30 @@ const (
 	ClojureSDKName string = "clojure"
 )
 
+var clojureEnvForWindows string = `
+$CLJ_CONFIG="%s"
+Import-Module %s
+Invoke-Clojure $args
+`
+
 func HandleClojureOnWindows(installDir string) {
-	// TODO:
+	/*
+		$CLJ_CONFIG="config path"
+		Import-Module $INSTALL_PATH\ClojureTools.psm1
+		Invoke-Clojure $args
+	*/
+	binDir := filepath.Join(installDir, "bin")
+	os.MkdirAll(binDir, os.ModePerm)
+	powershellScriptModule := filepath.Join(installDir, "ClojureTools.psm1")
+	if ok, _ := gutils.PathIsExist(powershellScriptModule); ok {
+		confPath := filepath.Join(installDir, "config")
+		os.MkdirAll(confPath, os.ModePerm)
+		data := fmt.Sprintf(clojureEnvForWindows, confPath, powershellScriptModule)
+		newScriptPath := filepath.Join(binDir, "clojure.ps1")
+		os.WriteFile(newScriptPath, []byte(data), os.ModePerm)
+		newScriptPath = filepath.Join(binDir, "clj.ps1")
+		os.WriteFile(newScriptPath, []byte(data), os.ModePerm)
+	}
 }
 
 func addXforMod(srcPath string) {

@@ -71,6 +71,18 @@ func UseArchiver(srcPath string) bool {
 	return true
 }
 
+func handleMultiCompress(destDir string) {
+	// for odin and clojure.
+	tempDirList, _ := os.ReadDir(destDir)
+	for _, d := range tempDirList {
+		dd := filepath.Join(destDir, d.Name())
+		if !d.IsDir() && strings.HasSuffix(d.Name(), ".zip") {
+			aa, _ := Arch.NewArchiver(dd, destDir, true)
+			aa.UnArchive()
+		}
+	}
+}
+
 /*
 Decompress archived files.
 */
@@ -83,26 +95,16 @@ func Extract(srcFile, destDir string) (err error) {
 
 	// try to use system unzip or tar.
 	if err = DecompressBySystemCommand(srcFile, destDir); err == nil {
+		handleMultiCompress(destDir)
 		return err
 	}
-
-	fmt.Println("-----", err)
 
 	if arch, err1 := Arch.NewArchiver(srcFile, destDir, UseArchiver(srcFile)); err1 == nil {
 		_, err = arch.UnArchive()
 		if err != nil {
 			return
 		}
-
-		// for odin.
-		tempDirList, _ := os.ReadDir(destDir)
-		for _, d := range tempDirList {
-			dd := filepath.Join(destDir, d.Name())
-			if !d.IsDir() && strings.HasSuffix(d.Name(), ".zip") {
-				aa, _ := Arch.NewArchiver(dd, destDir, true)
-				aa.UnArchive()
-			}
-		}
+		handleMultiCompress(destDir)
 		return
 	} else {
 		err = err1
