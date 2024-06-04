@@ -110,7 +110,10 @@ func (l *List) Search() {
 
 func (l *List) GetSelected() string {
 	r := l.Table.SelectedRow()
-	return r[0]
+	if len(r) > 0 {
+		return r[0]
+	}
+	return ""
 }
 
 func (l *List) Init() tea.Cmd {
