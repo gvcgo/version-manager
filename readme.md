@@ -14,6 +14,7 @@
 
 - [version-manager(vmr)](#version-managervmr)
 - [Features](#features)
+- [What's supported?](#whats-supported)
 - [Contributors](#contributors)
 - [Thanks to](#thanks-to)
 
@@ -47,6 +48,12 @@ Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none o
 - **No plugins** needed, just out of the box.
 - Installs SDKs **in local disk** instead of docker containers.
 - **High extendability**, even for thousands of applications(through **conda**).
+
+------
+
+### What's supported?
+
+[bun](https://bun.sh/), [clang](https://clang.llvm.org/), [clojure](https://clojure.org/), [codon](https://github.com/exaloop/codon), [deno](https://deno.com/), [dlang](https://dlang.org/), [dotnet](https://dotnet.microsoft.com/), [elixir](https://elixir-lang.org/), [erlang](https://www.erlang.org/), [flutter](https://flutter.dev/), [gcc](https://gcc.gnu.org/), [gleam](https://gleam.run/), [go](https://go.dev/), [groovy](http://www.groovy-lang.org/), [jdk](https://bell-sw.com/pages/downloads/), [julia](https://julialang.org/), [kotlin](https://kotlinlang.org/), [lfortran](https://lfortran.org/), [lua](https://www.lua.org/), [nim](https://nim-lang.org/), [node](https://nodejs.org/en), [odin](http://odin-lang.org/), [perl](https://www.perl.org/), [php](https://www.php.net/), [pypy](https://www.pypy.org/), [python](https://www.python.org/), [r](https://www.r-project.org/), [ruby](https://www.ruby-lang.org/en/), [rust](https://www.rust-lang.org/), [scala](https://www.scala-lang.org/), [typst](https://typst.app/), [v](https://vlang.io/), [zig](https://ziglang.org/)
 
 ------
 

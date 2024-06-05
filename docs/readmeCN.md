@@ -15,6 +15,7 @@
 - [](#)
   - [VMR简介](#vmr简介)
   - [功能特点](#功能特点)
+  - [支持的部分SDK](#支持的部分sdk)
   - [贡献者](#贡献者)
   - [特别感谢](#特别感谢)
 
@@ -50,6 +51,12 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 - **无需麻烦的插件**，开箱即用
 - **无需docker**，纯本地安装，效率更高
 - 更高的**可扩展性**，甚至可以通过使用**conda**来支持数以千计的应用
+
+------
+
+### 支持的部分SDK
+
+[bun](https://bun.sh/), [clang](https://clang.llvm.org/), [clojure](https://clojure.org/), [codon](https://github.com/exaloop/codon), [deno](https://deno.com/), [dlang](https://dlang.org/), [dotnet](https://dotnet.microsoft.com/), [elixir](https://elixir-lang.org/), [erlang](https://www.erlang.org/), [flutter](https://flutter.dev/), [gcc](https://gcc.gnu.org/), [gleam](https://gleam.run/), [go](https://go.dev/), [groovy](http://www.groovy-lang.org/), [jdk](https://bell-sw.com/pages/downloads/), [julia](https://julialang.org/), [kotlin](https://kotlinlang.org/), [lfortran](https://lfortran.org/), [lua](https://www.lua.org/), [nim](https://nim-lang.org/), [node](https://nodejs.org/en), [odin](http://odin-lang.org/), [perl](https://www.perl.org/), [php](https://www.php.net/), [pypy](https://www.pypy.org/), [python](https://www.python.org/), [r](https://www.r-project.org/), [ruby](https://www.ruby-lang.org/en/), [rust](https://www.rust-lang.org/), [scala](https://www.scala-lang.org/), [typst](https://typst.app/), [v](https://vlang.io/), [zig](https://ziglang.org/)
 
 ------
 <p id="9"></p>  
