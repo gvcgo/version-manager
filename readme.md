@@ -15,6 +15,7 @@
 - [version-manager(vmr)](#version-managervmr)
 - [Features](#features)
 - [Contributors](#contributors)
+- [Thanks to](#thanks-to)
 
  <div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_wordcloud.png" width="70%"></div>
 
@@ -55,4 +56,10 @@ Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none o
 <a href="https://github.com/gvcgo/version-manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
+
+------
+
+### Thanks to
+
+<div><a href="https://conda-forge.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/anaconda/anaconda-original-wordmark.svg" align="middle" height="128" /></a><a href="https://servicecomb.apache.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apache/apache-original-wordmark.svg" align="middle" height="128"/></a><a href="https://code.visualstudio.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original-wordmark.svg" align="middle" width="64"/></a></div>
 
