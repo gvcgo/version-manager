@@ -10,7 +10,7 @@
     "compress": true,
     "garble": true,
     "osslsigncode": true,
-    "pfx_file_path":"/home/moqsien/projects/golang/src/gvcgo/version-manager/scripts/vmr.pfx",
+    "pfx_file_path":"/home/moqsien/projects/go/src/gvcgo/version-manager/scripts/vmr.pfx",
     "pfx_password":"Vmr2024",
     "pfx_company":"GVC",
     "pfx_website":"https://github.com/gvcgo/",
@@ -19,5 +19,5 @@
         "-X main.GitTag=$(git describe --abbrev=0 --tags) -X main.GitHash=$(git show -s --format=%H)  -s -w",
         "./cmd/vmr/"
     ],
-    "work_dir": "/home/moqsien/projects/golang/src/gvcgo/version-manager"
+    "work_dir": "/home/moqsien/projects/go/src/gvcgo/version-manager"
 }

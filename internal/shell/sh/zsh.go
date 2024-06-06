@@ -19,9 +19,10 @@ The command "vmr use -E" will automatically find the .vmr.lock file, and add cor
 const vmEnvZsh = `# cd hook start
 if [ -z "$(alias|grep cdhook)" ]; then
 	cdhook() {
-		if [ -d "$1" ];then
-			cd "$1"
-			vmr use -E
+		if [ $# -eq 0 ]; then
+			cd
+		else
+			cd "$@" && vmr use -E
 		fi
 	}
 	alias cd='cdhook'
