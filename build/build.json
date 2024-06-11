@@ -1,0 +1,28 @@
+{
+    "work_dir": "/home/moqsien/projects/go/src/gvcgo/version-manager",
+    "arch_os_list": [
+        "darwin/amd64",
+        "darwin/arm64",
+        "linux/amd64",
+        "linux/arm64",
+        "windows/amd64",
+        "windows/arm64"
+    ],
+    "build_args": [
+        "-ldflags",
+        "-X main.GitTag=$(git describe --abbrev=0 --tags) -X main.GitHash=$(git show -s --format=%H)  -s -w",
+        "./cmd/vmr"
+    ],
+    "enable_cgo_with_xgo": false,
+    "xgo_image": "",
+    "xgo_deps": "",
+    "xgo_deps_args": "",
+    "enable_zip": true,
+    "enable_garble": false,
+    "enable_upx": true,
+    "enable_osslsigncode": true,
+    "ossl_pfx_file_path": "/home/moqsien/projects/go/src/gvcgo/version-manager/scripts/vmr.pfx",
+    "ossl_pfx_password": "Vmr2024",
+    "ossl_pfx_company": "GVC",
+    "ossl_pfx_website": "https://github.com/gvcgo/"
+}
