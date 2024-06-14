@@ -29,8 +29,7 @@ if [ -z "$(alias|grep cdhook)" ]; then
 fi
 # cd hook end
 
-export PATH=%s:$PATH
-`
+export PATH=%s:$PATH`
 
 /*
 internal/terminal/terminal.go line:90
