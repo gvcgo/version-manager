@@ -33,9 +33,9 @@
 
 Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none of them can manage multiple programming languages. Managers like asdf-vm support multiple languages, but only works on unix-like systems, and annoyingly makes things look complicated. Therefore, **VMR** comes.
 
-[See docs for details](https://vdocs.vmr.us.kg/) 
+[See docs for details](https://docs.vmr.us.kg/) 
 
-[FAQs](https://vdocs.vmr.us.kg/#/faq)
+[FAQs](https://docs.vmr.us.kg/#/faq)
 
 ------
 
