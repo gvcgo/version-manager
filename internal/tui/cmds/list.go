@@ -66,7 +66,8 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 	})
 	rows := download.GetSDKSortedRows(v.SdkList)
 	if len(rows) == 0 {
-		gprint.PrintWarning("no sdk found!")
+		gprint.PrintWarning("No sdk found!")
+		gprint.PrintWarning("Please check if you have a proxy or reverse proxy available.")
 		return
 	}
 	ll.SetRows(rows)

@@ -47,7 +47,7 @@ func (l *LocalInstalled) Show() (nextEvent, selectedItem string) {
 		w = 120
 	}
 	ll.SetHeader([]table.Column{
-		{Title: fmt.Sprintf("%s version", l.SDKName), Width: 60},
+		{Title: fmt.Sprintf("%s installed versions", l.SDKName), Width: 80},
 	})
 
 	rows := []table.Row{}
