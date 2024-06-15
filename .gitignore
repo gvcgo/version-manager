@@ -34,3 +34,5 @@ build/*64
 *.zip
 test.sh
 *.fish
+*.cast
+*.gif
