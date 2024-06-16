@@ -10,6 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gogf/gf/v2/util/gutil"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 )
 
 type ListType string
@@ -180,7 +181,7 @@ func (l *List) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (l *List) renderHelpInfo() (count int, s string) {
-	lines := []string{"<key map>"}
+	lines := []string{gprint.YellowStr("-----------key map-----------")}
 	pattern := "→| %-12s  %s"
 	if l.Text.Focused() {
 		lines = append(lines, fmt.Sprintf(pattern, "enter", "start searching and change focus on table"))
@@ -210,7 +211,7 @@ func (l *List) renderHelpInfo() (count int, s string) {
 			lines = append(lines, fmt.Sprintf(pattern, key, event.HelpInfo))
 		}
 	}
-	lines = append(lines, "See docs: https://gvcgo.github.io/vdocs/")
+	lines = append(lines, "See docs: https://docs.vmr.us.kg/")
 	return len(lines), JoinVertical(lipgloss.Left, lines...)
 }
 
