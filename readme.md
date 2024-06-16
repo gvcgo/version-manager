@@ -65,6 +65,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
 powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 ```
 
+**Note**: Please remember to read the [docs](https://docs.vmr.us.kg/), as the problems you encounter may be caused by your improper usage.
+
 ------
 
 ### What's supported?
