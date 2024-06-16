@@ -14,6 +14,7 @@
 
 - [version-manager(vmr)](#version-managervmr)
 - [Features](#features)
+- [Installation](#installation)
 - [What's supported?](#whats-supported)
 - [Contributors](#contributors)
 - [Thanks to](#thanks-to)
@@ -50,6 +51,19 @@ Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none o
 - **No plugins** needed, just out of the box.
 - Installs SDKs **in local disk** instead of docker containers.
 - **High extendability**, even for thousands of applications(through **conda**).
+
+------
+
+### Installation
+
+- MacOS/Linux
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
+```
+- Windows
+```bash
+powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
+```
 
 ------
 

@@ -15,6 +15,7 @@
 - [](#)
   - [VMR简介](#vmr简介)
   - [功能特点](#功能特点)
+  - [安装](#安装)
   - [支持的部分SDK](#支持的部分sdk)
   - [贡献者](#贡献者)
   - [特别感谢](#特别感谢)
@@ -53,6 +54,21 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 - **无需麻烦的插件**，开箱即用
 - **无需docker**，纯本地安装，效率更高
 - 更高的**可扩展性**，甚至可以通过使用**conda**来支持数以千计的应用
+
+------
+
+### 安装
+
+- MacOS/Linux
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
+```
+- Windows
+```bash
+powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
+```
+
+**注意**：安装之后，请记得阅读[文档](https://docs.vmr.us.kg/#/zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。
 
 ------
 
