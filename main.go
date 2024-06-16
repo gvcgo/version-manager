@@ -30,7 +30,7 @@ import (
 )
 
 func main() {
-	// os.Setenv(conf.VMReverseProxyEnvName, "https://gvc.1710717.xyz/proxy/")
+	// os.Setenv(conf.VMReverseProxyEnvName, "https://proxy.vmr.us.kg/proxy/")
 	// register.RunInstaller(register.VersionKeeper["python"])
 	// fmt.Println(os.Environ())
 	// pt := terminal.NewPtyTerminal("go")

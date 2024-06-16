@@ -46,7 +46,7 @@ main() {
 
     local version="v0.6.2"
     
-    local download_url="https://gvc.1710717.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
+    local download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
     local osType="linux"
     if [ "$os_type" = "Darwin" ]; then
         osType="darwin"
