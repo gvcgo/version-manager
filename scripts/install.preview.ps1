@@ -1,4 +1,7 @@
 <#
+ @@ ====================================================
+ @@ Installs/Updates version-manager(vmr) for Windows
+ @@ ====================================================
  @@    Copyright (c) 2024 moqsien@hotmail.com
  @@
  @@    Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -29,12 +32,15 @@ if ( "$sysType" -match "arm" )
     $arch="arm64"
 }
 
-$version="v0.6.2"
+# $version="v0.6.2"
 
+# $filename="vmr_windows-" + $arch + ".zip"
+# $download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
+
+# $url=$download_url + $version + "/" + $filename
+
+$url="https://packages.vmr.us.kg/windows/" + $arch
 $filename="vmr_windows-" + $arch + ".zip"
-$download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
-
-$url=$download_url + $version + "/" + $filename
 
 Write-Host "Downloading files..."
 

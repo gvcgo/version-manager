@@ -1,6 +1,6 @@
 #!/bin/sh
 # ====================================================
-# Installs/Updates version-manager(vm) for MacOS/Linux
+# Installs/Updates version-manager(vmr) for MacOS/Linux
 # ====================================================
 # Copyright (c) 2024 moqsien@hotmail.com
 #
@@ -44,9 +44,22 @@ main() {
     local os_type="$(uname -s)"
     local os_arch="$(uname -m)"
 
-    local version="v0.6.2"
-    
-    local download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
+    # local version="v0.6.2"
+    # local download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
+    # local osType="linux"
+    # if [ "$os_type" = "Darwin" ]; then
+    #     osType="darwin"
+    # fi
+
+    # local osArch="amd64"
+
+    # if  [ "$os_arch" = "arm64" ] || [ "$os_type" = "aarch64" ]; then
+    #     osArch="arm64"
+    # fi
+
+    # local filename="vmr_$osType-$osArch.zip"
+    # local url="$download_url$version/$filename"
+
     local osType="linux"
     if [ "$os_type" = "Darwin" ]; then
         osType="darwin"
@@ -57,9 +70,9 @@ main() {
     if  [ "$os_arch" = "arm64" ] || [ "$os_type" = "aarch64" ]; then
         osArch="arm64"
     fi
-
+    local url="https://packages.vmr.us.kg/$osType/$osArch"
     local filename="vmr_$osType-$osArch.zip"
-    local url="$download_url$version/$filename"
+
     echo "$url"
     need_cmd "curl"
     need_cmd "unzip"
