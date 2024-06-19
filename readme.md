@@ -17,6 +17,7 @@
 - [Installation](#installation)
 - [What's supported?](#whats-supported)
 - [Contributors](#contributors)
+- [Leave a star](#leave-a-star)
 - [Thanks to](#thanks-to)
 
  <div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_wordcloud.png" width="70%"></div>
@@ -81,6 +82,12 @@ powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 <a href="https://github.com/gvcgo/version-manager/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=gvcgo/version-manager" />
 </a>
+
+------
+
+### Leave a star
+
+**If this project helped, just leave a 🌟**.
 
 ------
 
