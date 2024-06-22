@@ -24,7 +24,7 @@
 
 ------
 
-<div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_preview.gif"></div>
+<div align=center><img src="https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr_node_demo.gif"></div>
 
 ------
 <p id="1"></p>  
