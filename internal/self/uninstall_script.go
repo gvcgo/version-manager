@@ -18,10 +18,12 @@ const (
 )
 
 var UnixRemoveScript string = `#!/bin/sh
+cd ~
 vmr Uins
 rm -rf %s`
 
-var WinRemoveScript string = `vmr Uins
+var WinRemoveScript string = `cd ~
+vmr Uins
 rmdir /s /q %s`
 
 func SetUninstallScript() {

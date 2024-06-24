@@ -58,6 +58,7 @@ func InstallSelf() {
 	if cnf.DefaultConfig.SDKIntallationDir != "" {
 		return
 	}
+	fmt.Println("")
 	fmt.Println(gprint.YellowStr(`Please set the sdk installation directory for VMR.`))
 	fmt.Println(gprint.YellowStr("The sdk installation directory is used to store the SDKs Installed by VMR."))
 	fmt.Println(gprint.YellowStr("If you left it as blank, the sdk installation directory will be '$HOME/.vmr/'."))

@@ -17,9 +17,11 @@ const (
 	updateScriptName string = "vmr-update"
 )
 
-var WinScript string = `powershell -c "irm https://proxy.vmr.us.kg/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.preview.ps1 | iex"`
+var WinScript string = `cd ~
+powershell -c "irm https://proxy.vmr.us.kg/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.preview.ps1 | iex"`
 
 var UnixScript string = `#!/bin/sh
+cd ~
 curl --proto '=https' --tlsv1.2 -sSf https://proxy.vmr.us.kg/proxy/https://raw.githubusercontent.com/gvcgo/version-manager/main/scripts/install.preview.sh | sh`
 
 func setUpdateForWindows() {
