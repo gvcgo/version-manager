@@ -59,6 +59,8 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(useHookCmd)
 	c.rootCmd.AddCommand(installSelfCmd)
 	c.rootCmd.AddCommand(unInstallSelfCmd)
+	c.rootCmd.AddCommand(setDownloadThreads)
+	c.rootCmd.AddCommand(toggleCustomedMirrors)
 }
 
 func (c *Cli) Run() {

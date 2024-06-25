@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	toml "github.com/pelletier/go-toml/v2"
 )
 
@@ -30,6 +31,8 @@ const (
 	VMRHostUrlEnv            string = "VMR_HOST"
 	VMRReverseProxyEnv       string = "VMR_REVERSE_PROXY"
 	VMRLocalProxyEnv         string = "VMR_LOCAL_PROXY"
+	VMRDonwloadThreadEnv     string = "VMR_DOWNLOAD_THREADS"
+	VMRUseCustomedMirrorEnv  string = "VMR_USE_CUSTOMED_MIRRORS"
 )
 
 /*
@@ -110,10 +113,12 @@ vmr config file.
 ==============================
 */
 type VMRConf struct {
-	ProxyUri          string `json,toml:"proxy_uri"`
-	ReverseProxy      string `json,toml:"reverse_proxy"`
-	SDKIntallationDir string `json,toml:"sdk_installation_dir"`
-	VersionHostUrl    string `json,toml:"version_host_url"`
+	ProxyUri           string `json,toml:"proxy_uri"`
+	ReverseProxy       string `json,toml:"reverse_proxy"`
+	SDKIntallationDir  string `json,toml:"sdk_installation_dir"`
+	VersionHostUrl     string `json,toml:"version_host_url"`
+	ThreadNum          int    `json,toml:"download_thread_num"`
+	UseCustomedMirrors bool   `json,toml:"use_customed_mirrors"`
 }
 
 func NewVMRConf() (v *VMRConf) {
@@ -127,6 +132,14 @@ func NewVMRConf() (v *VMRConf) {
 	}
 	if v.ProxyUri != "" {
 		os.Setenv(VMRLocalProxyEnv, v.ProxyUri)
+	}
+	if v.ThreadNum > 1 {
+		os.Setenv(VMRDonwloadThreadEnv, gconv.String(v.ThreadNum))
+	}
+	if v.UseCustomedMirrors {
+		os.Setenv(VMRUseCustomedMirrorEnv, "true")
+	} else {
+		os.Setenv(VMRUseCustomedMirrorEnv, "false")
 	}
 	return v
 }
@@ -169,5 +182,21 @@ func (v *VMRConf) SetVersionHostUrl(hUrl string) {
 	}
 	v.Load()
 	v.VersionHostUrl = hUrl
+	v.Save()
+}
+
+func (v *VMRConf) SetDownloadThreadNum(num int) {
+	v.Load()
+	if num < 1 {
+		v.ThreadNum = 1
+	} else {
+		v.ThreadNum = num
+	}
+	v.Save()
+}
+
+func (v *VMRConf) ToggleUseCustomedMirrors() {
+	v.Load()
+	v.UseCustomedMirrors = !v.UseCustomedMirrors
 	v.Save()
 }

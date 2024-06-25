@@ -4,22 +4,14 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
+	"github.com/pelletier/go-toml/v2"
 )
-
-// reverse proxy
-func GetReverseProxyUri() string {
-	rp := os.Getenv(VMRReverseProxyEnv)
-	if rp == "" {
-		rp = DefaultReverseProxy
-	}
-	if !strings.HasSuffix(rp, "/") {
-		rp = rp + "/"
-	}
-	return rp
-}
 
 // sdk-list.version.json
 func GetSDKListFileUrl() string {
@@ -54,16 +46,95 @@ func GetSDKInstallationConfFileUrlBySDKName(sdkName string) string {
 	return u
 }
 
+// reverse proxy
+func GetReverseProxyUri(dUrl, localProxy string) string {
+	if localProxy != "" {
+		// use localProxy prior to reverseProxy
+		return ""
+	}
+	if strings.Contains(dUrl, "gitee.com") {
+		// gittee does not need reverseProxy
+		return ""
+	}
+	rp := os.Getenv(VMRReverseProxyEnv)
+	if rp == "" && strings.Contains(dUrl, "github") {
+		rp = DefaultReverseProxy
+	}
+
+	if !strings.HasSuffix(rp, "/") {
+		rp = rp + "/"
+	}
+	return rp
+}
+
+// Get download thread num
+func GetDownloadThreadNum() int {
+	threadNum := os.Getenv(VMRDonwloadThreadEnv)
+	num := gconv.Int(threadNum)
+	if num < 1 {
+		num = 1
+	}
+	return num
+}
+
+func LoadCustomedMirror() map[string]string {
+	result := make(map[string]string)
+	fPath := filepath.Join(GetVMRWorkDir(), "customed_mirrors.toml")
+	if ok, _ := gutils.PathIsExist(fPath); !ok {
+		ff := request.NewFetcher()
+		ff.SetUrl(DefaultReverseProxy + DefaultHostUrl + "/mirrors/customed_mirrors.toml")
+		s, _ := ff.GetString()
+		os.WriteFile(fPath, []byte(s), os.ModePerm)
+	}
+	content, _ := os.ReadFile(fPath)
+	toml.Unmarshal(content, &result)
+	return result
+}
+
+func UseCustomedMirrorUrl(dUrl string) string {
+	if !gconv.Bool(os.Getenv(VMRUseCustomedMirrorEnv)) {
+		return dUrl
+	}
+	mirrors := LoadCustomedMirror()
+	for kk, vv := range mirrors {
+		if strings.Contains(dUrl, kk) {
+			if strings.HasPrefix(dUrl, "https://gradle.org/releases") && strings.Contains(vv, `%s`) {
+				uu, err := url.Parse(dUrl)
+				if err != nil {
+					return dUrl
+				}
+				version := uu.Query().Get("version=")
+				if version == "" {
+					return dUrl
+				}
+				return fmt.Sprintf(vv, version)
+			} else {
+				dUrl = strings.ReplaceAll(dUrl, kk, vv)
+			}
+		}
+	}
+	return dUrl
+}
+
 // Prepares request.Fetcher for URL.
 func GetFetcher(dUrl string) (fetcher *request.Fetcher) {
-	reverseProxy := GetReverseProxyUri()
+	// use customed mirror
+	dUrl = UseCustomedMirrorUrl(dUrl)
+
 	localProxy := os.Getenv(VMRLocalProxyEnv)
-	if localProxy == "" && !strings.Contains(dUrl, "gitee.com") {
+	reverseProxy := strings.Trim(GetReverseProxyUri(dUrl, localProxy), "/")
+	if reverseProxy != "" {
 		dUrl = reverseProxy + dUrl
 	}
 	fetcher = request.NewFetcher()
-	fetcher.SetUrl(dUrl)
+
+	// multi-threads only for large files.
+	if !strings.HasSuffix(dUrl, ".json") && !strings.HasSuffix(dUrl, ".toml") {
+		fetcher.SetThreadNum(GetDownloadThreadNum())
+	}
+	fetcher.SetUrl(strings.Trim(dUrl, "/"))
 	if !strings.Contains(dUrl, "gitee.com") {
+		// do not use proxy for gitee.
 		fetcher.Proxy = localProxy
 	}
 	return
