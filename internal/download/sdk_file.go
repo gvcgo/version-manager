@@ -1,8 +1,10 @@
 package download
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -31,6 +33,10 @@ func NewDownloader() (d *Downloader) {
 func (d *Downloader) getLocalFilePath() string {
 	cacheDir := cnf.GetCacheDir()
 	filename := filepath.Base(d.Version.Url)
+	// gradle: https://raw.githubusercontent.com/gvcgo/vsources/main/gradle.version.json
+	if d.SDKName == "gradle" && strings.Contains(filename, "?") {
+		filename = fmt.Sprintf("gradle-%s-all.zip", d.VersionName)
+	}
 	dd := filepath.Join(cacheDir, d.SDKName, d.VersionName)
 	os.MkdirAll(dd, os.ModePerm)
 	return filepath.Join(dd, filename)

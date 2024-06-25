@@ -82,7 +82,7 @@ func LoadCustomedMirror() map[string]string {
 	fPath := filepath.Join(GetVMRWorkDir(), "customed_mirrors.toml")
 	if ok, _ := gutils.PathIsExist(fPath); !ok {
 		ff := request.NewFetcher()
-		ff.SetUrl(DefaultReverseProxy + DefaultHostUrl + "/mirrors/customed_mirrors.toml")
+		ff.SetUrl(DefaultReverseProxy + strings.TrimSuffix(DefaultHostUrl, "/") + "/mirrors/customed_mirrors.toml")
 		s, _ := ff.GetString()
 		os.WriteFile(fPath, []byte(s), os.ModePerm)
 	}
@@ -103,7 +103,7 @@ func UseCustomedMirrorUrl(dUrl string) string {
 				if err != nil {
 					return dUrl
 				}
-				version := uu.Query().Get("version=")
+				version := uu.Query().Get("version")
 				if version == "" {
 					return dUrl
 				}
@@ -119,12 +119,13 @@ func UseCustomedMirrorUrl(dUrl string) string {
 // Prepares request.Fetcher for URL.
 func GetFetcher(dUrl string) (fetcher *request.Fetcher) {
 	// use customed mirror
+	oldDUrl := dUrl
 	dUrl = UseCustomedMirrorUrl(dUrl)
 
 	localProxy := os.Getenv(VMRLocalProxyEnv)
 	reverseProxy := strings.Trim(GetReverseProxyUri(dUrl, localProxy), "/")
-	if reverseProxy != "" {
-		dUrl = reverseProxy + dUrl
+	if reverseProxy != "" && oldDUrl == dUrl {
+		dUrl = reverseProxy + "/" + dUrl
 	}
 	fetcher = request.NewFetcher()
 
@@ -132,8 +133,9 @@ func GetFetcher(dUrl string) (fetcher *request.Fetcher) {
 	if !strings.HasSuffix(dUrl, ".json") && !strings.HasSuffix(dUrl, ".toml") {
 		fetcher.SetThreadNum(GetDownloadThreadNum())
 	}
+
 	fetcher.SetUrl(strings.Trim(dUrl, "/"))
-	if !strings.Contains(dUrl, "gitee.com") {
+	if !strings.Contains(dUrl, "gitee.com") && oldDUrl == dUrl {
 		// do not use proxy for gitee.
 		fetcher.Proxy = localProxy
 	}

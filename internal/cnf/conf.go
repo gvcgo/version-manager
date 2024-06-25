@@ -3,6 +3,7 @@ package cnf
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gogf/gf/v2/util/gconv"
 	toml "github.com/pelletier/go-toml/v2"
@@ -128,7 +129,7 @@ func NewVMRConf() (v *VMRConf) {
 		os.Setenv(VMRSdkInstallationDirEnv, v.SDKIntallationDir)
 	}
 	if v.VersionHostUrl != "" {
-		os.Setenv(VMRHostUrlEnv, v.VersionHostUrl)
+		os.Setenv(VMRHostUrlEnv, strings.TrimSuffix(v.VersionHostUrl, "/"))
 	}
 	if v.ProxyUri != "" {
 		os.Setenv(VMRLocalProxyEnv, v.ProxyUri)
@@ -140,6 +141,9 @@ func NewVMRConf() (v *VMRConf) {
 		os.Setenv(VMRUseCustomedMirrorEnv, "true")
 	} else {
 		os.Setenv(VMRUseCustomedMirrorEnv, "false")
+	}
+	if v.ReverseProxy != "" {
+		os.Setenv(VMRReverseProxyEnv, v.ReverseProxy)
 	}
 	return v
 }
