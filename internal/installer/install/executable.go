@@ -216,5 +216,6 @@ func (ei *ExeInstaller) Install() {
 	time.Sleep(time.Second * 2) // cursor fix.
 	if err != nil {
 		gprint.PrintError("%+v", err)
+		os.RemoveAll(filepath.Dir(localPath))
 	}
 }

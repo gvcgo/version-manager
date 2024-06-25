@@ -105,7 +105,7 @@ func (a *ArchiverInstaller) Install() {
 	tempDir := cnf.GetTempDir()
 	if err := utils.Extract(fPath, tempDir); err != nil {
 		gprint.PrintError("Extract file failed: %+v.", err)
-		os.RemoveAll(fPath)
+		os.RemoveAll(filepath.Dir(fPath))
 		return
 	}
 
@@ -115,6 +115,7 @@ func (a *ArchiverInstaller) Install() {
 	dirToCopy := a.dirFinder.GetDirName()
 	if dirToCopy == "" {
 		gprint.PrintError("Can't find dir to copy.")
+		os.RemoveAll(filepath.Dir(fPath))
 		return
 	}
 
@@ -125,6 +126,7 @@ func (a *ArchiverInstaller) Install() {
 	}()
 	if err := gutils.CopyDirectory(dirToCopy, installDir, true); err != nil {
 		gprint.PrintError("Copy directory failed: %+v.", err)
+		os.RemoveAll(filepath.Dir(fPath))
 		return
 	}
 }
