@@ -22,11 +22,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
-
-	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/shell"
-	"github.com/gvcgo/version-manager/internal/tui/cmds"
+	"regexp"
 )
 
 func main() {
@@ -72,12 +70,17 @@ func main() {
 
 	// test vmr
 
-	sh := shell.NewShell()
-	sh.WriteVMEnvToShell()
-	os.Setenv(cnf.VMRLocalProxyEnv, "http://localhost:2023")
-	ll := cmds.NewTUI()
-	ll.ListSDKName()
+	// sh := shell.NewShell()
+	// sh.WriteVMEnvToShell()
+	// os.Setenv(cnf.VMRLocalProxyEnv, "http://localhost:2023")
+	// ll := cmds.NewTUI()
+	// ll.ListSDKName()
 
+	var ShellRegExp = regexp.MustCompile(`# cd hook start[\w\W]+# cd hook end`)
+
+	content, _ := os.ReadFile("/home/moqsien/.vmr/vmr.sh")
+	s := ShellRegExp.FindString(string(content))
+	fmt.Println(s)
 	// _, err := gutils.ExecuteSysCommand(
 	// 	true,
 	// 	"",

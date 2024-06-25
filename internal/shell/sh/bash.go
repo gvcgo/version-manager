@@ -29,18 +29,20 @@ func (b *BashShell) WriteVMEnvToShell() {
 	installPath := cnf.GetVMRWorkDir()
 	vmEnvConfPath := b.VMEnvConfPath()
 
-	content, _ := os.ReadFile(vmEnvConfPath)
-	oldEnvStr := strings.TrimSpace(string(content))
+	// content, _ := os.ReadFile(vmEnvConfPath)
+	// oldEnvStr := strings.TrimSpace(string(content))
 	envStr := fmt.Sprintf(vmEnvZsh, FormatPathString(installPath))
-	if !strings.Contains(oldEnvStr, envStr) {
-		if oldEnvStr != "" {
-			envStr = envStr + "\n" + oldEnvStr
-		}
-		_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
-	}
+	vmrEnvPath := fmt.Sprintf("export PATH=%s:$PATH", FormatPathString(installPath))
+	UpdateVMRShellFile(vmEnvConfPath, vmrEnvPath, envStr)
+	// if !strings.Contains(oldEnvStr, envStr) {
+	// 	if oldEnvStr != "" {
+	// 		envStr = envStr + "\n" + oldEnvStr
+	// 	}
+	// 	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
+	// }
 
 	shellConfig := b.ConfPath()
-	content, _ = os.ReadFile(shellConfig)
+	content, _ := os.ReadFile(shellConfig)
 	data := string(content)
 
 	sourceStr := fmt.Sprintf(shellContent, VMDisableEnvName, FormatPathString(vmEnvConfPath))

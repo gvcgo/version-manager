@@ -62,18 +62,21 @@ func (f *FishShell) WriteVMEnvToShell() {
 	installPath := cnf.GetVMRWorkDir()
 	vmEnvConfPath := f.VMEnvConfPath()
 
-	content, _ := os.ReadFile(vmEnvConfPath)
-	oldEnvStr := strings.TrimSpace(string(content))
+	// content, _ := os.ReadFile(vmEnvConfPath)
+	// oldEnvStr := strings.TrimSpace(string(content))
 	envStr := fmt.Sprintf(vmEnvFish, FormatPathString(installPath))
-	if !strings.Contains(oldEnvStr, envStr) {
-		if oldEnvStr != "" {
-			envStr = envStr + "\n" + oldEnvStr
-		}
-		_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
-	}
+
+	vmrEnvPath := fmt.Sprintf("fish_add_path --global %s", FormatPathString(installPath))
+	UpdateVMRShellFile(vmEnvConfPath, vmrEnvPath, envStr)
+	// if !strings.Contains(oldEnvStr, envStr) {
+	// 	if oldEnvStr != "" {
+	// 		envStr = envStr + "\n" + oldEnvStr
+	// 	}
+	// 	_ = os.WriteFile(vmEnvConfPath, []byte(envStr), ModePerm)
+	// }
 
 	shellConfig := f.ConfPath()
-	content, _ = os.ReadFile(shellConfig)
+	content, _ := os.ReadFile(shellConfig)
 	data := string(content)
 
 	sourceStr := fmt.Sprintf(fishShellContent, VMDisableEnvName, FormatPathString(vmEnvConfPath))

@@ -3,6 +3,7 @@ package sh
 import (
 	"io/fs"
 	"os"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -38,4 +39,30 @@ func FormatPathString(p string) (formattedPath string) {
 		}
 	}
 	return
+}
+
+/*
+Update vmr.sh or vmr.fish
+*/
+var ShellRegExp = regexp.MustCompile(`# cd hook start[\w\W]+# cd hook end`)
+
+func UpdateVMRShellFile(fPath, vmrPathEnv, newHookContent string) {
+	oldData, _ := os.ReadFile(fPath)
+	oldContent := string(oldData)
+	if oldContent == "" {
+		os.WriteFile(fPath, []byte(newHookContent), ModePerm)
+		return
+	}
+	oldHookContent := ShellRegExp.FindString(oldContent)
+
+	if !strings.Contains(oldHookContent, vmrPathEnv) {
+		oldContent = strings.ReplaceAll(oldContent, vmrPathEnv, "")
+	}
+
+	if oldHookContent != "" {
+		oldContent = strings.ReplaceAll(oldContent, oldHookContent, newHookContent)
+	} else {
+		oldContent = newHookContent + "\n" + oldContent
+	}
+	_ = os.WriteFile(fPath, []byte(strings.TrimSpace(oldContent)), ModePerm)
 }

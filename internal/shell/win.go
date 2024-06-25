@@ -22,6 +22,22 @@ const (
 	PathEnvName     string = "path"
 )
 
+const oldPwsHook string = `function cdhook {
+    $TRUE_FALSE=(Test-Path $args[0])
+    if ( $TRUE_FALSE -eq "True" )
+    {
+        chdir $args[0]
+        vmr use -E
+    }
+}
+
+function vmrsource {
+	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+}
+
+Set-Alias -Name cd -Option AllScope -Value cdhook
+Set-Alias -Name source -Value vmrsource`
+
 // PowershellHook for Powershell
 const PowershellHook string = `# cd hook start
 function cdhook {
@@ -128,7 +144,9 @@ func (s *Shell) cdHook() {
 		return
 	}
 
-	if content != "" {
+	if strings.Contains(content, oldPwsHook) {
+		content = strings.ReplaceAll(content, oldPwsHook, PowershellHook)
+	} else if content != "" {
 		content = fmt.Sprintf("%s\n%s", PowershellHook, content)
 	} else {
 		content = PowershellHook
