@@ -49,18 +49,18 @@ function cdhook {
     }
 }
 
-if ( "" -ne $VMR_CD_INIT )
-{
-    $VMR_CD_INIT="vmr_cd_init"
-	cd "$(-split $(pwd))"
-}
-
 function vmrsource {
 	$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 }
 
 Set-Alias -Name cd -Option AllScope -Value cdhook
 Set-Alias -Name source -Value vmrsource
+
+if ( "" -eq "$env:VMR_CD_INIT" )
+{
+    $env:VMR_CD_INIT="vmr_cd_init"
+    cd "$(-split $(pwd))"
+}
 # cd hook end`
 
 var _ Sheller = (*Shell)(nil)
