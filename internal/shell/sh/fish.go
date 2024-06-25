@@ -16,15 +16,19 @@ https://fishshell.com/docs/current/cmds/function.html
 Run this function when the variable VARIABLE_NAME changes value. Note that fish makes no guarantees on any particular timing or even that the function will be run for every single set. Rather it will be run when the variable has been set at least once, possibly skipping some values or being run when the variable has been set to the same value (except for universal variables set in other shells - only changes in the value will be picked up for those).
 */
 const vmEnvFish = `# cd hook start
+fish_add_path --global %s
+
 function _vmr_cdhook --on-variable="PWD" --description "version manager cd hook"
 	if type -q vmr
         vmr use -E
 	end
 end
-# cd hook end
 
-fish_add_path --global %s
-`
+if set -q "$VMR_CD_INIT"
+	set VMR_CD_INIT "vmr_cd_init"
+    cd "$(pwd)"
+end
+# cd hook end`
 
 /*
 internal/terminal/terminal.go line:90

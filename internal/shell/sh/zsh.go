@@ -17,6 +17,8 @@ In cdhook, it will cd to the target directory and then try to execute "vmr use -
 The command "vmr use -E" will automatically find the .vmr.lock file, and add corresponding versions of an SDK to the envs.
 */
 const vmEnvZsh = `# cd hook start
+export PATH=%s:$PATH
+
 if [ -z "$(alias|grep cdhook)" ]; then
 	cdhook() {
 		if [ $# -eq 0 ]; then
@@ -27,9 +29,12 @@ if [ -z "$(alias|grep cdhook)" ]; then
 	}
 	alias cd='cdhook'
 fi
-# cd hook end
 
-export PATH=%s:$PATH`
+if [ ! $VMR_CD_INIT ]; then
+        VMR_CD_INIT="vmr_cd_init"
+        cd "$(pwd)"
+fi
+# cd hook end`
 
 /*
 internal/terminal/terminal.go line:90
