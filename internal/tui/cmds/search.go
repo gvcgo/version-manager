@@ -75,7 +75,15 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 		gprint.PrintWarning("No versions found for current platform.")
 		return
 	}
-	ll.SetRows(rows)
+	newRows := []table.Row{}
+	// filter invalid version name.
+	for _, row := range rows {
+		if len(row[0]) == 0 {
+			continue
+		}
+		newRows = append(newRows, row)
+	}
+	ll.SetRows(newRows)
 	ll.Run()
 
 	selectedItem = strings.TrimSuffix(ll.GetSelected(), "-lts")
