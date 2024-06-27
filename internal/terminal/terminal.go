@@ -12,6 +12,7 @@ import (
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"github.com/gvcgo/version-manager/internal/terminal/term"
+	"github.com/shirou/gopsutil/process"
 )
 
 /*
@@ -74,18 +75,24 @@ func (p *PtyTerminal) AddEnv(key, value string) {
 	addEnv(key, value)
 }
 
-func (p *PtyTerminal) Run() {
-	command := "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
-	if ok, _ := gutils.PathIsExist(command); !ok {
-		command = "powershell.exe"
-	}
-	if runtime.GOOS != "windows" {
+func (p *PtyTerminal) FindShellCommand() (command string) {
+	if runtime.GOOS == gutils.Windows {
+		pp, _ := process.NewProcess(int32(os.Getppid()))
+		command, _ = pp.Name()
+		if command == "" {
+			command = "powershell.exe"
+		}
+	} else {
 		command = "/bin/sh"
 		if shell := os.Getenv("SHELL"); shell != "" {
 			command = shell
 		}
 	}
+	return
+}
 
+func (p *PtyTerminal) Run() {
+	command := p.FindShellCommand()
 	// Disable reading vmr.sh/vmr.fish for the new pseudo-shell.
 	if runtime.GOOS != gutils.Windows {
 		os.Setenv(sh.VMDisableEnvName, "111")
