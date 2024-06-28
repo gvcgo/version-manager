@@ -36,9 +36,7 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 
 你可能已经听说过fnm，gvm，nvm，pyenv，phpenv等SDK版本管理工具。然而，它们很多都不能管理多种编程语言。像asdf-vm这样的管理器支持多种语言，但只适用于类unix系统，并且看起来非常复杂。因此，VMR的出现主要就是为了解决这些问题。
 
-[查看详细文档](https://docs.vmr.us.kg/#/zh-cn/)
-
-[常见问题答疑](https://docs.vmr.us.kg/#/zh-cn/faq)
+[查看详细文档](https://vdocs.vmr.us.kg/zh-cn/)
 
 **注意**： v0.6.x改版非常大，主要是为了更好的用户体验，以及更清晰的代码架构，方便用户使用的同时，也方便更多有兴趣的开发者参与进来。所以，放弃了对老版本的兼容。在安装v0.6.x的过程中，会提示**是否删除已有的老版本**，只有删除老版本(包含通过老版本安装的SDK)，才能继续安装v0.6.x。相信v0.6.x能不负众望，给同学们带来更好的使用体验。**鉴于资源有限，老版本的vmr的SDK版本仓库已经不再维护了，请童鞋们尽快升级**。
 
@@ -69,7 +67,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
 powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 ```
 
-**注意**：安装之后，请记得阅读[文档](https://docs.vmr.us.kg/#/zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。
+**注意**：安装之后，请记得阅读[文档](https://vdocs.vmr.us.kg/zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。
 
 ------
 

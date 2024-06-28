@@ -35,9 +35,7 @@
 
 Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none of them can manage multiple programming languages. Managers like asdf-vm support multiple languages, but only works on unix-like systems, and annoyingly makes things look complicated. Therefore, **VMR** comes.
 
-[See docs for details](https://docs.vmr.us.kg/) 
-
-[FAQs](https://docs.vmr.us.kg/#/faq)
+[See docs for details](https://vdocs.vmr.us.kg/) 
 
 ------
 
@@ -66,7 +64,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
 powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 ```
 
-**Note**: Please remember to read the [docs](https://docs.vmr.us.kg/), as the problems you encounter may be caused by your improper usage.
+**Note**: Please remember to read the [docs](https://vdocs.vmr.us.kg/), as the problems you encounter may be caused by your improper usage.
 
 ------
 
