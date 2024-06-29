@@ -79,7 +79,7 @@ func (a *ArchiverInstaller) prepareDirFinder() {
 }
 
 func (a *ArchiverInstaller) handleArchivedFile(fPath string) (newPath string) {
-	if strings.Contains(fPath, "git-for-windows") && strings.HasSuffix(fPath, ".7z.exe") {
+	if strings.Contains(fPath, "git") && strings.HasSuffix(fPath, ".7z.exe") {
 		newPath = strings.TrimSuffix(fPath, ".exe")
 		os.Rename(fPath, newPath)
 		return newPath

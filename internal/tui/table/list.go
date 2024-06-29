@@ -211,7 +211,7 @@ func (l *List) renderHelpInfo() (count int, s string) {
 			lines = append(lines, fmt.Sprintf(pattern, key, event.HelpInfo))
 		}
 	}
-	lines = append(lines, "See docs: https://docs.vmr.us.kg/")
+	lines = append(lines, "See docs: https://vdocs.vmr.us.kg/")
 	return len(lines), JoinVertical(lipgloss.Left, lines...)
 }
 
