@@ -9,7 +9,7 @@ Before you report an issue, Please make sure you have read the docs: https://vdo
 -->
 
 ## Platform Info
-<!--for example, MacOS arm64 (平台信息)-->
+<!--for example, MacOS arm64 (平台信息，举例： MacOS arm64)-->
 
 ## Description
 <!-- Your description about what happend. (描述一下发生了什么)-->
