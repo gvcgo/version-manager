@@ -24,7 +24,7 @@
 
 ------
 
-<div align=center><img src="https://image-acc.vmr.us.kg/vmr.gif" width="60%"></div>
+<div align=center><img src="https://image-acc.vmr.us.kg/vmr.gif"></div>
 
 ------
 <p id="1"></p>  
