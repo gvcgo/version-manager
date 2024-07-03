@@ -42,13 +42,18 @@ type SDKVersion []Item
 
 type VersionList map[string]SDKVersion
 
+func GetVersionFilePath(sdkName string) (fPath string) {
+	versionFileCacheDir := filepath.Join(cnf.GetCacheDir(), sdkName)
+	os.MkdirAll(versionFileCacheDir, os.ModePerm)
+	fPath = filepath.Join(versionFileCacheDir, strings.Trim(fmt.Sprintf(cnf.VersionFileUrlPattern, sdkName), "/"))
+	return
+}
+
 /*
 Download version list file.
 */
 func CheckSumForVersionFile(sdkName, newSha256 string) (ok bool, fPath string) {
-	versionFileCacheDir := filepath.Join(cnf.GetCacheDir(), sdkName)
-	os.MkdirAll(versionFileCacheDir, os.ModePerm)
-	fPath = filepath.Join(versionFileCacheDir, strings.Trim(fmt.Sprintf(cnf.VersionFileUrlPattern, sdkName), "/"))
+	fPath = GetVersionFilePath(sdkName)
 	content, _ := os.ReadFile(fPath)
 
 	h := sha256.New()

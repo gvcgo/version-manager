@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,16 +17,27 @@ import (
 */
 
 type InstalledVersionFinder struct {
-	SDKName           string
+	OriginSDKName     string
 	InstalledVersions []string
 	CurrentVersion    string
 	Installer         *Installer
 }
 
 func NewIVFinder(sdkName string) (i *InstalledVersionFinder) {
+	versionFilePath := download.GetVersionFilePath(sdkName)
+	content, _ := os.ReadFile(versionFilePath)
+	rawVersionList := make(download.VersionList)
+	json.Unmarshal(content, &rawVersionList)
+	installerType := "unarchiver"
+	for _, vl := range rawVersionList {
+		if len(vl) > 0 {
+			installerType = vl[0].Installer
+			break
+		}
+	}
 	i = &InstalledVersionFinder{
-		SDKName:   sdkName,
-		Installer: NewInstaller(sdkName, "", "", download.Item{}),
+		OriginSDKName: sdkName,
+		Installer:     NewInstaller(sdkName, "", "", download.Item{Installer: installerType}),
 	}
 	return
 }
@@ -37,7 +49,7 @@ func (i *InstalledVersionFinder) findCurrentVersion(symbolPath string) {
 
 	slink, _ := os.Readlink(symbolPath)
 	fName := filepath.Base(slink)
-	namePrefix := fmt.Sprintf("%s-", i.SDKName)
+	namePrefix := fmt.Sprintf("%s-", i.OriginSDKName)
 	if strings.HasPrefix(fName, namePrefix) {
 		i.CurrentVersion = strings.TrimPrefix(fName, namePrefix)
 	}
@@ -56,7 +68,7 @@ func (i *InstalledVersionFinder) FindAll() (r []string, current string) {
 	}
 	i.findCurrentVersion(symbolPath)
 
-	namePrefix := fmt.Sprintf("%s-", i.SDKName)
+	namePrefix := fmt.Sprintf("%s-", i.OriginSDKName)
 	dList, _ := os.ReadDir(versionDir)
 	for _, d := range dList {
 		if d.IsDir() && strings.HasPrefix(d.Name(), namePrefix) {

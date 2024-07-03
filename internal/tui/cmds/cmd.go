@@ -1,6 +1,9 @@
 package cmds
 
 import (
+	"encoding/json"
+	"os"
+
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
 )
@@ -116,6 +119,17 @@ func (v *VmrTUI) RemoveInstalledVersions(sdkName string) {
 }
 
 func (v *VmrTUI) RemoveSelectedVersion(sdkName, versionName string) {
-	ins := installer.NewInstaller(sdkName, versionName, "", download.Item{})
+	versionFilePath := download.GetVersionFilePath(sdkName)
+	content, _ := os.ReadFile(versionFilePath)
+	rawVersionList := make(download.VersionList)
+	json.Unmarshal(content, &rawVersionList)
+	installerType := "unarchiver"
+	for _, vl := range rawVersionList {
+		if len(vl) > 0 {
+			installerType = vl[0].Installer
+			break
+		}
+	}
+	ins := installer.NewInstaller(sdkName, versionName, "", download.Item{Installer: installerType})
 	ins.Uninstall()
 }
