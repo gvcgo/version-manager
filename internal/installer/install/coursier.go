@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -71,12 +72,15 @@ func (c *CoursierInstaller) Install() {
 	if coursierCommand == "" {
 		coursierCommand = "cs"
 	}
+
+	version := strings.TrimSuffix(c.VersionName, "-LTS")
+	version = strings.TrimSuffix(version, "-lts")
 	_, err := gutils.ExecuteSysCommand(
 		true, homeDir,
 		coursierCommand, "install",
 		"-q",
 		fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
-		fmt.Sprintf("%s:%s", c.OriginSDKName, c.VersionName),
+		fmt.Sprintf("%s:%s", c.OriginSDKName, version),
 	)
 	c.spinner.Quit()
 	time.Sleep(time.Duration(2) * time.Second)
