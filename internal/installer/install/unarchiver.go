@@ -109,6 +109,7 @@ func (a *ArchiverInstaller) Install() {
 		return
 	}
 
+	a.patchFileName()
 	// find dir to copy
 	a.prepareDirFinder()
 	a.dirFinder.Find(tempDir)
@@ -128,5 +129,26 @@ func (a *ArchiverInstaller) Install() {
 		gprint.PrintError("Copy directory failed: %+v.", err)
 		os.RemoveAll(filepath.Dir(fPath))
 		return
+	}
+}
+
+// patches file name for some tools.
+func (a *ArchiverInstaller) patchFileName() {
+	tempDir := cnf.GetTempDir()
+	dList, _ := os.ReadDir(tempDir)
+	newName := a.SDKName
+	if runtime.GOOS == gutils.Windows {
+		newName += ".exe"
+	}
+	if len(dList) == 1 {
+		dd := dList[0]
+		if !dd.IsDir() && strings.Contains(dd.Name(), a.SDKName) && dd.Name() != newName {
+			oldPath := filepath.Join(tempDir, dd.Name())
+			newPath := filepath.Join(tempDir, newName)
+			os.Rename(oldPath, newPath)
+		}
+		if runtime.GOOS != gutils.Windows {
+			gutils.ExecuteSysCommand(true, tempDir, "chmod", "+x", newName)
+		}
 	}
 }
