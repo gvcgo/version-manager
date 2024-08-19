@@ -17,7 +17,7 @@ In cdhook, it will cd to the target directory and then try to execute "vmr use -
 The command "vmr use -E" will automatically find the .vmr.lock file, and add corresponding versions of an SDK to the envs.
 */
 const vmEnvZsh = `# cd hook start
-export PATH=%s:$PATH
+export PATH=%s:"${PATH}"
 
 if [ -z "$(alias|grep cdhook)" ]; then
 	cdhook() {
@@ -30,7 +30,7 @@ if [ -z "$(alias|grep cdhook)" ]; then
 	alias cd='cdhook'
 fi
 
-if [ ! $VMR_CD_INIT ]; then
+if [ -z "${VMR_CD_INIT}" ]; then
         VMR_CD_INIT="vmr_cd_init"
         cd "$(pwd)"
 fi
@@ -72,7 +72,7 @@ func (z *ZshShell) WriteVMEnvToShell() {
 	// content, _ := os.ReadFile(vmEnvConfPath)
 	// oldEnvStr := strings.TrimSpace(string(content))
 	envStr := fmt.Sprintf(vmEnvZsh, FormatPathString(installPath))
-	vmrEnvPath := fmt.Sprintf("export PATH=%s:$PATH", FormatPathString(installPath))
+	vmrEnvPath := fmt.Sprintf(`export PATH=%s:"${PATH}"`, FormatPathString(installPath))
 	UpdateVMRShellFile(vmEnvConfPath, vmrEnvPath, envStr)
 	// if !strings.Contains(oldEnvStr, envStr) {
 	// 	if oldEnvStr != "" {
@@ -98,7 +98,7 @@ func (z *ZshShell) WriteVMEnvToShell() {
 }
 
 func (z *ZshShell) PackPath(path string) string {
-	return fmt.Sprintf("export PATH=%s:$PATH", path)
+	return fmt.Sprintf(`export PATH=%s:"${PATH}"`, path)
 }
 
 func (z *ZshShell) PackEnv(key, value string) string {

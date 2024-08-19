@@ -22,7 +22,7 @@ type OldConfig struct {
 }
 
 var OldShellRC string = `# vm_envs start
-if [ -z $VM_DISABLE ]; then
+if [ -z "${VM_DISABLE}" ]; then
     . ~/.vm/vmr.sh
 fi
 # vm_envs end`
@@ -94,13 +94,13 @@ func DetectAndRemoveOldVersions() {
 
 var NewShellRC = `
 # vm_envs start
-if [ -z $VM_DISABLE ]; then
+if [ -z "${VM_DISABLE}" ]; then
     . ~/.vmr/vmr.sh
 fi
 # vm_envs end`
 
 var NewShellRCFish = `# vm_envs start
-if not test $VM_DISABLE 
+if not test "${VM_DISABLE}" 
     . ~/.vmr/vmr.fish
 end
 # vm_envs end`
