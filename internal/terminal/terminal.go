@@ -3,6 +3,7 @@ package terminal
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -112,4 +113,32 @@ func (p *PtyTerminal) Run() {
 func GetTerminalSize() (height, width int, err error) {
 	t := term.NewTerminal()
 	return t.Size()
+}
+
+func RunTerminal() {
+	var command string
+	if runtime.GOOS == gutils.Windows {
+		pp, _ := process.NewProcess(int32(os.Getppid()))
+		command, _ = pp.Name()
+		if command == "" {
+			command = "powershell.exe"
+		}
+	} else {
+		command = "/bin/sh"
+		if shell := os.Getenv("SHELL"); shell != "" {
+			command = shell
+		}
+	}
+	if runtime.GOOS != gutils.Windows {
+		os.Setenv(sh.VMDisableEnvName, "111")
+	}
+	if command != "" {
+		cmd := exec.Command(command)
+		cmd.Env = os.Environ()
+		cmd.Stdout = os.Stdout
+		cmd.Stdin = os.Stdin
+		cmd.Stderr = os.Stderr
+		cmd.Start()
+		cmd.Wait()
+	}
 }

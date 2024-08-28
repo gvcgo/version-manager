@@ -222,8 +222,9 @@ func (i *Installer) Install() {
 		os.Setenv(AddToPathTemporarillyEnvName, "1")
 		i.AddEnvsTemporarilly()
 
-		t := terminal.NewPtyTerminal()
-		t.Run()
+		// t := terminal.NewPtyTerminal()
+		// t.Run()
+		terminal.RunTerminal()
 	}
 }
 

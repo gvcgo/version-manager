@@ -117,7 +117,7 @@ func (v *VersionLocker) HookForCdCommand() {
 	if len(v.VersionOfSDKs) == 0 {
 		os.Exit(0)
 	}
-	t := terminal.NewPtyTerminal()
+	// t := terminal.NewPtyTerminal()
 	os.Setenv(AddToPathTemporarillyEnvName, "1")
 	for sdkName, versionName := range v.VersionOfSDKs {
 		RemoveGlobalSDKPathTemporarily(sdkName)
@@ -125,7 +125,8 @@ func (v *VersionLocker) HookForCdCommand() {
 		// follow the order.
 		ins.AddEnvsTemporarilly()
 	}
-	t.Run()
+	// t.Run()
+	terminal.RunTerminal()
 }
 
 /*
