@@ -2,11 +2,12 @@ package download
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gogf/gf/v2/util/gutil"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 )
@@ -27,6 +28,7 @@ type Version struct {
 	Major int
 	Minor int
 	Patch int
+	Build int
 	Beta  int
 	RC    int
 }
@@ -47,20 +49,30 @@ func ParseVersion(version string) (v Version, err error) {
 	for i, part := range parts {
 		switch i {
 		case 0:
-			v.Major, _ = strconv.Atoi(part)
+			v.Major = gconv.Int(part)
 		case 1:
-			v.Minor, _ = strconv.Atoi(part)
+			v.Minor = gconv.Int(part)
 		case 2:
-			v.Patch, _ = strconv.Atoi(part)
+			v.Patch = gconv.Int(part)
+		case 3:
+			v.Build = gconv.Int(part)
 		default:
 		}
 	}
 
-	if bstr != "" {
-		v.Beta, _ = strconv.Atoi(numRegexp.FindString(bstr))
+	v.Beta = gconv.Int(numRegexp.FindString(bstr))
+	v.RC = gconv.Int(numRegexp.FindString(rstr))
+
+	if v.Beta == 0 && !strings.Contains(version, "beta") {
+		v.Beta = math.MaxInt
+	} else if v.Beta == 0 && strings.Contains(version, "beta") {
+		v.Beta = 1
 	}
-	if rstr != "" {
-		v.RC, _ = strconv.Atoi(numRegexp.FindString(rstr))
+
+	if v.RC == 0 && !strings.Contains(version, "rc") {
+		v.RC = math.MaxInt
+	} else if v.RC == 0 && strings.Contains(version, "rc") {
+		v.RC = 1
 	}
 	return
 }
@@ -86,6 +98,10 @@ func SortVersions(versions []table.Row) {
 
 		if v1.Patch != v2.Patch {
 			return v1.Patch > v2.Patch
+		}
+
+		if v1.Build != v2.Build {
+			return v1.Build > v2.Build
 		}
 
 		if v1.Beta != v2.Beta {
@@ -115,6 +131,10 @@ func SortVersionAscend(versions []table.Row) {
 
 		if v1.Patch != v2.Patch {
 			return v1.Patch < v2.Patch
+		}
+
+		if v1.Build != v2.Build {
+			return v1.Build < v2.Build
 		}
 
 		if v1.Beta != v2.Beta {
