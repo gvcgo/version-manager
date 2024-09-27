@@ -44,6 +44,7 @@ Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none o
 - Cross-platform, supports **Windows**, **Linux**, **MacOS**.
 - Supports **multiple languages and tools**.
 - Nicer TUI, inpsired by lazygit, more intuitive, **no need to remember any commands**.
+- **CLI is also available**. You can choose either TUI or CLI as you like.
 - Supports **locking SDK version for each project**.
 - Supports **Reverse Proxy**/**Local Proxy**, improves your download experience.
 - Well-designed, **faster** response and **higher** stability.
