@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/gvcgo/version-manager/cmd/vmr/cli/vcli"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/spf13/cobra"
 )
@@ -8,7 +9,7 @@ import (
 var setProxyCmd = &cobra.Command{
 	Use:     "set-proxy",
 	Aliases: []string{"sp"},
-	GroupID: GroupID,
+	GroupID: vcli.GroupID,
 	Short:   "Sets proxy for version manager.",
 	Long:    "Example: vmr sp http://127.0.0.1:2023",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -25,7 +26,7 @@ var setProxyCmd = &cobra.Command{
 var setReverseProxyCmd = &cobra.Command{
 	Use:     "set-reverse-proxy",
 	Aliases: []string{"sr", "srp"},
-	GroupID: GroupID,
+	GroupID: vcli.GroupID,
 	Short:   "Sets reverse proxy for version manager.",
 	Long:    "Example: vmr sr https://proxy.vmr.us.kg/proxy/",
 	Run: func(cmd *cobra.Command, args []string) {

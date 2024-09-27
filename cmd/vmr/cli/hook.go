@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/gvcgo/version-manager/cmd/vmr/cli/vcli"
 	"github.com/gvcgo/version-manager/internal/installer"
 	"github.com/spf13/cobra"
 )
@@ -11,7 +12,7 @@ subcommand for cd hook.
 var useHookCmd = &cobra.Command{
 	Use:     "use",
 	Aliases: []string{"u", "h"},
-	GroupID: GroupID,
+	GroupID: vcli.GroupID,
 	Short:   "This is the hook for command cd.",
 	Long:    "Users do not use this command directly.",
 	Run: func(cmd *cobra.Command, args []string) {

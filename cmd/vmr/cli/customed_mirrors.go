@@ -2,6 +2,7 @@ package cli
 
 import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/version-manager/cmd/vmr/cli/vcli"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/spf13/cobra"
 )
@@ -9,7 +10,7 @@ import (
 var toggleCustomedMirrors = &cobra.Command{
 	Use:     "toggle-customed-mirrors",
 	Aliases: []string{"tcm", "tm"},
-	GroupID: GroupID,
+	GroupID: vcli.GroupID,
 	Short:   "Toggle customed mirrors.",
 	Run: func(cmd *cobra.Command, args []string) {
 		cnf.DefaultConfig.ToggleUseCustomedMirrors()

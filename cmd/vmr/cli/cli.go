@@ -4,12 +4,9 @@ import (
 	"fmt"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/version-manager/cmd/vmr/cli/vcli"
 	"github.com/gvcgo/version-manager/internal/tui/cmds"
 	"github.com/spf13/cobra"
-)
-
-const (
-	GroupID string = "vmr"
 )
 
 // Cli is a commander
@@ -31,7 +28,7 @@ func New(gitTag, gitHash string) (c *Cli) {
 				ll.ListSDKName()
 			},
 		},
-		groupID: GroupID,
+		groupID: vcli.GroupID,
 		gitTag:  gitTag,
 		gitHash: gitHash,
 	}
@@ -44,7 +41,7 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(&cobra.Command{
 		Use:     "version",
 		Aliases: []string{"v"},
-		GroupID: GroupID,
+		GroupID: vcli.GroupID,
 		Short:   "Shows version info of version-manager.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(c.gitHash) > 7 {
@@ -61,6 +58,10 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(unInstallSelfCmd)
 	c.rootCmd.AddCommand(setDownloadThreads)
 	c.rootCmd.AddCommand(toggleCustomedMirrors)
+
+	// For CLIs
+	c.rootCmd.AddCommand(vcli.ShowSDKCmd)
+	c.rootCmd.AddCommand(vcli.SearchVersionsCmd)
 }
 
 func (c *Cli) Run() {
