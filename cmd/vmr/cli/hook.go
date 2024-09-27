@@ -21,6 +21,12 @@ var useHookCmd = &cobra.Command{
 			l := installer.NewVLocker()
 			l.HookForCdCommand()
 		}
+
+		// use a version.
+
+		// lock a version.
+
+		// use a version only for current session.
 	},
 }
 

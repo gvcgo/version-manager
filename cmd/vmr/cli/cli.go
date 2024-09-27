@@ -62,6 +62,8 @@ func (c *Cli) initiate() {
 	// For CLIs
 	c.rootCmd.AddCommand(vcli.ShowSDKCmd)
 	c.rootCmd.AddCommand(vcli.SearchVersionsCmd)
+	c.rootCmd.AddCommand(vcli.ShowInstalledCmd)
+	c.rootCmd.AddCommand(vcli.UninstallVersionCmd)
 }
 
 func (c *Cli) Run() {
