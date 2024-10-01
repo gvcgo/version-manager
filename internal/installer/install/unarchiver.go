@@ -140,7 +140,7 @@ func (a *ArchiverInstaller) patchFileName() {
 	if runtime.GOOS == gutils.Windows {
 		newName += ".exe"
 	}
-	if len(dList) == 1 {
+	if len(dList) == 1 && !dList[0].IsDir() {
 		dd := dList[0]
 		if !dd.IsDir() && strings.Contains(dd.Name(), a.SDKName) && dd.Name() != newName {
 			oldPath := filepath.Join(tempDir, dd.Name())
