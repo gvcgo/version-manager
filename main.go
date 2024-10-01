@@ -22,9 +22,7 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"regexp"
+	"github.com/gvcgo/version-manager/internal/installer"
 )
 
 func main() {
@@ -76,11 +74,14 @@ func main() {
 	// ll := cmds.NewTUI()
 	// ll.ListSDKName()
 
-	var ShellRegExp = regexp.MustCompile(`# cd hook start[\w\W]+# cd hook end`)
+	// var ShellRegExp = regexp.MustCompile(`# cd hook start[\w\W]+# cd hook end`)
 
-	content, _ := os.ReadFile("/home/moqsien/.vmr/vmr.sh")
-	s := ShellRegExp.FindString(string(content))
-	fmt.Println(s)
+	// content, _ := os.ReadFile("/home/moqsien/.vmr/vmr.sh")
+	// s := ShellRegExp.FindString(string(content))
+	// fmt.Println(s)
+
+	installer.TestCondaSearcher()
+
 	// _, err := gutils.ExecuteSysCommand(
 	// 	true,
 	// 	"",
