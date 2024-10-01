@@ -47,6 +47,7 @@ type Installer struct {
 	installerConf download.InstallerConfig
 	Shell         shell.Sheller
 	Mode          InvokeMode
+	NoEnvs        bool
 }
 
 func NewInstaller(originSDKName, versionName, intallSha256 string, version download.Item) (i *Installer) {
@@ -56,6 +57,7 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 		Version:       version,
 		Shell:         shell.NewShell(),
 		Mode:          ModeGlobally,
+		NoEnvs:        false,
 	}
 	switch version.Installer {
 	case download.Conda, download.CondaForge:
@@ -71,6 +73,10 @@ func NewInstaller(originSDKName, versionName, intallSha256 string, version downl
 	i.installerConf = download.GetSDKInstallationConfig(originSDKName, intallSha256)
 	i.sdkInstaller.SetInstallConf(i.installerConf)
 	return
+}
+
+func (i *Installer) DisableEnvs() {
+	i.NoEnvs = true
 }
 
 func (i *Installer) SetInvokeMode(m InvokeMode) {
@@ -98,6 +104,9 @@ func (i *Installer) CreateSymlink() {
 
 func (i *Installer) CollectEnvs(basePath string) map[string][]string {
 	result := make(map[string][]string)
+	if i.NoEnvs {
+		return result
+	}
 	if ok, _ := gutils.PathIsExist(basePath); ok {
 		binDirList := []download.DirPath{}
 		dd := i.installerConf.BinaryDirs
@@ -144,6 +153,9 @@ func (i *Installer) CollectEnvs(basePath string) map[string][]string {
 }
 
 func (i *Installer) AddEnvsTemporarilly() {
+	if i.NoEnvs {
+		return
+	}
 	if !gconv.Bool(os.Getenv(AddToPathTemporarillyEnvName)) {
 		return
 	}
@@ -167,6 +179,9 @@ func (i *Installer) AddEnvsTemporarilly() {
 }
 
 func (i *Installer) SetEnvGlobally() {
+	if i.NoEnvs {
+		return
+	}
 	symbolPath := i.sdkInstaller.GetSymbolLinkPath()
 	envList := i.CollectEnvs(symbolPath)
 	for key, value := range envList {

@@ -4,26 +4,30 @@ import (
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/installer"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 )
 
 type VersionSearcher struct {
 	SDKName          string
-	Fetcher          *request.Fetcher
 	ToShowList       bool
 	filteredVersions map[string]download.Item
+	ToSearchByConda  bool
 }
 
 func NewVersionSearcher() (sv *VersionSearcher) {
 	sv = &VersionSearcher{
-		Fetcher:          request.NewFetcher(),
 		ToShowList:       true,
 		filteredVersions: make(map[string]download.Item),
+		ToSearchByConda:  false,
 	}
 	return
+}
+
+func (s *VersionSearcher) EnableCondaSearch() {
+	s.ToSearchByConda = true
 }
 
 func (s *VersionSearcher) GetVersionByVersionName(vName string) (item download.Item) {
@@ -33,7 +37,12 @@ func (s *VersionSearcher) GetVersionByVersionName(vName string) (item download.I
 
 func (s *VersionSearcher) Search(sdkName, newSha256 string) (nextEvent, selectedItem string) {
 	s.SDKName = sdkName
-	s.filteredVersions = download.GetVersionList(sdkName, newSha256)
+	if !s.ToSearchByConda {
+		s.filteredVersions = download.GetVersionList(sdkName, newSha256)
+	} else {
+		condaSearcher := installer.NewCondaSearcher(sdkName)
+		s.filteredVersions = condaSearcher.GetVersions()
+	}
 	if s.ToShowList {
 		nextEvent, selectedItem = s.Show()
 	}

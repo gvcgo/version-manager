@@ -21,6 +21,13 @@ var SearchVersionsCmd = &cobra.Command{
 		}
 		sdkName := args[0]
 		l := cliui.NewVersionSearcher()
+		if ok, _ := cmd.Flags().GetBool("search-by-conda"); ok {
+			l.EnableCondaSearch()
+		}
 		l.Search(sdkName, "")
 	},
+}
+
+func init() {
+	SearchVersionsCmd.Flags().BoolP("search-by-conda", "c", false, "Search SDK versions by Conda.")
 }

@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"runtime"
 	"strings"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/cmd/vmr/cli/vcli"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
@@ -12,13 +14,14 @@ import (
 /*
 subcommand for cd hook.
 */
-var useHookCmd = &cobra.Command{
+var useCmd = &cobra.Command{
 	Use:     "use",
 	Aliases: []string{"u", "h"},
 	GroupID: vcli.GroupID,
 	Short:   "Installs and switches to a version for an SDK.",
 	Long:    "Example: vmr use sdkname@version.",
 	Run: func(cmd *cobra.Command, args []string) {
+
 		// enable locked version.
 		if ok, _ := cmd.Flags().GetBool("enable-locked-version"); ok {
 			l := installer.NewVLocker()
@@ -45,17 +48,34 @@ var useHookCmd = &cobra.Command{
 		sdkName := vl[0]
 		versionName := vl[1]
 
+		ok2, _ := cmd.Flags().GetBool("install-by-conda")
+
 		vList := download.GetVersionList(sdkName, "")
-		if len(vList) == 0 {
+		if len(vList) == 0 && !ok2 {
+			gprint.PrintError("No SDK Found.")
 			return
 		}
 
 		vItem, ok := vList[versionName]
-		if !ok {
+
+		if !ok && !ok2 {
+			gprint.PrintError("No Versions Found.")
 			return
+		} else if ok2 {
+			vItem = download.Item{
+				Arch:      runtime.GOARCH,
+				Os:        runtime.GOOS,
+				Installer: download.Conda,
+			}
 		}
 
 		ins := installer.NewInstaller(sdkName, versionName, "", vItem)
+
+		if ok2 {
+			// If an SDK is installed by Conda only, and it is not supported by VMR yet,
+			// VMR will not know how to add Envs for this SDK.
+			ins.DisableEnvs()
+		}
 
 		if ok, _ := cmd.Flags().GetBool("session-only"); ok {
 			// use a version only for current session.
@@ -69,11 +89,18 @@ var useHookCmd = &cobra.Command{
 		}
 
 		ins.Install()
+
+		if ok2 {
+			sdkInstaller := ins.GetSDKInstaller()
+			gprint.PrintInfo("The SDK is installed by Conda in %s, you need to add Envs by yourself.", sdkInstaller.GetSymbolLinkPath())
+		}
+
 	},
 }
 
 func init() {
-	useHookCmd.Flags().BoolP("enable-locked-version", "E", false, "To enable the locked version for current project.")
-	useHookCmd.Flags().BoolP("session-only", "s", false, "New a terminal session and add the specified version to the new session.")
-	useHookCmd.Flags().BoolP("lock-version", "l", false, "Lock the specific version for an SDK.")
+	useCmd.Flags().BoolP("enable-locked-version", "E", false, "To enable the locked version for current project.")
+	useCmd.Flags().BoolP("session-only", "s", false, "New a terminal session and add the specified version to the new session.")
+	useCmd.Flags().BoolP("lock-version", "l", false, "Lock the specific version for an SDK.")
+	useCmd.Flags().BoolP("install-by-conda", "c", false, "Install an SDK by Conda, and you need to add Envs by your self.")
 }
