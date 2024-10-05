@@ -176,7 +176,7 @@ func (ei *ExeInstaller) GetSymbolLinkPath() string {
 }
 
 func (ei *ExeInstaller) RenameFile() {
-	if ei.installConf.BinaryRename != nil {
+	if ei.installConf.BinaryRename != nil && ei.installConf.BinaryRename.NameFlag != "" {
 		installDir := ei.GetInstallDir()
 		dList, _ := os.ReadDir(installDir)
 		for _, dd := range dList {
