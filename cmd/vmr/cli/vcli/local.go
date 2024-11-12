@@ -25,3 +25,15 @@ var ShowInstalledCmd = &cobra.Command{
 		l.Show()
 	},
 }
+
+var ShowInstalledSDKs = &cobra.Command{
+	Use:     "installed-sdks",
+	Aliases: []string{"in"},
+	GroupID: GroupID,
+	Short:   "Shows installed SDKs.",
+	Long:    "Example: vmr in.",
+	Run: func(cmd *cobra.Command, args []string) {
+		l := cliui.NewSDKSearcher()
+		l.PrintInstalledSDKs()
+	},
+}

@@ -98,6 +98,26 @@ func (v *SDKSearcher) ShowInstalledOnly() (nextEvent, selectedItem string) {
 	return
 }
 
+func (v *SDKSearcher) PrintInstalledSDKs() {
+	v.SdkList = download.GetSDKList()
+	rows := download.GetSDKSortedRows(v.SdkList)
+
+	installedRows := []table.Row{}
+	for _, r := range rows {
+		if install.IsSDKInstalledByVMR(r[0]) {
+			installedRows = append(installedRows, r)
+		}
+	}
+	if len(installedRows) == 0 {
+		gprint.PrintWarning("no installed sdk found!")
+		return
+	}
+
+	for _, r := range installedRows {
+		gprint.PrintInfo(r[0])
+	}
+}
+
 func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
 	// Open homepage.
 	ll.SetKeyEventForTable("o", table.KeyEvent{

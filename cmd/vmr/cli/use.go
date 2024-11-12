@@ -26,6 +26,7 @@ var useCmd = &cobra.Command{
 		if ok, _ := cmd.Flags().GetBool("enable-locked-version"); ok {
 			l := installer.NewVLocker()
 			l.HookForCdCommand()
+			return
 		}
 
 		if len(args) == 0 {
