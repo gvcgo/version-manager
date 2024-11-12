@@ -116,6 +116,11 @@ func GetTerminalSize() (height, width int, err error) {
 }
 
 func RunTerminal() {
+	// already run a terminal.
+	if os.Getenv(sh.VMDisableEnvName) != "" {
+		return
+	}
+
 	var command string
 	if runtime.GOOS == gutils.Windows {
 		pp, _ := process.NewProcess(int32(os.Getppid()))
@@ -129,9 +134,12 @@ func RunTerminal() {
 			command = shell
 		}
 	}
-	if runtime.GOOS != gutils.Windows {
-		os.Setenv(sh.VMDisableEnvName, "111")
-	}
+
+	// if runtime.GOOS != gutils.Windows {
+	// 	os.Setenv(sh.VMDisableEnvName, "111")
+	// }
+	os.Setenv(sh.VMDisableEnvName, "111")
+
 	if command != "" {
 		cmd := exec.Command(command)
 		cmd.Env = os.Environ()
