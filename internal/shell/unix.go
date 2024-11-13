@@ -26,6 +26,8 @@ func NewShell() *Shell {
 	case strings.HasSuffix(shellPath, sh.Fish):
 		shell = sh.NewFishShell()
 	default:
+		// use bash as default shell, in case os.Getenv("SHELL") does not work in docker containers.
+		shell = sh.NewBashShell()
 	}
 	return &Shell{shell}
 }
