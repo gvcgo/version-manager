@@ -41,6 +41,7 @@ need_cmd() {
 }
 
 main() {
+    export SHELL=$SHELL
     local os_type="$(uname -s)"
     local os_arch="$(uname -m)"
 
