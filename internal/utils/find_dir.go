@@ -54,7 +54,7 @@ func (h *HomeDirFinder) Find(startDir string) {
 		} else {
 			// If test failed, continue to test subdirs.
 			for _, d := range dList {
-				if d.IsDir() {
+				if d.IsDir() && d.Name() != "__MACOSX" {
 					h.Find(filepath.Join(startDir, d.Name()))
 				}
 			}
