@@ -1,7 +1,6 @@
 package installer
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -219,7 +218,7 @@ func (i *Installer) Install() {
 			handler(i.VersionName, i.Version)
 		}
 	} else if i.Mode == ModeGlobally {
-		gprint.PrintInfo(fmt.Sprintf("%s %s is already installed.", i.OriginSDKName, i.VersionName))
+		gprint.PrintInfo("%s %s is already installed.", i.OriginSDKName, i.VersionName)
 	}
 
 	if i.Mode == ModeGlobally {

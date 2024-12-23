@@ -10,7 +10,7 @@ require (
 	github.com/creack/termios v0.0.0-20160714173321-88d0029e36a1
 	github.com/erikgeiser/promptkit v0.9.0
 	github.com/gogf/gf/v2 v2.6.1
-	github.com/gvcgo/goutils v1.0.0
+	github.com/gvcgo/goutils v1.0.1
 	github.com/mattn/go-runewidth v0.0.15
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
 	github.com/pelletier/go-toml/v2 v2.0.7
@@ -62,7 +62,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.15.1 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 )
