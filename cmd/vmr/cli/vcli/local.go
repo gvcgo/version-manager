@@ -54,7 +54,7 @@ var ShowInstalledSDKInfo = &cobra.Command{
 		for _, sdkName := range installedSDKList {
 			ll := cliui.NewLocalInstalled()
 			ll.Search(sdkName)
-			versionListString := gprint.YellowStr("%s", sdkName) + ": " + gprint.CyanStr("%s", strings.Join(ll.VersionList, ","))
+			versionListString := gprint.YellowStr("%s", sdkName) + ": " + gprint.CyanStr("%s", strings.Join(ll.VersionList, ", "))
 			fmt.Println(versionListString)
 		}
 	},
