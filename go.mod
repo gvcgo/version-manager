@@ -16,8 +16,8 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.8.0
-	golang.org/x/sys v0.19.0
-	golang.org/x/term v0.18.0
+	golang.org/x/sys v0.28.0
+	golang.org/x/term v0.27.0
 )
 
 require (
@@ -61,8 +61,8 @@ require (
 	go.opentelemetry.io/otel v1.15.1 // indirect
 	go.opentelemetry.io/otel/trace v1.15.1 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )
