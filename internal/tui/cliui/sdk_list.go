@@ -1,6 +1,8 @@
 package cliui
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/internal/download"
@@ -99,6 +101,13 @@ func (v *SDKSearcher) ShowInstalledOnly() (nextEvent, selectedItem string) {
 }
 
 func (v *SDKSearcher) PrintInstalledSDKs() {
+	sdkList := v.GetInstalledSDKList()
+	for _, sdkName := range sdkList {
+		fmt.Println(gprint.CyanStr("%s", sdkName))
+	}
+}
+
+func (v *SDKSearcher) GetInstalledSDKList() (sdkList []string) {
 	v.SdkList = download.GetSDKList()
 	rows := download.GetSDKSortedRows(v.SdkList)
 
@@ -114,8 +123,9 @@ func (v *SDKSearcher) PrintInstalledSDKs() {
 	}
 
 	for _, r := range installedRows {
-		gprint.PrintInfo(r[0])
+		sdkList = append(sdkList, r[0])
 	}
+	return
 }
 
 func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
