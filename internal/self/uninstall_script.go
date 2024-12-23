@@ -22,7 +22,7 @@ cd ~
 vmr Uins
 rm -rf %s`
 
-var WinRemoveScript string = `cd "$env:USERPROFILE"
+var WinRemoveScript string = `cd %HOMEPATH%
 vmr Uins
 rmdir /s /q %s`
 

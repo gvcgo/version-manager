@@ -17,7 +17,7 @@ const (
 	updateScriptName string = "vmr-update"
 )
 
-var WinScript string = `cd "$env:USERPROFILE"
+var WinScript string = `cd %HOMEPATH%
 powershell -c "irm https://scripts.vmr.us.kg/windows | iex"`
 
 var UnixScript string = `#!/bin/sh
