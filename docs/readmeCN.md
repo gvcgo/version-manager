@@ -6,8 +6,8 @@
 [![go report card](https://img.shields.io/badge/go%20report-a+-brightgreen.svg?style=for-the-badge)](https://goreportcard.com/report/github.com/gvcgo/version-manager)
 [![github license](https://img.shields.io/github/license/gvcgo/version-manager?style=for-the-badge)](license)
 [![github release](https://img.shields.io/github/v/release/gvcgo/version-manager?display_name=tag&style=for-the-badge)](https://github.com/gvcgo/version-manager/releases)
-[![prs card](https://img.shields.io/badge/prs-vm-cyan.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/pulls)
-[![issues card](https://img.shields.io/badge/issues-vm-pink.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/issues)
+[![prs card](https://img.shields.io/badge/prs-vmr-cyan.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/pulls)
+[![issues card](https://img.shields.io/badge/issues-vmr-pink.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/issues)
 [![versions repo card](https://img.shields.io/badge/versions-repo-blue.svg?style=for-the-badge)](https://github.com/gvcgo/resources)
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmecn.md) | [en](https://github.com/gvcgo/version-manager)
