@@ -25,19 +25,18 @@ rm -rf %s`
 
 var WinRemoveScript string = `cd %HOMEPATH%
 vmr Uins
-rmdir /s /q %s`
+rmdir /s /q `
 
 var WinMingwRemoveScript string = `#!/bin/sh
 powershell %s`
 
 func SetUninstallScript() {
-	script := UnixRemoveScript
+	script := fmt.Sprintf(UnixRemoveScript, cnf.GetVMRWorkDir())
 	scriptName := unInstallScriptName
 	if runtime.GOOS == gutils.Windows {
-		script = WinRemoveScript
+		script = WinRemoveScript + cnf.GetVMRWorkDir()
 		scriptName = unInstallScriptName + ".bat"
 	}
-	script = fmt.Sprintf(script, cnf.GetVMRWorkDir())
 
 	scriptPath := filepath.Join(cnf.GetVMRWorkDir(), scriptName)
 	os.WriteFile(scriptPath, []byte(script), os.ModePerm)
