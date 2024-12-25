@@ -77,3 +77,23 @@ func CreateSymLink(oldname, newname string) (err error) {
 	}
 	return
 }
+
+func IsMingWBash() bool {
+	if runtime.GOOS != gutils.Windows {
+		return false
+	}
+	return strings.Contains(os.Getenv("SHELL"), "bash")
+}
+
+func ConvertWindowsPathToMingwPath(originalPath string) (newPath string) {
+	if originalPath == "" {
+		return
+	}
+	newPath = strings.ReplaceAll(originalPath, `\`, "/")
+	newPath = strings.ReplaceAll(newPath, ":", "")
+	dList := strings.Split(newPath, "/")
+	diskName := strings.ToLower(dList[0])
+	dList = append([]string{diskName}, dList[1:]...)
+	newPath = "/" + strings.Join(dList, "/")
+	return
+}

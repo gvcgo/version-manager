@@ -27,7 +27,8 @@ func Untar(srcPath, dstDir string) (err error) {
 }
 
 func Unzip(srcPath, dstDir string) (err error) {
-	if runtime.GOOS == gutils.Windows {
+	// use unzip command in mingw bash.
+	if runtime.GOOS == gutils.Windows && !IsMingWBash() {
 		// expand -r file.zip C:\Users\username\Desktop\extracted
 		_, err = gutils.ExecuteSysCommand(true, "",
 			"powershell",

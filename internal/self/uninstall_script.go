@@ -8,6 +8,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 /*
@@ -26,6 +27,9 @@ var WinRemoveScript string = `cd %HOMEPATH%
 vmr Uins
 rmdir /s /q %s`
 
+var WinMingwRemoveScript string = `#!/bin/sh
+powershell %s`
+
 func SetUninstallScript() {
 	script := UnixRemoveScript
 	scriptName := unInstallScriptName
@@ -37,6 +41,12 @@ func SetUninstallScript() {
 
 	scriptPath := filepath.Join(cnf.GetVMRWorkDir(), scriptName)
 	os.WriteFile(scriptPath, []byte(script), os.ModePerm)
+
+	if runtime.GOOS == gutils.Windows {
+		mingwScriptPath := filepath.Join(cnf.GetVMRWorkDir(), unInstallScriptName+".sh")
+		mingwScript := fmt.Sprintf(WinMingwRemoveScript, utils.ConvertWindowsPathToMingwPath(scriptPath))
+		os.WriteFile(mingwScriptPath, []byte(mingwScript), os.ModePerm)
+	}
 
 	if runtime.GOOS != gutils.Windows {
 		gutils.ExecuteSysCommand(true, "", "chmod", "+x", scriptPath)

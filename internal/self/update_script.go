@@ -8,6 +8,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 /*
@@ -20,6 +21,10 @@ const (
 var WinScript string = `cd %HOMEPATH%
 powershell -c "irm https://scripts.vmr.us.kg/windows | iex"`
 
+var WinMingwScript string = `#!/bin/sh
+cd ~
+powershll %s`
+
 var UnixScript string = `#!/bin/sh
 cd ~
 curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh`
@@ -27,6 +32,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh`
 func setUpdateForWindows() {
 	scriptPath := filepath.Join(cnf.GetVMRWorkDir(), fmt.Sprintf("%s.bat", updateScriptName))
 	os.WriteFile(scriptPath, []byte(WinScript), os.ModePerm)
+
+	mingwScriptPath := filepath.Join(cnf.GetVMRWorkDir(), fmt.Sprintf("%s.sh", updateScriptName))
+	batPath := utils.ConvertWindowsPathToMingwPath(scriptPath)
+	os.WriteFile(mingwScriptPath, []byte(fmt.Sprintf(WinMingwScript, batPath)), os.ModePerm)
 }
 
 func setUpdateForUnix() {
