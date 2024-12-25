@@ -23,7 +23,7 @@ powershell -c "irm https://scripts.vmr.us.kg/windows | iex"`
 
 var WinMingwScript string = `#!/bin/sh
 cd ~
-powershll %s`
+powershell %s`
 
 var UnixScript string = `#!/bin/sh
 cd ~
