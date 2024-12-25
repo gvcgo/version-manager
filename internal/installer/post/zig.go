@@ -25,7 +25,7 @@ func PostInstallForZig(versionName string, version download.Item) {
 	versionDir := cnf.GetVersionsDir()
 	d := filepath.Join(versionDir, fmt.Sprintf("%s_versions", ZigSdkName))
 	zigInstallDir := filepath.Join(d, fmt.Sprintf("%s-%s", ZigSdkName, versionName))
-	if runtime.GOOS == gutils.Windows {
+	if runtime.GOOS != gutils.Windows {
 		binPath := filepath.Join(zigInstallDir, "zig")
 		gutils.ExecuteSysCommand(true, zigInstallDir, "chmod", "+x", binPath)
 	}

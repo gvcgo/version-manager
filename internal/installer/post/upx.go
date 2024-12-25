@@ -25,7 +25,7 @@ func PostInstallForUPX(versionName string, version download.Item) {
 	versionDir := cnf.GetVersionsDir()
 	d := filepath.Join(versionDir, fmt.Sprintf("%s_versions", UPXSdkName))
 	upxInstallDir := filepath.Join(d, fmt.Sprintf("%s-%s", UPXSdkName, versionName))
-	if runtime.GOOS == gutils.Windows {
+	if runtime.GOOS != gutils.Windows {
 		binPath := filepath.Join(upxInstallDir, "upx")
 		gutils.ExecuteSysCommand(true, upxInstallDir, "chmod", "+x", binPath)
 	}
