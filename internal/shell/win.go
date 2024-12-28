@@ -120,19 +120,7 @@ func (s *Shell) cdHook() {
 		set-alias:
 		https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/set-alias?view=powershell-7.4
 	*/
-	homeDir, _ := os.UserHomeDir()
-
-	psConfDir := filepath.Join(homeDir,
-		"Documents",
-		"WindowsPowerShell",
-	)
-	psConfName := "profile.ps1"
-
-	if ok, _ := gutils.PathIsExist(psConfDir); !ok {
-		_ = os.MkdirAll(psConfDir, os.ModePerm)
-	}
-
-	psConfPath := filepath.Join(psConfDir, psConfName)
+	psConfPath := s.ConfPath()
 
 	var content string
 	if ok, _ := gutils.PathIsExist(psConfPath); ok {
@@ -159,7 +147,19 @@ func (s *Shell) cdHook() {
 }
 
 func (s *Shell) ConfPath() string {
-	return ""
+	homeDir, _ := os.UserHomeDir()
+	psConfDir := filepath.Join(homeDir,
+		"Documents",
+		"WindowsPowerShell",
+	)
+	psConfName := "profile.ps1"
+
+	if ok, _ := gutils.PathIsExist(psConfDir); !ok {
+		_ = os.MkdirAll(psConfDir, os.ModePerm)
+	}
+
+	psConfPath := filepath.Join(psConfDir, psConfName)
+	return psConfPath
 }
 
 func (s *Shell) VMEnvConfPath() string {
