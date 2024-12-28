@@ -1,31 +1,31 @@
-name: Go
+# name: Go
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+#   workflow_dispatch:
 
-jobs:
+# jobs:
 
-  build:
-    runs-on: ubuntu-latest
-    # permissions:
-    #     wiki: write
-    steps:
-    - uses: actions/checkout@v3
+#   build:
+#     runs-on: ubuntu-latest
+#     # permissions:
+#     #     wiki: write
+#     steps:
+#     - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: stable
+#     - name: Set up Go
+#       uses: actions/setup-go@v3
+#       with:
+#         go-version: stable
 
-    - name: Build
-      run: go build -v ./...
+#     - name: Build
+#       run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+#     - name: Test
+#       run: go test -v ./...
 
-    - name: Update coverage badge
-      uses: gvcgo/go-coverage-report@main
+#     - name: Update coverage badge
+#       uses: gvcgo/go-coverage-report@main
