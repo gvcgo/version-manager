@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-        wikis: write
+        wiki: write
     steps:
     - uses: actions/checkout@v3
 
