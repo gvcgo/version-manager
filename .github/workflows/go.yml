@@ -28,4 +28,4 @@ jobs:
       run: go test -v ./...
 
     - name: Update coverage badge
-      uses: ncruces/go-coverage-report@main
+      uses: gvcgo/go-coverage-report@main
