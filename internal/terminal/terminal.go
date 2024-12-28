@@ -10,6 +10,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"github.com/gvcgo/version-manager/internal/terminal/term"
@@ -116,8 +117,8 @@ func GetTerminalSize() (height, width int, err error) {
 }
 
 func RunTerminal() {
-	// already run a terminal.
-	if os.Getenv(sh.VMDisableEnvName) != "" {
+	// already run a terminal. Allow/Disallow nested sessions.
+	if os.Getenv(sh.VMDisableEnvName) != "" && !cnf.DefaultConfig.AllowNestedSessions {
 		return
 	}
 

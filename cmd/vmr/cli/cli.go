@@ -67,6 +67,7 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(vcli.ShowInstalledSDKInfo)
 	c.rootCmd.AddCommand(vcli.UninstallVersionCmd)
 	c.rootCmd.AddCommand(vcli.SetupAutoCompletions)
+	c.rootCmd.AddCommand(vcli.ToggleAllowNestedSessions)
 }
 
 func (c *Cli) Run() {

@@ -28,12 +28,13 @@ const (
 Envs
 */
 const (
-	VMRSdkInstallationDirEnv string = "VMR_SDK_INSTALLATION_DIR"
-	VMRHostUrlEnv            string = "VMR_HOST"
-	VMRReverseProxyEnv       string = "VMR_REVERSE_PROXY"
-	VMRLocalProxyEnv         string = "VMR_LOCAL_PROXY"
-	VMRDonwloadThreadEnv     string = "VMR_DOWNLOAD_THREADS"
-	VMRUseCustomedMirrorEnv  string = "VMR_USE_CUSTOMED_MIRRORS"
+	VMRSdkInstallationDirEnv  string = "VMR_SDK_INSTALLATION_DIR"
+	VMRHostUrlEnv             string = "VMR_HOST"
+	VMRReverseProxyEnv        string = "VMR_REVERSE_PROXY"
+	VMRLocalProxyEnv          string = "VMR_LOCAL_PROXY"
+	VMRDonwloadThreadEnv      string = "VMR_DOWNLOAD_THREADS"
+	VMRUseCustomedMirrorEnv   string = "VMR_USE_CUSTOMED_MIRRORS"
+	VMRAllowNestedSessionsEnv string = "VMR_ALLOW_NESTED_SESSIONS"
 )
 
 /*
@@ -114,12 +115,13 @@ vmr config file.
 ==============================
 */
 type VMRConf struct {
-	ProxyUri           string `json,toml:"proxy_uri"`
-	ReverseProxy       string `json,toml:"reverse_proxy"`
-	SDKIntallationDir  string `json,toml:"sdk_installation_dir"`
-	VersionHostUrl     string `json,toml:"version_host_url"`
-	ThreadNum          int    `json,toml:"download_thread_num"`
-	UseCustomedMirrors bool   `json,toml:"use_customed_mirrors"`
+	ProxyUri            string `json,toml:"proxy_uri"`
+	ReverseProxy        string `json,toml:"reverse_proxy"`
+	SDKIntallationDir   string `json,toml:"sdk_installation_dir"`
+	VersionHostUrl      string `json,toml:"version_host_url"`
+	ThreadNum           int    `json,toml:"download_thread_num"`
+	UseCustomedMirrors  bool   `json,toml:"use_customed_mirrors"`
+	AllowNestedSessions bool   `json,toml:"allow_nested_sessions"`
 }
 
 func NewVMRConf() (v *VMRConf) {
@@ -144,6 +146,9 @@ func NewVMRConf() (v *VMRConf) {
 	}
 	if v.ReverseProxy != "" {
 		os.Setenv(VMRReverseProxyEnv, v.ReverseProxy)
+	}
+	if v.AllowNestedSessions {
+		os.Setenv(VMRAllowNestedSessionsEnv, "true")
 	}
 	return v
 }
@@ -203,4 +208,11 @@ func (v *VMRConf) ToggleUseCustomedMirrors() {
 	v.Load()
 	v.UseCustomedMirrors = !v.UseCustomedMirrors
 	v.Save()
+}
+
+func (v *VMRConf) ToggleAllowNestedSessions() bool {
+	v.Load()
+	v.AllowNestedSessions = !v.AllowNestedSessions
+	v.Save()
+	return v.AllowNestedSessions
 }
