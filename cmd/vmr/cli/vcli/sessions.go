@@ -45,8 +45,10 @@ var IsSessionMode = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if gconv.Bool(os.Getenv(sh.VMDisableEnvName)) {
 			fmt.Println(gprint.YellowStr("Current shell is in session mode."))
+			fmt.Println(gprint.YellowStr("Nested sessions are not recommeded for vmr. You can use 'exit' to exit session mode."))
+			fmt.Println(gprint.YellowStr("If you install an SDK in global mode under a session mode shell, the 'source' command will not work, you should use the customed command 'svmr' instead."))
 		} else {
-			fmt.Println(gprint.CyanStr("Current shell is not in session mode."))
+			fmt.Println(gprint.CyanStr("Current shell is in global mode."))
 		}
 	},
 }
