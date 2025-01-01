@@ -54,6 +54,9 @@ func InstallSelf() {
 	// Generate uninstall script.
 	SetUninstallScript()
 
+	// Add customed source command.
+	AddCustomedSourceCmd()
+
 	// Set your sdk installation directory.
 	if cnf.DefaultConfig.SDKIntallationDir != "" {
 		return
