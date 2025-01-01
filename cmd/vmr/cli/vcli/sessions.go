@@ -38,6 +38,7 @@ Test session mode.
 Nested session mode is not recommended, vmr ism can be used to check if current shell is in session mode.
 If current shell is in session mode, users can use exit command to exit current shell.
 */
+
 var IsSessionMode = &cobra.Command{
 	Use:     "is-session-mode",
 	Aliases: []string{"ism"},
@@ -47,6 +48,7 @@ var IsSessionMode = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if gconv.Bool(os.Getenv(sh.VMDisableEnvName)) {
 			fmt.Println(gprint.BrownStr("Current shell is in session mode."))
+			// Hinsts for handling nested sessions.
 			if runtime.GOOS != gutils.Windows {
 				fmt.Println(gprint.YellowStr("Nested sessions are not recommeded for vmr. You can use 'exit' to exit session mode."))
 				fmt.Println(gprint.YellowStr("If you install an SDK in global mode under a session mode shell, the 'source' command will not work, you should use the customed command 'svmr' instead."))
