@@ -140,7 +140,13 @@ func (v *SDKSearcher) GetSDKInstalledByCondaForge(sdkInstalledByVMR []string) []
 	}
 	dirs, _ := os.ReadDir(cnf.GetVersionsDir())
 	for _, d := range dirs {
-		sdkName := strings.Split(d.Name(), "_")[0]
+		nList := strings.Split(d.Name(), "_")
+		sdkName := ""
+		if len(nList) < 2 {
+			sdkName = strings.Join(nList, "_")
+		} else {
+			sdkName = strings.Join(nList[:len(nList)-1], "_")
+		}
 		if _, ok := dedup[sdkName]; ok {
 			continue
 		}
