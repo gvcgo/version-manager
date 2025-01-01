@@ -3,9 +3,11 @@ package vcli
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"github.com/spf13/cobra"
@@ -44,9 +46,11 @@ var IsSessionMode = &cobra.Command{
 	Long:    "Example: vmr ism.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if gconv.Bool(os.Getenv(sh.VMDisableEnvName)) {
-			fmt.Println(gprint.YellowStr("Current shell is in session mode."))
-			fmt.Println(gprint.YellowStr("Nested sessions are not recommeded for vmr. You can use 'exit' to exit session mode."))
-			fmt.Println(gprint.YellowStr("If you install an SDK in global mode under a session mode shell, the 'source' command will not work, you should use the customed command 'svmr' instead."))
+			fmt.Println(gprint.BrownStr("Current shell is in session mode."))
+			if runtime.GOOS != gutils.Windows {
+				fmt.Println(gprint.YellowStr("Nested sessions are not recommeded for vmr. You can use 'exit' to exit session mode."))
+				fmt.Println(gprint.YellowStr("If you install an SDK in global mode under a session mode shell, the 'source' command will not work, you should use the customed command 'svmr' instead."))
+			}
 		} else {
 			fmt.Println(gprint.CyanStr("Current shell is in global mode."))
 		}
