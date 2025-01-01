@@ -2,9 +2,12 @@ package cliui
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/terminal"
@@ -125,7 +128,25 @@ func (v *SDKSearcher) GetInstalledSDKList() (sdkList []string) {
 	for _, r := range installedRows {
 		sdkList = append(sdkList, r[0])
 	}
+	sdkList = v.GetSDKInstalledByCondaForge(sdkList)
 	return
+}
+
+// SDK supported by Conda not by VMR.
+func (v *SDKSearcher) GetSDKInstalledByCondaForge(sdkInstalledByVMR []string) []string {
+	dedup := map[string]struct{}{}
+	for _, sdkName := range sdkInstalledByVMR {
+		dedup[sdkName] = struct{}{}
+	}
+	dirs, _ := os.ReadDir(cnf.GetVersionsDir())
+	for _, d := range dirs {
+		sdkName := strings.Split(d.Name(), "_")[0]
+		if _, ok := dedup[sdkName]; ok {
+			continue
+		}
+		sdkInstalledByVMR = append(sdkInstalledByVMR, sdkName)
+	}
+	return sdkInstalledByVMR
 }
 
 func (v *SDKSearcher) RegisterKeyEvents(ll *table.List) {
