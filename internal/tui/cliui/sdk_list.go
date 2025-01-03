@@ -132,7 +132,7 @@ func (v *SDKSearcher) GetInstalledSDKList() (sdkList []string) {
 	return
 }
 
-// SDK supported by Conda not by VMR.
+// SDK supported by Conda but not by VMR.
 func (v *SDKSearcher) GetSDKInstalledByCondaForge(sdkInstalledByVMR []string) []string {
 	dedup := map[string]struct{}{}
 	for _, sdkName := range sdkInstalledByVMR {
@@ -140,13 +140,7 @@ func (v *SDKSearcher) GetSDKInstalledByCondaForge(sdkInstalledByVMR []string) []
 	}
 	dirs, _ := os.ReadDir(cnf.GetVersionsDir())
 	for _, d := range dirs {
-		nList := strings.Split(d.Name(), "_")
-		sdkName := ""
-		if len(nList) < 2 {
-			sdkName = strings.Join(nList, "_")
-		} else {
-			sdkName = strings.Join(nList[:len(nList)-1], "_")
-		}
+		sdkName := strings.TrimSuffix(d.Name(), install.VersionDirSuffix)
 		if _, ok := dedup[sdkName]; ok {
 			continue
 		}

@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	VerisonDirPattern        string = "%s_versions"
+	VerisonDirPattern        string = "%s%s"
+	VersionDirSuffix         string = "_versions"
 	VersionInstallDirPattern string = "%s-%s"
 )
 
 func GetSDKVersionDir(sdkName string) string {
 	versionDir := cnf.GetVersionsDir()
-	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, sdkName))
+	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, sdkName, VersionDirSuffix))
 	os.MkdirAll(d, os.ModePerm)
 	return d
 }
