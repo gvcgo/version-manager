@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
@@ -57,6 +56,7 @@ func InstallMiniconda(exePath, installDir string) (err error) {
 			installDir,
 		}
 	}
+	// TODO: kill process if quit occurs.
 	_, err = gutils.ExecuteSysCommand(true, homeDir, commands...)
 	return
 }
@@ -64,6 +64,7 @@ func InstallMiniconda(exePath, installDir string) (err error) {
 // vscode
 func InstallVSCode(pkgFilePath, installDir string) (err error) {
 	homeDir, _ := os.UserHomeDir()
+	// TODO: kill process if quit occurs.
 	switch runtime.GOOS {
 	case gutils.Windows:
 		if strings.HasSuffix(pkgFilePath, ".exe") {
@@ -105,6 +106,7 @@ install *.exe for windows
 */
 func InstallExeForWindows(exePath, installDir string) (err error) {
 	homeDir, _ := os.UserHomeDir()
+	// TODO: kill process if quit occurs.
 	_, err = gutils.ExecuteSysCommand(true, homeDir,
 		"start", "/wait", exePath, "/S", fmt.Sprintf("/D=%s", installDir))
 	return
@@ -140,12 +142,14 @@ type ExeInstaller struct {
 	spinner       *spinner.Spinner
 	downloader    *download.Downloader
 	installConf   download.InstallerConfig
+	signal        chan struct{}
 }
 
 func NewExeInstaller() (ei *ExeInstaller) {
 	ei = &ExeInstaller{
 		spinner:    spinner.NewSpinner(),
 		downloader: download.NewDownloader(),
+		signal:     make(chan struct{}),
 	}
 	return
 }
@@ -197,25 +201,34 @@ func (ei *ExeInstaller) Install() {
 		return
 	}
 	ei.spinner.SetTitle(fmt.Sprintf("Installing %s", ei.OriginSDKName))
+	ei.spinner.SetSweepFunc(func() {
+		ei.signal <- struct{}{}
+		os.RemoveAll(ei.GetInstallDir())
+	})
 	go ei.spinner.Run()
-	var err error
+	go func() {
+		var err error
 
-	switch ei.OriginSDKName {
-	case MinicondaSDKName:
-		err = InstallMiniconda(localPath, ei.GetInstallDir())
-	case ErlangSDKName, ElixirSDKName:
-		err = InstallExeForWindows(localPath, ei.GetInstallDir())
-	case VSCodeSDKName:
-		err = InstallVSCode(localPath, ei.GetInstallDir())
-	default:
-		err = InstallStandAloneExecutables(localPath, ei.GetInstallDir())
-		ei.RenameFile()
-	}
+		switch ei.OriginSDKName {
+		case MinicondaSDKName:
+			err = InstallMiniconda(localPath, ei.GetInstallDir())
+		case ErlangSDKName, ElixirSDKName:
+			err = InstallExeForWindows(localPath, ei.GetInstallDir())
+		case VSCodeSDKName:
+			err = InstallVSCode(localPath, ei.GetInstallDir())
+		default:
+			err = InstallStandAloneExecutables(localPath, ei.GetInstallDir())
+			ei.RenameFile()
+		}
+		if err != nil {
+			gprint.PrintError("%+v", err)
+			os.RemoveAll(filepath.Dir(localPath))
+		}
 
-	ei.spinner.Quit()
-	time.Sleep(time.Second * 2) // cursor fix.
-	if err != nil {
-		gprint.PrintError("%+v", err)
-		os.RemoveAll(filepath.Dir(localPath))
-	}
+		ei.signal <- struct{}{}
+		ei.spinner.Quit()
+	}()
+
+	<-ei.signal
+	// time.Sleep(time.Second * 2) // cursor fix.
 }
