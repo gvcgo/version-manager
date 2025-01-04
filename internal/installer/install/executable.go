@@ -26,7 +26,7 @@ const (
 /*
 Install miniconda.
 */
-func InstallMiniconda(exePath, installDir string) (err error) {
+func InstallMiniconda(exePath, installDir string) (task *utils.SysCommandRunner) {
 	var commands []string
 	homeDir, _ := os.UserHomeDir()
 	if runtime.GOOS == "windows" {
@@ -56,31 +56,53 @@ func InstallMiniconda(exePath, installDir string) (err error) {
 			installDir,
 		}
 	}
-	// TODO: kill process if quit occurs.
-	_, err = gutils.ExecuteSysCommand(true, homeDir, commands...)
+	// _, err = gutils.ExecuteSysCommand(true, homeDir, commands...)
+	task = utils.NewSysCommandRunner(true, homeDir, commands...)
 	return
 }
 
 // vscode
-func InstallVSCode(pkgFilePath, installDir string) (err error) {
+func InstallVSCode(pkgFilePath, installDir string) (task *utils.SysCommandRunner) {
 	homeDir, _ := os.UserHomeDir()
-	// TODO: kill process if quit occurs.
 	switch runtime.GOOS {
 	case gutils.Windows:
 		if strings.HasSuffix(pkgFilePath, ".exe") {
-			_, err = gutils.ExecuteSysCommand(true, homeDir,
-				pkgFilePath, "/VERYSILENT", "/MERGETASKS=!runcode")
+			// _, err = gutils.ExecuteSysCommand(true, homeDir,
+			// 	pkgFilePath, "/VERYSILENT", "/MERGETASKS=!runcode")
+			task = utils.NewSysCommandRunner(
+				true,
+				homeDir,
+				pkgFilePath,
+				"/VERYSILENT",
+				"/MERGETASKS=!runcode",
+			)
 		}
 	case gutils.Linux:
 		if strings.HasSuffix(pkgFilePath, ".deb") {
-			_, err = gutils.ExecuteSysCommand(true, homeDir,
-				"sudo", "dpkg", "-i", pkgFilePath)
+			// _, err = gutils.ExecuteSysCommand(true, homeDir,
+			// 	"sudo", "dpkg", "-i", pkgFilePath)
+			task = utils.NewSysCommandRunner(
+				true,
+				homeDir,
+				"sudo",
+				"dpkg",
+				"-i",
+				pkgFilePath,
+			)
 		} else if strings.HasSuffix(pkgFilePath, ".rpm") {
-			_, err = gutils.ExecuteSysCommand(true, homeDir,
-				"sudo", "rpm", "-ivh", pkgFilePath)
+			// _, err = gutils.ExecuteSysCommand(true, homeDir,
+			// 	"sudo", "rpm", "-ivh", pkgFilePath)
+			task = utils.NewSysCommandRunner(
+				true,
+				homeDir,
+				"sudo",
+				"rpm",
+				"-ivh",
+				pkgFilePath,
+			)
 		}
 	case gutils.Darwin:
-		err = utils.Extract(pkgFilePath, cnf.GetTempDir())
+		err := utils.Extract(pkgFilePath, cnf.GetTempDir())
 		if err != nil {
 			gprint.PrintError("extract vscode failed: %v", err)
 			os.RemoveAll(pkgFilePath)
@@ -104,22 +126,37 @@ install *.exe for windows
 1. erlang
 2. elixir
 */
-func InstallExeForWindows(exePath, installDir string) (err error) {
+func InstallExeForWindows(exePath, installDir string) (task *utils.SysCommandRunner) {
 	homeDir, _ := os.UserHomeDir()
-	// TODO: kill process if quit occurs.
-	_, err = gutils.ExecuteSysCommand(true, homeDir,
-		"start", "/wait", exePath, "/S", fmt.Sprintf("/D=%s", installDir))
+	// _, err = gutils.ExecuteSysCommand(true, homeDir,
+	// 	"start", "/wait", exePath, "/S", fmt.Sprintf("/D=%s", installDir))
+	task = utils.NewSysCommandRunner(
+		true,
+		homeDir,
+		"start",
+		"/wait",
+		exePath,
+		"/S",
+		fmt.Sprintf("/D=%s", installDir),
+	)
 	return
 }
 
 // Other standalone executables.
-func InstallStandAloneExecutables(exePath, installDir string) (err error) {
+func InstallStandAloneExecutables(exePath, installDir string) (task *utils.SysCommandRunner) {
 	fName := filepath.Base(exePath)
 	os.MkdirAll(installDir, os.ModePerm)
 	destPath := filepath.Join(installDir, fName)
+	var err error
 	if ok, _ := gutils.PathIsExist(exePath); ok {
 		err = gutils.CopyAFile(exePath, destPath)
 	}
+
+	if err != nil {
+		gprint.PrintError("%+v", err)
+		os.RemoveAll(filepath.Dir(exePath))
+	}
+
 	if err == nil && runtime.GOOS != gutils.Windows {
 		gutils.ExecuteSysCommand(true, installDir, "chmod", "+x", destPath)
 	}
@@ -200,25 +237,47 @@ func (ei *ExeInstaller) Install() {
 	if localPath == "" {
 		return
 	}
+	var task *utils.SysCommandRunner
+
+	switch ei.OriginSDKName {
+	case MinicondaSDKName:
+		task = InstallMiniconda(localPath, ei.GetInstallDir())
+	case ErlangSDKName, ElixirSDKName:
+		task = InstallExeForWindows(localPath, ei.GetInstallDir())
+	case VSCodeSDKName:
+		task = InstallVSCode(localPath, ei.GetInstallDir())
+	default:
+		task = InstallStandAloneExecutables(localPath, ei.GetInstallDir())
+		ei.RenameFile()
+	}
+
 	ei.spinner.SetTitle(fmt.Sprintf("Installing %s", ei.OriginSDKName))
 	ei.spinner.SetSweepFunc(func() {
+		if task != nil {
+			task.Cancel()
+		}
 		ei.signal <- struct{}{}
 		os.RemoveAll(ei.GetInstallDir())
 	})
 	go ei.spinner.Run()
+
 	go func() {
 		var err error
 
-		switch ei.OriginSDKName {
-		case MinicondaSDKName:
-			err = InstallMiniconda(localPath, ei.GetInstallDir())
-		case ErlangSDKName, ElixirSDKName:
-			err = InstallExeForWindows(localPath, ei.GetInstallDir())
-		case VSCodeSDKName:
-			err = InstallVSCode(localPath, ei.GetInstallDir())
-		default:
-			err = InstallStandAloneExecutables(localPath, ei.GetInstallDir())
-			ei.RenameFile()
+		// switch ei.OriginSDKName {
+		// case MinicondaSDKName:
+		// 	err = InstallMiniconda(localPath, ei.GetInstallDir())
+		// case ErlangSDKName, ElixirSDKName:
+		// 	err = InstallExeForWindows(localPath, ei.GetInstallDir())
+		// case VSCodeSDKName:
+		// 	err = InstallVSCode(localPath, ei.GetInstallDir())
+		// default:
+		// 	err = InstallStandAloneExecutables(localPath, ei.GetInstallDir())
+		// 	ei.RenameFile()
+		// }
+
+		if task != nil {
+			err = task.Run()
 		}
 		if err != nil {
 			gprint.PrintError("%+v", err)

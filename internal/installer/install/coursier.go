@@ -8,8 +8,8 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
-	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 const (
@@ -64,32 +64,44 @@ func (c *CoursierInstaller) GetSymbolLinkPath() string {
 
 func (c *CoursierInstaller) Install() {
 	homeDir, _ := os.UserHomeDir()
-	c.spinner.SetTitle(fmt.Sprintf("Coursier installing %s", c.OriginSDKName))
-	c.spinner.SetSweepFunc(func() {
-		c.signal <- struct{}{}
-		os.RemoveAll(c.GetInstallDir())
-	})
-	go c.spinner.Run()
+
 	/*
 		https://get-coursier.io/docs/cli-install
 	*/
+	version := strings.TrimSuffix(c.VersionName, "-LTS")
+	version = strings.TrimSuffix(version, "-lts")
+
 	coursierCommand := os.Getenv(CoursierPathEnvName)
 	if coursierCommand == "" {
 		coursierCommand = "cs"
 	}
+	task := utils.NewSysCommandRunner(
+		true,
+		homeDir,
+		coursierCommand,
+		"install",
+		"-q",
+		fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
+		fmt.Sprintf("%s:%s", c.OriginSDKName, version),
+	)
 
-	version := strings.TrimSuffix(c.VersionName, "-LTS")
-	version = strings.TrimSuffix(version, "-lts")
+	c.spinner.SetTitle(fmt.Sprintf("Coursier installing %s", c.OriginSDKName))
+	c.spinner.SetSweepFunc(func() {
+		task.Cancel()
+		c.signal <- struct{}{}
+		os.RemoveAll(c.GetInstallDir())
+	})
+	go c.spinner.Run()
+
 	go func() {
-		// TODO: kill process if quit occurs.
-		_, err := gutils.ExecuteSysCommand(
-			true, homeDir,
-			coursierCommand, "install",
-			"-q",
-			fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
-			fmt.Sprintf("%s:%s", c.OriginSDKName, version),
-		)
-		if err != nil {
+		// _, err := gutils.ExecuteSysCommand(
+		// 	true, homeDir,
+		// 	coursierCommand, "install",
+		// 	"-q",
+		// 	fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
+		// 	fmt.Sprintf("%s:%s", c.OriginSDKName, version),
+		// )
+		if err := task.Run(); err != nil {
 			gprint.PrintError("%+v", err)
 		}
 		c.signal <- struct{}{}

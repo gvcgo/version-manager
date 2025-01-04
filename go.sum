@@ -120,6 +120,8 @@ github.com/grokify/html-strip-tags-go v0.0.1 h1:0fThFwLbW7P/kOiTBs03FsJSV9RM2M/Q
 github.com/grokify/html-strip-tags-go v0.0.1/go.mod h1:2Su6romC5/1VXOQMaWL2yb618ARB8iVo6/DR99A6d78=
 github.com/gvcgo/goutils v1.0.5 h1:fkUSYB3/a0G+iZNk6dI30ZvoPqnu2eE4MPjaaMvjN4U=
 github.com/gvcgo/goutils v1.0.5/go.mod h1:zeRT+8rBsnuJra+fdazd1aTyy0lLjiASm9vbzw2zVlo=
+github.com/gvcgo/goutils v1.0.6 h1:ZoV0ce/C+m9UEaoo261IPVMHfGVTHqL0t8zeOhHnZe0=
+github.com/gvcgo/goutils v1.0.6/go.mod h1:zeRT+8rBsnuJra+fdazd1aTyy0lLjiASm9vbzw2zVlo=
 github.com/gvcgo/xtractr v0.0.3 h1:EtuXR2pTL1zNRShY6PcgtKHVA0264Tiyk6qMYz4dJzY=
 github.com/gvcgo/xtractr v0.0.3/go.mod h1:ZmFrtV/BMsuPXeePoDwGBS/2WVDQpdQzuTf6T7o5KmQ=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=

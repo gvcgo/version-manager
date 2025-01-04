@@ -7,8 +7,8 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
-	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 const (
@@ -71,29 +71,38 @@ func (c *CondaInstaller) Install() {
 		https://docs.conda.io/projects/conda/en/latest/commands/create.html
 		Example: conda create -q -y --prefix=~/.vm/versions/pypy_versions -c conda-forge pypy python=3.8
 	*/
-	c.spinner.SetTitle(fmt.Sprintf("Conda installing %s", c.OriginSDKName))
-	c.spinner.SetSweepFunc(func() {
-		c.signal <- struct{}{}
-		os.RemoveAll(c.GetInstallDir())
-	})
-	go c.spinner.Run()
-
 	condaCommand := os.Getenv(CondaPathEnvName)
 	if condaCommand == "" {
 		condaCommand = "conda"
 	}
 
+	task := utils.NewSysCommandRunner(
+		true, homeDir,
+		condaCommand, "create",
+		"-q", "-y",
+		fmt.Sprintf("--prefix=%s", c.GetInstallDir()),
+		"-c", "conda-forge", c.OriginSDKName,
+		fmt.Sprintf("%s=%s", c.OriginSDKName, c.VersionName),
+	)
+
+	c.spinner.SetTitle(fmt.Sprintf("Conda installing %s", c.OriginSDKName))
+	c.spinner.SetSweepFunc(func() {
+		task.Cancel()
+		c.signal <- struct{}{}
+		os.RemoveAll(c.GetInstallDir())
+	})
+	go c.spinner.Run()
+
 	go func() {
-		// TODO: kill process if quit occurs.
-		_, err := gutils.ExecuteSysCommand(
-			true, homeDir,
-			condaCommand, "create",
-			"-q", "-y",
-			fmt.Sprintf("--prefix=%s", c.GetInstallDir()),
-			"-c", "conda-forge", c.OriginSDKName,
-			fmt.Sprintf("%s=%s", c.OriginSDKName, c.VersionName),
-		)
-		if err != nil {
+		// _, err := gutils.ExecuteSysCommand(
+		// 	true, homeDir,
+		// 	condaCommand, "create",
+		// 	"-q", "-y",
+		// 	fmt.Sprintf("--prefix=%s", c.GetInstallDir()),
+		// 	"-c", "conda-forge", c.OriginSDKName,
+		// 	fmt.Sprintf("%s=%s", c.OriginSDKName, c.VersionName),
+		// )
+		if err := task.Run(); err != nil {
 			gprint.PrintError("%+v", err)
 		}
 		c.signal <- struct{}{}
