@@ -66,23 +66,21 @@ if ( "" -eq "$env:VMR_CD_INIT" )
 
 var _ Sheller = (*Shell)(nil)
 
-var VersionsDir = cnf.GetVersionsDir()
-
 const (
 	VMR_VERSIONS_ENV    = "VMR_VERSIONS"
 	VMR_VERSIONS_PREFIX = `%VMR_VERSIONS%`
 )
 
-func SetVMRVersionsEnv() {
-	if os.Getenv(VMR_VERSIONS_ENV) == "" {
+func TidyWindowsPathEnv(pathStr string) (newPath string) {
+	var VersionsDir = cnf.GetVersionsDir()
+
+	if os.Getenv(VMR_VERSIONS_ENV) != VersionsDir {
 		shell := NewShell()
 		shell.SetEnv(VMR_VERSIONS_ENV, VersionsDir)
 	}
-}
 
-func TidyWindowsPathEnv(pathStr string) (newPath string) {
 	newPath = pathStr
-	if strings.Contains(pathStr, VersionsDir) && os.Getenv(VMR_VERSIONS_ENV) != "" {
+	if strings.Contains(pathStr, VersionsDir) {
 		newPath = strings.ReplaceAll(pathStr, VersionsDir, VMR_VERSIONS_PREFIX)
 	}
 	return
@@ -232,7 +230,6 @@ func (s *Shell) SetPath(path string) {
 		gprint.PrintError("Windows registry key is closed.")
 		return
 	}
-	SetVMRVersionsEnv()
 	path = TidyWindowsPathEnv(path)
 
 	oldPathValue, _, err := s.Key.GetStringValue(PathEnvName)
@@ -256,7 +253,6 @@ func (s *Shell) UnsetPath(path string) {
 		gprint.PrintError("Windows registry key is closed.")
 		return
 	}
-	SetVMRVersionsEnv()
 	path = TidyWindowsPathEnv(path)
 
 	oldPathValue, _, err := s.Key.GetStringValue(PathEnvName)
