@@ -45,7 +45,7 @@ func InstallSelf() {
 	sh := shell.NewShell()
 	sh.WriteVMEnvToShell()
 	if runtime.GOOS == gutils.Windows {
-		sh.SetPath(cnf.GetVMRWorkDir())
+		sh.SetPath(vmrWorkDir)
 	}
 
 	// Generate update script.
