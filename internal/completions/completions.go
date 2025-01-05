@@ -23,16 +23,8 @@ const OtherShellScript = `# VMR Completions
 . %s
 # VMR Completions`
 
-func GetBinaryPath() string {
-	p, _ := os.Executable()
-	if utils.IsMingWBash() {
-		p = utils.ConvertWindowsPathToMingwPath(p)
-	}
-	return p
-}
-
+// generate completion script content.
 func getCompletionScriptContent() string {
-	binPath := GetBinaryPath()
 	shellName := "powershell"
 	if runtime.GOOS != gutils.Windows {
 		shellName = gutils.GetShell()
@@ -40,9 +32,9 @@ func getCompletionScriptContent() string {
 	if utils.IsMingWBash() {
 		shellName = "bash"
 	}
-	homeDir, _ := os.UserHomeDir()
+
 	content := ""
-	if b, err := gutils.ExecuteSysCommand(true, homeDir, binPath, "completion", shellName); err == nil {
+	if b, err := gutils.ExecuteSysCommand(true, "", "vmr", "completion", shellName); err == nil {
 		content = b.String()
 	}
 	return content
