@@ -10,6 +10,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/shell"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 /*
@@ -44,7 +45,7 @@ func getCompletionScriptContent() string {
 func writeCompletionScript() (sPath string) {
 	content := getCompletionScriptContent()
 	sPath = filepath.Join(cnf.GetVMRWorkDir(), "vmr_completions.ps1")
-	if runtime.GOOS != gutils.Windows {
+	if runtime.GOOS != gutils.Windows || utils.IsMingWBash() {
 		sPath = filepath.Join(cnf.GetVMRWorkDir(), "vmr_completions.sh")
 	}
 	if content == "" {
@@ -52,6 +53,9 @@ func writeCompletionScript() (sPath string) {
 	}
 	if err := os.WriteFile(sPath, []byte(content), os.ModePerm); err != nil {
 		return
+	}
+	if utils.IsMingWBash() {
+		sPath = utils.ConvertWindowsPathToMingwPath(sPath)
 	}
 	return sPath
 }
@@ -62,13 +66,20 @@ func AddCompletionScriptToShellProfile() {
 	if shellProfilePath == "" {
 		return
 	}
+	if utils.IsMingWBash() {
+		homeDir, _ := os.UserHomeDir()
+		shellProfilePath = filepath.Join(homeDir, ".bashrc")
+	}
+
 	scriptPath := writeCompletionScript()
 	if scriptPath == "" {
 		return
 	}
 
+	// including mingw bash shell.
 	shellScript := OtherShellScript
-	if runtime.GOOS == gutils.Windows {
+	if runtime.GOOS == gutils.Windows && !utils.IsMingWBash() {
+		// powershell.
 		shellScript = PowershellScript
 	}
 	completionScrit := fmt.Sprintf(shellScript, scriptPath)
