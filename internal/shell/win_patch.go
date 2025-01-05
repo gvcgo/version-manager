@@ -46,11 +46,11 @@ func GetVmrRelatedPathEnvsAlreadyExist() (result []string) {
 	return
 }
 
+/*
+Mingw Bash Shell profile path.
+*/
 func GetMingwBashProfilePath() (path string) {
 	homeDir, _ := os.UserHomeDir()
-	if utils.IsMingWBash() {
-		homeDir = utils.ConvertWindowsPathToMingwPath(homeDir)
-	}
 	path = filepath.Join(homeDir, ".bashrc")
 	return
 }
@@ -78,7 +78,7 @@ func AddOnePathEnv(pathEnv string) {
 	os.WriteFile(mingwBashProfilePath, []byte(contentStr), os.ModePerm)
 }
 
-// Add env to $HOME/.bashrc
+// Add env to $HOME/.bashrc content.
 func AddPathEnv(pathEnv string, oldContent string) (newContent string) {
 	newContent = oldContent
 	if strings.HasPrefix(pathEnv, VersionsDir) {
@@ -88,9 +88,10 @@ func AddPathEnv(pathEnv string, oldContent string) (newContent string) {
 		)
 		newContent = AddExportLine(newContent, exportLine)
 	} else if strings.HasPrefix(pathEnv, VMR_VERSIONS_PREFIX) {
+		p := strings.ReplaceAll(pathEnv, VMR_VERSIONS_PREFIX, VersionsDir)
 		exportLine := fmt.Sprintf(
 			MingwBashExportPattern,
-			strings.ReplaceAll(pathEnv, VMR_VERSIONS_PREFIX, utils.ConvertWindowsPathToMingwPath(VersionsDir)),
+			utils.ConvertWindowsPathToMingwPath(p),
 		)
 		newContent = AddExportLine(newContent, exportLine)
 	} else if strings.HasPrefix(pathEnv, utils.ConvertWindowsPathToMingwPath(VersionsDir)) {
