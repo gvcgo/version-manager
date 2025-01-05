@@ -11,7 +11,6 @@ import (
 	"unsafe"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -65,26 +64,6 @@ if ( "" -eq "$env:VMR_CD_INIT" )
 # cd hook end`
 
 var _ Sheller = (*Shell)(nil)
-
-const (
-	VMR_VERSIONS_ENV    = "VMR_VERSIONS"
-	VMR_VERSIONS_PREFIX = `%VMR_VERSIONS%`
-)
-
-func TidyWindowsPathEnv(pathStr string) (newPath string) {
-	var VersionsDir = cnf.GetVersionsDir()
-
-	if os.Getenv(VMR_VERSIONS_ENV) != VersionsDir {
-		shell := NewShell()
-		shell.SetEnv(VMR_VERSIONS_ENV, VersionsDir)
-	}
-
-	newPath = pathStr
-	if strings.Contains(pathStr, VersionsDir) {
-		newPath = strings.ReplaceAll(pathStr, VersionsDir, VMR_VERSIONS_PREFIX)
-	}
-	return
-}
 
 type Shell struct {
 	sh.Sheller
