@@ -34,6 +34,9 @@ func getCompletionScriptContent() string {
 	if runtime.GOOS != gutils.Windows {
 		shellName = gutils.GetShell()
 	}
+	if utils.IsMingWBash() {
+		shellName = "bash"
+	}
 	homeDir, _ := os.UserHomeDir()
 	content := ""
 	if b, err := gutils.ExecuteSysCommand(true, homeDir, binPath, "completion", shellName); err == nil {
