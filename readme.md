@@ -98,6 +98,8 @@ powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 
 <!-- <a href="https://evolution-host.com/"><img src="https://evolution-host.com/images/branding/newLogoBlack.png" align="middle" width="64"/></a> -->
 
+------
+
 ### Star History
 
 ![Star History Chart](https://api.star-history.com/svg?repos=gvcgo/version-manager&type=Date)
