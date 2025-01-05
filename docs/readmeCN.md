@@ -39,8 +39,6 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 
 [查看详细文档](https://vdocs.vmr.us.kg/zh-cn/)
 
-**注意**： v0.6.x改版非常大，主要是为了更好的用户体验，以及更清晰的代码架构，方便用户使用的同时，也方便更多有兴趣的开发者参与进来。所以，放弃了对老版本的兼容。在安装v0.6.x的过程中，会提示**是否删除已有的老版本**，只有删除老版本(包含通过老版本安装的SDK)，才能继续安装v0.6.x。相信v0.6.x能不负众望，给同学们带来更好的使用体验。**鉴于资源有限，老版本的vmr的SDK版本仓库已经不再维护了，请童鞋们尽快升级**。
-
 ------
 
 ### 功能特点
@@ -55,6 +53,7 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 - **无需麻烦的插件**，开箱即用
 - **无需docker**，纯本地安装，效率更高
 - 更高的**可扩展性**，甚至可以通过使用**conda**来支持数以千计的应用
+- 支持多种Shell，包括**bash**，**zsh**，**fish**, **powershell**, **git-bash**
 
 ------
 
@@ -102,3 +101,7 @@ powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 <div></a><a href="https://conda-forge.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/anaconda/anaconda-original-wordmark.svg" align="middle" height="128" /></a><a href="https://servicecomb.apache.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apache/apache-original-wordmark.svg" align="middle" height="128"/></a><a href="https://code.visualstudio.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original-wordmark.svg" align="middle" width="64"/></a><a href="https://register.us.kg/"><img src="https://register.us.kg/static/img/logo.jpg" align="middle" width="64"/><a href="https://www.cloudflare.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cloudflare/cloudflare-original-wordmark.svg" align="middle" width="64" /></a></div>
 
 <!-- <a href="https://evolution-host.com/"><img src="https://evolution-host.com/images/branding/newLogoBlack.png" align="middle" width="64"/> -->
+
+### Star History
+
+![Star History Chart](https://api.star-history.com/svg?repos=gvcgo/version-manager&type=Date)

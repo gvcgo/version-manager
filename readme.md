@@ -52,6 +52,7 @@ Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none o
 - **No plugins** needed, just out of the box.
 - Installs SDKs **in local disk** instead of docker containers.
 - **High extendability**, even for thousands of applications(through **conda**).
+- Supports multiple shells, such as **bash**, **zsh**, **fish**, **powershell**, **git-bash**.
 
 ------
 
@@ -96,3 +97,7 @@ powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 <div><a href="https://conda-forge.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/anaconda/anaconda-original-wordmark.svg" align="middle" height="128" /></a><a href="https://servicecomb.apache.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apache/apache-original-wordmark.svg" align="middle" height="128"/></a><a href="https://code.visualstudio.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original-wordmark.svg" align="middle" width="64"/></a><a href="https://register.us.kg/"><img src="https://register.us.kg/static/img/logo.jpg" align="middle" width="64"/><a href="https://www.cloudflare.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cloudflare/cloudflare-original-wordmark.svg" align="middle" width="64" /></a></div>
 
 <!-- <a href="https://evolution-host.com/"><img src="https://evolution-host.com/images/branding/newLogoBlack.png" align="middle" width="64"/></a> -->
+
+### Star History
+
+![Star History Chart](https://api.star-history.com/svg?repos=gvcgo/version-manager&type=Date)
