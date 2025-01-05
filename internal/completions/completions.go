@@ -25,6 +25,9 @@ const OtherShellScript = `# VMR Completions
 
 func GetBinaryPath() string {
 	p, _ := os.Executable()
+	if utils.IsMingWBash() {
+		p = utils.ConvertWindowsPathToMingwPath(p)
+	}
 	return p
 }
 
