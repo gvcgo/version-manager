@@ -28,6 +28,8 @@ func TidyWindowsPathEnv(pathStr string) (newPath string) {
 	// Handle Path envs for Mingw bash shell.
 	HandleVmrRelatedPathEnvsAlreadyExist()
 	AddOnePathEnv(pathStr)
+	// Patch cd hook for Mingw bash shell.
+	PatchVmrCdHookForMingwBash()
 
 	newPath = pathStr
 	if strings.Contains(pathStr, VersionsDir) {
@@ -113,4 +115,47 @@ func AddExportLine(oldContent string, exportLine string) (newContent string) {
 		newContent = oldContent + "\n" + exportLine
 	}
 	return
+}
+
+/*
+cd hook for Mingw bash shell.
+*/
+const VmrMingwBashCdHook = `# cd hook start
+export PATH=%s:"${PATH}"
+
+if [ -z "$(alias|grep cdhook)" ]; then
+	cdhook() {
+		if [ $# -eq 0 ]; then
+			cd
+		else
+			cd "$@" && vmr use -E
+		fi
+	}
+	alias cd='cdhook'
+fi
+
+if [ -z "${VMR_CD_INIT}" ]; then
+        VMR_CD_INIT="vmr_cd_init"
+        cd "$(pwd)"
+fi
+# cd hook end`
+
+// add cd hook to $HOME/.bashrc content.
+func PatchVmrCdHookForMingwBash() {
+	mingwBashProfilePath := GetMingwBashProfilePath()
+	content, _ := os.ReadFile(mingwBashProfilePath)
+	contentStr := string(content)
+
+	vmrInstallDir := utils.ConvertWindowsPathToMingwPath(cnf.GetVMRWorkDir())
+
+	cdHook := fmt.Sprintf(VmrMingwBashCdHook, vmrInstallDir)
+	if !strings.Contains(contentStr, cdHook) {
+		if contentStr == "" {
+			contentStr = cdHook
+		} else {
+			contentStr = contentStr + "\n" + cdHook
+		}
+	}
+
+	os.WriteFile(mingwBashProfilePath, []byte(contentStr), os.ModePerm)
 }
