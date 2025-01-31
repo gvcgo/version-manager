@@ -1,8 +1,11 @@
 module github.com/gvcgo/version-manager
 
-go 1.22.3
+go 1.23
+
+toolchain go1.23.5
 
 require (
+	github.com/PuerkitoBio/goquery v1.10.1
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.8.0
@@ -16,6 +19,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.8.0
+	github.com/yuin/gopher-lua v1.1.1
 	golang.org/x/sys v0.28.0
 	golang.org/x/term v0.27.0
 )
@@ -23,6 +27,7 @@ require (
 require (
 	github.com/alexmullins/zip v0.0.0-20180717182244-4affb64b04d0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
