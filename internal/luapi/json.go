@@ -2,6 +2,7 @@ package luapi
 
 import (
 	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -16,7 +17,7 @@ func checkGJson(L *lua.LState) *gjson.Json {
 
 func InitGJson(L *lua.LState) int {
 	arg := L.ToUserData(1)
-	if j, err := gjson.DecodeToJson(arg.Value); err != nil {
+	if j, err := gjson.LoadJson(gconv.String(arg.Value)); err != nil {
 		prepareResult(L, nil)
 		return 0
 	} else {
@@ -37,7 +38,7 @@ func GetGJsonString(L *lua.LState) int {
 		return 0
 	}
 	res := j.Get(jPath).String()
-	prepareResult(L, res)
+	L.Push(lua.LString(res))
 	return 1
 }
 
@@ -52,7 +53,7 @@ func GetGJsonInt(L *lua.LState) int {
 		return 0
 	}
 	res := j.Get(jPath).Int()
-	prepareResult(L, res)
+	L.Push(lua.LNumber(res))
 	return 1
 }
 
@@ -101,7 +102,7 @@ func GetGJsonFromMapByKey(L *lua.LState) int {
 
 	key := L.ToString(3)
 	val := res[key]
-	prepareResult(L, val)
+	L.Push(lua.LString(gconv.String(val)))
 	return 1
 }
 
@@ -110,24 +111,30 @@ func GetGJsonSliceEach(L *lua.LState) int {
 	if j == nil {
 		return 0
 	}
+
 	jPath := L.ToString(2)
 	if jPath == "" {
 		return 0
 	}
+
 	res := j.Get(jPath).Array()
+
 	if res == nil {
 		return 0
 	}
 
 	cb := L.ToFunction(3)
-	for _, v := range res {
+	for idx, v := range res {
+		if v == nil {
+			continue
+		}
 		ud := L.NewUserData()
 		ud.Value = v
 		if err := L.CallByParam(lua.P{
 			Fn:      cb,
 			NRet:    0,
 			Protect: true,
-		}, ud); err != nil {
+		}, lua.LNumber(idx+1), ud); err != nil {
 			panic(err)
 		}
 	}
@@ -153,6 +160,6 @@ func GetGJsonFromSliceByIndex(L *lua.LState) int {
 		return 0
 	}
 	val := res[index-1]
-	prepareResult(L, val)
+	L.Push(lua.LString(gconv.String(val)))
 	return 1
 }
