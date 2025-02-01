@@ -46,6 +46,9 @@ func (l *Lua) init() {
 	l.setGlobal("mapEach", GetGJsonMapEach)
 	l.setGlobal("getByIndex", GetGJsonFromSliceByIndex)
 	l.setGlobal("sliceEach", GetGJsonSliceEach)
+	// utils
+	l.setGlobal("getOsArch", GetOsArch)
+	l.setGlobal("regexpFindString", RegExpFindString)
 }
 
 func (l *Lua) GetLState() *lua.LState {
