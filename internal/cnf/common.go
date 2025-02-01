@@ -141,3 +141,9 @@ func GetFetcher(dUrl string) (fetcher *request.Fetcher) {
 	}
 	return
 }
+
+func GetGithubToken() string {
+	cnf := NewVMRConf()
+	cnf.Load()
+	return cnf.GithubToken
+}
