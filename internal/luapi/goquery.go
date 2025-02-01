@@ -1,18 +1,11 @@
 package luapi
 
 import (
+	"strings"
+
 	"github.com/PuerkitoBio/goquery"
 	lua "github.com/yuin/gopher-lua"
 )
-
-func checkGoQuery(L *lua.LState) *Crawler {
-	ud := L.ToUserData(1)
-	if g, ok := ud.Value.(*Crawler); ok {
-		return g
-	}
-	L.ArgError(1, "GoQuery expected")
-	return nil
-}
 
 func checkSelection(L *lua.LState) *goquery.Selection {
 	ud := L.ToUserData(1)
@@ -23,19 +16,17 @@ func checkSelection(L *lua.LState) *goquery.Selection {
 	return nil
 }
 
-func prepareResult(L *lua.LState, result interface{}) {
-	ud := L.NewUserData()
-	ud.Value = result
-	L.Push(ud)
+func initDocument(resp string) *goquery.Document {
+	if resp == "" {
+		return nil
+	}
+	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(resp))
+	return doc
 }
 
 func InitSelection(L *lua.LState) int {
-	q := checkGoQuery(L)
-	if q == nil {
-		prepareResult(L, nil)
-		return 0
-	}
-	doc := GetDocument(q.Url, q.Timeout)
+	resp := L.ToString(1)
+	doc := initDocument(resp)
 	if doc == nil {
 		prepareResult(L, nil)
 		return 0

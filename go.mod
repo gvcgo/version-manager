@@ -25,6 +25,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/alexmullins/zip v0.0.0-20180717182244-4affb64b04d0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
@@ -34,8 +35,10 @@ require (
 	github.com/bodgit/sevenzip v1.4.2 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
+	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -48,6 +51,7 @@ require (
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/kr/pty v1.1.8 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
@@ -70,4 +74,5 @@ require (
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

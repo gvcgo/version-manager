@@ -2,25 +2,43 @@ package luapi
 
 import (
 	"os"
-	"strings"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/request"
+	lua "github.com/yuin/gopher-lua"
 )
+
+func prepareResult(L *lua.LState, result interface{}) {
+	ud := L.NewUserData()
+	ud.Value = result
+	L.Push(ud)
+}
 
 const (
 	ProxyEnvName string = "VCOLLECTOR_PROXY"
 )
 
-func GetResp(dUrl string, timeout ...int) string {
+func GetResponse(L *lua.LState) int {
+	dUrl := L.ToString(1)
+	timeout := L.ToInt(2)
+	headers := make(map[string]string)
+
+	hTable := L.ToTable(3)
+
+	if hTable != nil {
+		hTable.ForEach(func(k lua.LValue, v lua.LValue) {
+			headers[k.String()] = v.String()
+		})
+	}
+
 	t := 180
-	if len(timeout) > 0 && timeout[0] > 0 {
-		t = timeout[0]
+	if timeout > 0 {
+		t = timeout
 	}
 
 	fetcher := request.NewFetcher()
+	fetcher.Headers = headers
 	fetcher.SetUrl(dUrl)
 	fetcher.Timeout = time.Duration(t) * time.Second
 
@@ -33,27 +51,8 @@ func GetResp(dUrl string, timeout ...int) string {
 
 	resp, code := fetcher.GetString()
 	if code != 200 || resp == "" {
-		return ""
+		return 0
 	}
-	return resp
-}
-
-func GetDocument(dUrl string, timeout ...int) *goquery.Document {
-	if resp := GetResp(dUrl, timeout...); resp != "" {
-		doc, _ := goquery.NewDocumentFromReader(strings.NewReader(resp))
-		return doc
-	}
-	return nil
-}
-
-type Crawler struct {
-	Url     string
-	Timeout int // in seconds
-}
-
-func NewCrawler(url string, timeout int) *Crawler {
-	return &Crawler{
-		Url:     url,
-		Timeout: timeout,
-	}
+	prepareResult(L, resp)
+	return 1
 }
