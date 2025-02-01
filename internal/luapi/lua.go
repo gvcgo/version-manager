@@ -47,3 +47,7 @@ func (l *Lua) init() {
 	l.setGlobal("getByIndex", GetGJsonFromSliceByIndex)
 	l.setGlobal("sliceEach", GetGJsonSliceEach)
 }
+
+func (l *Lua) GetLState() *lua.LState {
+	return l.L
+}

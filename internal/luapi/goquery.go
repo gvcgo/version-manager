@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/gogf/gf/v2/util/gconv"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -25,8 +26,11 @@ func initDocument(resp string) *goquery.Document {
 }
 
 func InitSelection(L *lua.LState) int {
-	resp := L.ToString(1)
-	doc := initDocument(resp)
+	resp := L.ToUserData(1)
+	if resp == nil {
+		return 0
+	}
+	doc := initDocument(gconv.String(resp.Value))
 	if doc == nil {
 		prepareResult(L, nil)
 		return 0
