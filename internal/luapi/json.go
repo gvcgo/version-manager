@@ -85,7 +85,7 @@ func GetGJsonMapEach(L *lua.LState) int {
 	return 0
 }
 
-func GetGJsonFromMapByKeys(L *lua.LState) int {
+func GetGJsonFromMapByKey(L *lua.LState) int {
 	j := checkGJson(L)
 	if j == nil {
 		return 0
