@@ -20,7 +20,7 @@ function parseMapA(k, v)
 		return
 	end
 
-	function parseSlice(idx,vvv)
+	function parseSlice(idx, vvv)
 		local mapJ = initGJson(vvv)
 		local item = {}
 		item["version"] = getString(mapJ, "version")
