@@ -1,5 +1,8 @@
 package lua_global
 
+/*
+Lua runtime.
+*/
 import (
 	lua "github.com/yuin/gopher-lua"
 )
@@ -49,6 +52,9 @@ func (l *Lua) init() {
 	// utils
 	l.setGlobal("getOsArch", GetOsArch)
 	l.setGlobal("regexpFindString", RegExpFindString)
+	// version
+	l.setGlobal("newVersionList", NewVersionList)
+	l.setGlobal("addItem", AddItem)
 }
 
 func (l *Lua) GetLState() *lua.LState {
