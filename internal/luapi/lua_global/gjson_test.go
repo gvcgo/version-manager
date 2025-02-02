@@ -12,7 +12,6 @@ local j = initGJson(resp)
 print("----------------gjson----------------")
 
 function parseMapA(k, v)
-	print("=======***")
 	local jj = initGJson(v)
 	
 	local stable = getString(jj, "stable")

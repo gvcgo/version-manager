@@ -52,6 +52,12 @@ func (l *Lua) init() {
 	// utils
 	l.setGlobal("getOsArch", GetOsArch)
 	l.setGlobal("regexpFindString", RegExpFindString)
+	l.setGlobal("hasPrefix", HasPrefix)
+	l.setGlobal("hasSuffix", HasSuffix)
+	l.setGlobal("contains", Contains)
+	l.setGlobal("trimPrefix", TrimPrefix)
+	l.setGlobal("trimSuffix", TrimSuffix)
+	l.setGlobal("trim", Trim)
 	// version
 	l.setGlobal("newVersionList", NewVersionList)
 	l.setGlobal("addItem", AddItem)

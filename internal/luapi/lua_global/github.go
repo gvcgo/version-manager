@@ -51,8 +51,8 @@ func GetGithubRelease(L *lua.LState) int {
 	rl := client.GetReleases()
 
 	tagFilter := L.ToFunction(2)
-	fileFilter := L.ToFunction(3)
-	versionParser := L.ToFunction(4)
+	versionParser := L.ToFunction(3)
+	fileFilter := L.ToFunction(4)
 	archParser := L.ToFunction(5)
 	osParser := L.ToFunction(6)
 	installerGetter := L.ToFunction(7)
@@ -63,10 +63,12 @@ func GetGithubRelease(L *lua.LState) int {
 		if !githubBoolFuncCall(L, tagFilter, rItem.TagName) {
 			continue
 		}
+
 		vStr := githubStringFuncCall(L, versionParser, rItem.TagName)
 		if vStr == "" {
 			continue
 		}
+
 	INNER:
 		for _, a := range rItem.Assets {
 			if strings.Contains(a.Url, "archive/refs/") {
@@ -92,6 +94,7 @@ func GetGithubRelease(L *lua.LState) int {
 		}
 	}
 
+	// fmt.Println("******$$$$$$$", result["1.2.2"])
 	ud := L.NewUserData()
 	ud.Value = result
 	L.Push(ud)
