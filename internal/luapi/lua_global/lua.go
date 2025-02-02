@@ -45,9 +45,9 @@ func (l *Lua) init() {
 	l.setGlobal("initGJson", InitGJson)
 	l.setGlobal("getString", GetGJsonString)
 	l.setGlobal("getInt", GetGJsonInt)
-	l.setGlobal("getByKey", GetGJsonFromMapByKey)
+	l.setGlobal("getByKey", GetGJsonFromMapByKey) // for dict
 	l.setGlobal("mapEach", GetGJsonMapEach)
-	l.setGlobal("getByIndex", GetGJsonFromSliceByIndex)
+	l.setGlobal("getByIndex", GetGJsonFromSliceByIndex) // for array
 	l.setGlobal("sliceEach", GetGJsonSliceEach)
 	// utils
 	l.setGlobal("getOsArch", GetOsArch)
@@ -55,6 +55,8 @@ func (l *Lua) init() {
 	// version
 	l.setGlobal("newVersionList", NewVersionList)
 	l.setGlobal("addItem", AddItem)
+	// github
+	l.setGlobal("getGithubRelease", GetGithubRelease)
 }
 
 func (l *Lua) GetLState() *lua.LState {

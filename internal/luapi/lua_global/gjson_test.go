@@ -29,7 +29,7 @@ function parseMapA(k, v)
 		item["os"] = getString(mapJ, "os")
 		item["arch"] = getString(mapJ, "arch")
 		item["size"] = getInt(mapJ, "size")
-		print(item.url)
+		-- print(item.url)
 	end
 	sliceEach(jj, "files", parseSlice)
 end
