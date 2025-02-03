@@ -11,6 +11,7 @@ import (
 var goPluginPath = "/Users/moqsien/projects/lua/vmr_plugins/go.lua"
 var minicondaPluginPath = "/Users/moqsien/projects/lua/vmr_plugins/miniconda.lua"
 var coursierPluginPath = "/Users/moqsien/projects/lua/vmr_plugins/coursier.lua"
+var luaPluginPath = "/Users/moqsien/projects/lua/vmr_plugins/lua.lua"
 
 func TestGoPlugin(t *testing.T) {
 	fmt.Println("aaa")
@@ -182,4 +183,57 @@ func TestCoursierPlugin(t *testing.T) {
 		t.Error("installer config should be defined")
 	}
 	fmt.Println(ic.FlagFiles)
+}
+
+func TestLuaPlugin(t *testing.T) {
+	fmt.Println("aaa")
+
+	ll := lua_global.NewLua()
+	defer ll.L.Close()
+	if err := ll.L.DoFile(luaPluginPath); err != nil {
+		t.Error(err)
+	}
+
+	L := ll.GetLState()
+
+	if pre := GetConfItemFromLua(L, Prequisite); pre != "conda" {
+		t.Errorf("prequisite should be 'conda', but got '%s'", pre)
+	}
+
+	f := L.GetGlobal("crawl")
+	if f == nil || f.Type() != lua.LTFunction {
+		t.Error("crawl function should be defined")
+	}
+
+	if err := L.CallByParam(lua.P{
+		Fn:      f,
+		NRet:    1,
+		Protect: true,
+	}); err != nil {
+		t.Error(err)
+	}
+
+	r := L.Get(-1)
+
+	ud, ok := r.(*lua.LUserData)
+	if !ok {
+		t.Error("return value should be userdata")
+	}
+
+	if vl, ok := ud.Value.(lua_global.VersionList); !ok {
+		t.Error("userdata value should be VersionList")
+	} else {
+		// keys := []string{}
+		// for k := range vl {
+		// 	keys = append(keys, k)
+		// }
+		// fmt.Println(keys)
+		fmt.Println(vl["5.4.6"])
+	}
+
+	ic := lua_global.GetInstallerConfig(L)
+	if ic == nil {
+		t.Error("installer config should be defined")
+	}
+	fmt.Println(ic.BinaryDirs)
 }
