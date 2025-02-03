@@ -110,6 +110,15 @@ func GetSDKInstallationConfDir() string {
 }
 
 /*
+Plugin directory is for storing lua plugins.
+*/
+func GetPluginDir() string {
+	pDir := filepath.Join(GetVMRWorkDir(), "plugins")
+	os.MkdirAll(pDir, os.ModePerm)
+	return pDir
+}
+
+/*
 ==============================
 vmr config file.
 ==============================
