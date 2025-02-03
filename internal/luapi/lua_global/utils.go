@@ -2,6 +2,7 @@ package lua_global
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"runtime"
 	"strings"
@@ -76,6 +77,13 @@ func Trim(L *lua.LState) int {
 	return 1
 }
 
+func TrimSpace(L *lua.LState) int {
+	str := L.ToString(1)
+	result := strings.TrimSpace(str)
+	L.Push(lua.LString(result))
+	return 1
+}
+
 func Sprintf(L *lua.LState) int {
 	pattern := L.ToString(1)
 	array := L.ToTable(2)
@@ -86,5 +94,19 @@ func Sprintf(L *lua.LState) int {
 	})
 	result := fmt.Sprintf(pattern, args...)
 	L.Push(lua.LString(result))
+	return 1
+}
+
+func UrlJoin(L *lua.LState) int {
+	base := L.ToString(1)
+	paths := L.ToString(2)
+	result, _ := url.JoinPath(base, paths)
+	L.Push(lua.LString(result))
+	return 1
+}
+
+func LenString(L *lua.LState) int {
+	str := L.ToString(1)
+	L.Push(lua.LNumber(len(str)))
 	return 1
 }

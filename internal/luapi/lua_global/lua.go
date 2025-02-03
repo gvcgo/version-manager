@@ -58,7 +58,10 @@ func (l *Lua) init() {
 	l.SetGlobal("trimPrefix", TrimPrefix)
 	l.SetGlobal("trimSuffix", TrimSuffix)
 	l.SetGlobal("trim", Trim)
+	l.SetGlobal("trimSpace", TrimSpace)
 	l.SetGlobal("sprintf", Sprintf)
+	l.SetGlobal("urlJoin", UrlJoin)
+	l.SetGlobal("lenString", LenString)
 	// version
 	l.SetGlobal("newVersionList", NewVersionList)
 	l.SetGlobal("addItem", AddItem)

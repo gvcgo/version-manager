@@ -45,10 +45,6 @@ type InstallerConfig struct {
 	AdditionalEnvs  AdditionalEnvList `json:"additional_envs"`
 }
 
-const (
-	InstallerConfigName string = "ic"
-)
-
 func NewInstallerConfig() (ic *InstallerConfig) {
 	ic = &InstallerConfig{
 		FlagFiles:      &FileItems{},
@@ -191,6 +187,10 @@ func AddAdditionalEnvs(L *lua.LState) int {
 	L.Push(result)
 	return 1
 }
+
+const (
+	InstallerConfigName string = "ic"
+)
 
 func GetInstallerConfig(L *lua.LState) *InstallerConfig {
 	v := L.GetGlobal(InstallerConfigName)
