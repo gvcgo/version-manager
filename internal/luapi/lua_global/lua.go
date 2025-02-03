@@ -28,41 +28,48 @@ func (l *Lua) Close() {
 	l.L.Close()
 }
 
-func (l *Lua) setGlobal(name string, fn lua.LGFunction) {
+func (l *Lua) SetGlobal(name string, fn lua.LGFunction) {
 	l.L.SetGlobal(name, l.L.NewFunction(fn))
 }
 
 func (l *Lua) init() {
-	l.setGlobal("getResponse", GetResponse)
+	l.SetGlobal("getResponse", GetResponse)
 	// goquery
-	l.setGlobal("initSelection", InitSelection)
-	l.setGlobal("find", Find)
-	l.setGlobal("eq", Eq)
-	l.setGlobal("attr", Attr)
-	l.setGlobal("text", Text)
-	l.setGlobal("each", Each)
+	l.SetGlobal("initSelection", InitSelection)
+	l.SetGlobal("find", Find)
+	l.SetGlobal("eq", Eq)
+	l.SetGlobal("attr", Attr)
+	l.SetGlobal("text", Text)
+	l.SetGlobal("each", Each)
 	// gjson
-	l.setGlobal("initGJson", InitGJson)
-	l.setGlobal("getString", GetGJsonString)
-	l.setGlobal("getInt", GetGJsonInt)
-	l.setGlobal("getByKey", GetGJsonFromMapByKey) // for dict
-	l.setGlobal("mapEach", GetGJsonMapEach)
-	l.setGlobal("getByIndex", GetGJsonFromSliceByIndex) // for array
-	l.setGlobal("sliceEach", GetGJsonSliceEach)
+	l.SetGlobal("initGJson", InitGJson)
+	l.SetGlobal("getString", GetGJsonString)
+	l.SetGlobal("getInt", GetGJsonInt)
+	l.SetGlobal("getByKey", GetGJsonFromMapByKey) // for dict
+	l.SetGlobal("mapEach", GetGJsonMapEach)
+	l.SetGlobal("getByIndex", GetGJsonFromSliceByIndex) // for array
+	l.SetGlobal("sliceEach", GetGJsonSliceEach)
 	// utils
-	l.setGlobal("getOsArch", GetOsArch)
-	l.setGlobal("regexpFindString", RegExpFindString)
-	l.setGlobal("hasPrefix", HasPrefix)
-	l.setGlobal("hasSuffix", HasSuffix)
-	l.setGlobal("contains", Contains)
-	l.setGlobal("trimPrefix", TrimPrefix)
-	l.setGlobal("trimSuffix", TrimSuffix)
-	l.setGlobal("trim", Trim)
+	l.SetGlobal("getOsArch", GetOsArch)
+	l.SetGlobal("regexpFindString", RegExpFindString)
+	l.SetGlobal("hasPrefix", HasPrefix)
+	l.SetGlobal("hasSuffix", HasSuffix)
+	l.SetGlobal("contains", Contains)
+	l.SetGlobal("trimPrefix", TrimPrefix)
+	l.SetGlobal("trimSuffix", TrimSuffix)
+	l.SetGlobal("trim", Trim)
+	l.SetGlobal("sprintf", Sprintf)
 	// version
-	l.setGlobal("newVersionList", NewVersionList)
-	l.setGlobal("addItem", AddItem)
+	l.SetGlobal("newVersionList", NewVersionList)
+	l.SetGlobal("addItem", AddItem)
 	// github
-	l.setGlobal("getGithubRelease", GetGithubRelease)
+	l.SetGlobal("getGithubRelease", GetGithubRelease)
+	// installer_config
+	l.SetGlobal("newInstallerConfig", NewInstallerConf)
+	l.SetGlobal("addFlagFiles", AddFlagFiles)
+	l.SetGlobal("enableFlagDirExcepted", EnableFlagDirExcepted)
+	l.SetGlobal("addBinaryDirs", AddBinaryDirs)
+	l.SetGlobal("addAdditionalEnvs", AddAdditionalEnvs)
 }
 
 func (l *Lua) GetLState() *lua.LState {
