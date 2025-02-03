@@ -65,4 +65,12 @@ func TestGoPlugin(t *testing.T) {
 		// fmt.Println(keys)
 		fmt.Println(vl["go1.23.5"][0].Extra)
 	}
+
+	ic := lua_global.GetInstallerConfig(L)
+	if ic == nil {
+		t.Error("installer config should be defined")
+	}
+	fmt.Println(ic.FlagFiles)
+	fmt.Println(ic.BinaryDirs)
+	fmt.Println(ic.AdditionalEnvs)
 }

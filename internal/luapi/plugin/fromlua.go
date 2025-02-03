@@ -8,6 +8,7 @@ type LuaConfItem string
 
 const (
 	SDKName       LuaConfItem = "sdk_name"
+	PluginName    LuaConfItem = "plugin_name"
 	PluginVersion LuaConfItem = "plugin_version"
 	Prequisite    LuaConfItem = "prequisite"
 	Homepage      LuaConfItem = "homepage"
