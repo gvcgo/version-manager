@@ -9,8 +9,12 @@ import (
 )
 
 var goPluginPath = "/Users/moqsien/projects/lua/vmr_plugins/go.lua"
+var minicondaPluginPath = "/Users/moqsien/projects/lua/vmr_plugins/miniconda.lua"
+var coursierPluginPath = "/Users/moqsien/projects/lua/vmr_plugins/coursier.lua"
 
 func TestGoPlugin(t *testing.T) {
+	fmt.Println("aaa")
+
 	ll := lua_global.NewLua()
 	defer ll.L.Close()
 
@@ -63,7 +67,7 @@ func TestGoPlugin(t *testing.T) {
 		// 	keys = append(keys, k)
 		// }
 		// fmt.Println(keys)
-		fmt.Println(vl["go1.23.5"][0].Extra)
+		fmt.Println(vl["1.23.5"][0].Extra)
 	}
 
 	ic := lua_global.GetInstallerConfig(L)
@@ -73,4 +77,109 @@ func TestGoPlugin(t *testing.T) {
 	fmt.Println(ic.FlagFiles)
 	fmt.Println(ic.BinaryDirs)
 	fmt.Println(ic.AdditionalEnvs)
+}
+
+func TestMinicondaPlugin(t *testing.T) {
+	fmt.Println("xxx-----")
+	ll := lua_global.NewLua()
+	defer ll.L.Close()
+	if err := ll.L.DoFile(minicondaPluginPath); err != nil {
+		t.Error(err)
+	}
+
+	L := ll.GetLState()
+
+	if pluginName := GetConfItemFromLua(L, PluginName); pluginName != "miniconda" {
+		t.Errorf("plugin_name should be 'miniconda', but got '%s'", pluginName)
+	}
+
+	f := L.GetGlobal("crawl")
+	if f == nil || f.Type() != lua.LTFunction {
+		t.Error("crawl function should be defined")
+	}
+
+	if err := L.CallByParam(lua.P{
+		Fn:      f,
+		NRet:    1,
+		Protect: true,
+	}); err != nil {
+		t.Error(err)
+	}
+
+	r := L.Get(-1)
+
+	ud, ok := r.(*lua.LUserData)
+	if !ok {
+		t.Error("return value should be userdata")
+	}
+
+	if vl, ok := ud.Value.(lua_global.VersionList); !ok {
+		t.Error("userdata value should be VersionList")
+	} else {
+		// keys := []string{}
+		// for k := range vl {
+		// 	keys = append(keys, k)
+		// }
+		// fmt.Println(keys)
+		fmt.Println(vl["latest"])
+	}
+
+	ic := lua_global.GetInstallerConfig(L)
+	if ic == nil {
+		t.Error("installer config should be defined")
+	}
+	fmt.Println(ic.BinaryDirs)
+}
+
+func TestCoursierPlugin(t *testing.T) {
+	fmt.Println("aaa")
+
+	ll := lua_global.NewLua()
+	defer ll.L.Close()
+	if err := ll.L.DoFile(coursierPluginPath); err != nil {
+		t.Error(err)
+	}
+
+	L := ll.GetLState()
+
+	if pluginName := GetConfItemFromLua(L, PluginName); pluginName != "coursier" {
+		t.Errorf("plugin_name should be 'coursier', but got '%s'", pluginName)
+	}
+
+	f := L.GetGlobal("crawl")
+	if f == nil || f.Type() != lua.LTFunction {
+		t.Error("crawl function should be defined")
+	}
+
+	if err := L.CallByParam(lua.P{
+		Fn:      f,
+		NRet:    1,
+		Protect: true,
+	}); err != nil {
+		t.Error(err)
+	}
+
+	r := L.Get(-1)
+
+	ud, ok := r.(*lua.LUserData)
+	if !ok {
+		t.Error("return value should be userdata")
+	}
+
+	if vl, ok := ud.Value.(lua_global.VersionList); !ok {
+		t.Error("userdata value should be VersionList")
+	} else {
+		// keys := []string{}
+		// for k := range vl {
+		// 	keys = append(keys, k)
+		// }
+		// fmt.Println(keys)
+		fmt.Println(vl["2.1.24"])
+	}
+
+	ic := lua_global.GetInstallerConfig(L)
+	if ic == nil {
+		t.Error("installer config should be defined")
+	}
+	fmt.Println(ic.FlagFiles)
 }

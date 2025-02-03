@@ -84,3 +84,39 @@ func AddItem(L *lua.LState) int {
 	L.Push(result)
 	return 1
 }
+
+func MergeVersionList(L *lua.LState) int {
+	ud := L.ToUserData(1)
+	if ud == nil {
+		return 0
+	}
+	vl, ok := ud.Value.(VersionList)
+
+	if !ok || vl == nil {
+		return 0
+	}
+
+	ud2 := L.ToUserData(2)
+	if ud2 == nil {
+		return 0
+	}
+	vl2, ok2 := ud2.Value.(VersionList)
+
+	if !ok2 || vl2 == nil {
+		return 0
+	}
+
+	for k, v := range vl2 {
+		sdkVersion, ok3 := vl[k]
+		if !ok3 {
+			vl[k] = v
+		} else {
+			vl[k] = append(sdkVersion, v...)
+		}
+	}
+
+	result := L.NewUserData()
+	result.Value = vl
+	L.Push(result)
+	return 1
+}

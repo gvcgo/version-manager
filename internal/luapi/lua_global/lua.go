@@ -65,6 +65,7 @@ func (l *Lua) init() {
 	// version
 	l.SetGlobal("newVersionList", NewVersionList)
 	l.SetGlobal("addItem", AddItem)
+	l.SetGlobal("mergeVersionList", MergeVersionList)
 	// github
 	l.SetGlobal("getGithubRelease", GetGithubRelease)
 	// installer_config
