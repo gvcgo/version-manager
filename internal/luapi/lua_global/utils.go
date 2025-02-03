@@ -1,6 +1,7 @@
 package lua_global
 
 import (
+	"fmt"
 	"regexp"
 	"runtime"
 	"strings"
@@ -71,6 +72,19 @@ func Trim(L *lua.LState) int {
 	str := L.ToString(1)
 	s := L.ToString(2)
 	result := strings.Trim(str, s)
+	L.Push(lua.LString(result))
+	return 1
+}
+
+func Sprintf(L *lua.LState) int {
+	pattern := L.ToString(1)
+	array := L.ToTable(2)
+
+	args := make([]any, 0)
+	array.ForEach(func(l1, l2 lua.LValue) {
+		args = append(args, l2.String())
+	})
+	result := fmt.Sprintf(pattern, args...)
 	L.Push(lua.LString(result))
 	return 1
 }
