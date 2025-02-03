@@ -74,6 +74,8 @@ func (l *Lua) init() {
 	l.SetGlobal("enableFlagDirExcepted", EnableFlagDirExcepted)
 	l.SetGlobal("addBinaryDirs", AddBinaryDirs)
 	l.SetGlobal("addAdditionalEnvs", AddAdditionalEnvs)
+	// conda
+	l.SetGlobal("searchByConda", SearchByConda)
 }
 
 func (l *Lua) GetLState() *lua.LState {
