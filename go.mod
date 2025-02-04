@@ -13,7 +13,7 @@ require (
 	github.com/creack/termios v0.0.0-20160714173321-88d0029e36a1
 	github.com/erikgeiser/promptkit v0.9.0
 	github.com/gogf/gf/v2 v2.6.1
-	github.com/gvcgo/goutils v1.0.7
+	github.com/gvcgo/goutils v1.0.8
 	github.com/mattn/go-runewidth v0.0.15
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
 	github.com/pelletier/go-toml/v2 v2.0.7

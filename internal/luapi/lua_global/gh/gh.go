@@ -68,8 +68,6 @@ func (g *Gh) getRelease(page int) (r []byte) {
 			"Accept":        AcceptHeader,
 			"Authorization": fmt.Sprintf(AuthorizationHeader, g.Token),
 		}
-		// g.Proxy = "http://127.0.0.1:2023"
-		// g.ReverseProxy = "https://proxy.vmr.us.kg/proxy/"
 	}
 
 	// https://api.github.com/repos/{owner}/{repo}/releases?per_page=100&page=1
@@ -104,5 +102,48 @@ func (g *Gh) GetReleases() (rl ReleaseList) {
 		rl = append(rl, itemList...)
 		page++
 	}
+	return
+}
+
+type RepoFile struct {
+	Name string `json:"name"`
+	Size int64  `json:"size"`
+	Url  string `json:"download_url"`
+	Sha  string `json:"sha"`
+}
+
+func (g *Gh) getFileList() (r []byte) {
+	if g.fetcher == nil {
+		g.fetcher = request.NewFetcher()
+		g.fetcher.Headers = map[string]string{
+			"Accept":        AcceptHeader,
+			"Authorization": fmt.Sprintf(AuthorizationHeader, g.Token),
+		}
+	}
+
+	//   https://api.github.com/repos/{gvcgo/vmr_plugins}/contents/
+	dUrl := fmt.Sprintf("https://api.github.com/repos/%s/contents/", strings.Trim(g.RepoName, "/"))
+
+	if g.Proxy != "" {
+		g.fetcher.Proxy = g.Proxy
+	} else if g.ReverseProxy != "" {
+		dUrl = strings.TrimSuffix(g.ReverseProxy, "/") + "/" + dUrl
+	}
+
+	g.fetcher.SetUrl(dUrl)
+	g.fetcher.Timeout = 180 * time.Second
+	if resp := g.fetcher.Get(); resp != nil {
+		defer resp.RawResponse.Body.Close()
+		r, _ = io.ReadAll(resp.RawResponse.Body)
+	}
+	return
+}
+
+/*
+Github files.
+*/
+func (g *Gh) GetFileList() (files []RepoFile) {
+	r := g.getFileList()
+	json.Unmarshal(r, &files)
 	return
 }

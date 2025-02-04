@@ -22,7 +22,7 @@
 package main
 
 import (
-	"github.com/gvcgo/version-manager/internal/installer"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 )
 
 func main() {
@@ -80,7 +80,7 @@ func main() {
 	// s := ShellRegExp.FindString(string(content))
 	// fmt.Println(s)
 
-	installer.TestCondaSearcher()
+	// installer.TestCondaSearcher()
 
 	// _, err := gutils.ExecuteSysCommand(
 	// 	true,
@@ -92,4 +92,5 @@ func main() {
 	// 	"/home/moqsien/.vmr/cache/jdk/21.0.3.0_12/",
 	// )
 	// fmt.Println(err)
+	plugin.DownloadPlugins()
 }

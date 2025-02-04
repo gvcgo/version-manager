@@ -237,3 +237,9 @@ func TestLuaPlugin(t *testing.T) {
 	}
 	fmt.Println(ic.BinaryDirs)
 }
+
+func TestPluginsLoadAll(t *testing.T) {
+	p := NewPlugins()
+	p.LoadAll()
+	fmt.Println(p.plugins)
+}
