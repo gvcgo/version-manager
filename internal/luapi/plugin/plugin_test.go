@@ -133,7 +133,7 @@ func TestMinicondaPlugin(t *testing.T) {
 }
 
 func TestCoursierPlugin(t *testing.T) {
-	fmt.Println("aaa")
+	fmt.Println("test coursier plugin")
 
 	ll := lua_global.NewLua()
 	defer ll.L.Close()
@@ -186,7 +186,7 @@ func TestCoursierPlugin(t *testing.T) {
 }
 
 func TestLuaPlugin(t *testing.T) {
-	fmt.Println("aaaaaa")
+	fmt.Println("test lua plugin")
 
 	ll := lua_global.NewLua()
 	defer ll.L.Close()

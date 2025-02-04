@@ -1,11 +1,9 @@
 package lua_global
 
 import (
-	"os"
 	"strings"
 
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/luapi/lua_global/gh"
 	lua "github.com/yuin/gopher-lua"
@@ -50,8 +48,7 @@ func GetGithubRelease(L *lua.LState) int {
 	cfg.Load()
 
 	if cfg.GithubToken == "" {
-		gprint.PrintError("Github token is not set in config file")
-		os.Exit(1)
+		cfg.GithubToken = gh.GetDefaultReadOnly()
 	}
 
 	client := gh.NewGh(repoName, cfg.GithubToken, cfg.ProxyUri, cfg.ReverseProxy)

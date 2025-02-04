@@ -7,8 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gvcgo/goutils/pkgs/crypt"
 	"github.com/gvcgo/goutils/pkgs/request"
 )
+
+func GetDefaultReadOnly() string {
+	r := crypt.DecodeBase64("WjJod1gxY3lVV1paTVZrNVYyVnZNVXQxVDFKUVNGWkhTalZTTWtaemJuVnNNakZYVUVsQk1R")
+	r = crypt.DecodeBase64(r)
+	return r
+}
 
 // ReleaseItem
 type Asset struct {
