@@ -1,6 +1,9 @@
 package lua_global
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 var condaScript = `print("-----------------conda-------------------")
 
@@ -11,6 +14,7 @@ print(result)
 `
 
 func TestConda(t *testing.T) {
+	fmt.Println("test conda")
 	ll := NewLua()
 	defer ll.Close()
 

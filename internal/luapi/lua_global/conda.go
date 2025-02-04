@@ -3,6 +3,7 @@ package lua_global
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -139,8 +140,13 @@ func SearchVersions(sdkName string) (result map[string][]string) {
 	}
 	result = make(map[string][]string)
 	for _, platform := range CondaPlatformList {
+		archInfo := ParseArch(platform)
+		osInfo := ParseOS(platform)
+		if archInfo != runtime.GOARCH || osInfo != runtime.GOOS {
+			continue
+		}
 		vlist := GetVersionForPlatform(platform, sdkName)
-		key := fmt.Sprintf("%s/%s", ParseOS(platform), ParseArch(platform))
+		key := fmt.Sprintf("%s/%s", osInfo, archInfo)
 		result[key] = vlist
 	}
 	return
@@ -168,15 +174,13 @@ func SearchByConda(L *lua.LState) int {
 
 	for platform, versionList := range versions {
 		pList := strings.Split(platform, "/")
-		osStr := pList[0]
-		archStr := pList[1]
 		for _, vv := range versionList {
 			if vv == "" {
 				continue
 			}
 			item := Item{
-				Os:        osStr,
-				Arch:      archStr,
+				Os:        pList[0],
+				Arch:      pList[1],
 				Installer: "conda",
 			}
 			if _, ok := result[vv]; !ok {

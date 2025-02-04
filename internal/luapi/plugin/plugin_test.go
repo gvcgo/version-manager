@@ -186,7 +186,7 @@ func TestCoursierPlugin(t *testing.T) {
 }
 
 func TestLuaPlugin(t *testing.T) {
-	fmt.Println("aaa")
+	fmt.Println("aaaaaa")
 
 	ll := lua_global.NewLua()
 	defer ll.L.Close()
