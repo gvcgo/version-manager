@@ -20,7 +20,7 @@ type Plugin struct {
 }
 
 type Plugins struct {
-	plugins []Plugin `json:"plugins"`
+	plugins []Plugin
 }
 
 func NewPlugins() *Plugins {
@@ -72,3 +72,10 @@ func (p *Plugins) LoadAll() {
 		ll.Close()
 	}
 }
+
+/*
+TODO:
+1. run a lua plugin
+2. cache version list
+3. show plugin list
+*/
