@@ -239,6 +239,7 @@ func TestLuaPlugin(t *testing.T) {
 }
 
 func TestPluginsLoadAll(t *testing.T) {
+	fmt.Println("test plugins load all aaaaa")
 	p := NewPlugins()
 	p.LoadAll()
 	fmt.Println(p.plugins)

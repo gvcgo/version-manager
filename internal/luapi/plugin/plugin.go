@@ -7,7 +7,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	lua "github.com/yuin/gopher-lua"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 )
 
 type Plugin struct {
@@ -48,7 +48,8 @@ func (p *Plugins) LoadAll() {
 		pl := Plugin{
 			FileName: f.Name(),
 		}
-		L := lua.NewState()
+		ll := lua_global.NewLua()
+		L := ll.L
 		L.DoFile(filepath.Join(pDir, f.Name()))
 		pl.PluginName = GetConfItemFromLua(L, PluginName)
 		if pl.PluginName == "" {
@@ -64,7 +65,10 @@ func (p *Plugins) LoadAll() {
 		if pl.Homepage == "" {
 			continue
 		}
+		if !DoLuaItemExist(L, InstallerConfig) || !DoLuaItemExist(L, Crawler) {
+			continue
+		}
 		p.plugins = append(p.plugins, pl)
-		L.Close()
+		ll.Close()
 	}
 }

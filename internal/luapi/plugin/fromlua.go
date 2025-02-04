@@ -34,3 +34,13 @@ func GetConfItemFromLua(L *lua.LState, item LuaConfItem) (result string) {
 	}
 	return
 }
+
+const (
+	InstallerConfig LuaConfItem = "ic"
+	Crawler         LuaConfItem = "crawl"
+)
+
+func DoLuaItemExist(L *lua.LState, item LuaConfItem) bool {
+	v := L.GetGlobal(string(item))
+	return v.String() != "nil"
+}

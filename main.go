@@ -21,10 +21,6 @@
 
 package main
 
-import (
-	"github.com/gvcgo/version-manager/internal/luapi/plugin"
-)
-
 func main() {
 	// os.Setenv(conf.VMReverseProxyEnvName, "https://proxy.vmr.us.kg/proxy/")
 	// register.RunInstaller(register.VersionKeeper["python"])
@@ -92,5 +88,4 @@ func main() {
 	// 	"/home/moqsien/.vmr/cache/jdk/21.0.3.0_12/",
 	// )
 	// fmt.Println(err)
-	plugin.DownloadPlugins()
 }
