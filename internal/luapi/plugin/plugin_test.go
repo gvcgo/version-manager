@@ -74,6 +74,7 @@ func TestGoPlugin(t *testing.T) {
 	ic := lua_global.GetInstallerConfig(L)
 	if ic == nil {
 		t.Error("installer config should be defined")
+		return
 	}
 	fmt.Println(ic.FlagFiles)
 	fmt.Println(ic.BinaryDirs)
@@ -128,6 +129,7 @@ func TestMinicondaPlugin(t *testing.T) {
 	ic := lua_global.GetInstallerConfig(L)
 	if ic == nil {
 		t.Error("installer config should be defined")
+		return
 	}
 	fmt.Println(ic.BinaryDirs)
 }
@@ -181,6 +183,7 @@ func TestCoursierPlugin(t *testing.T) {
 	ic := lua_global.GetInstallerConfig(L)
 	if ic == nil {
 		t.Error("installer config should be defined")
+		return
 	}
 	fmt.Println(ic.FlagFiles)
 }
@@ -234,6 +237,7 @@ func TestLuaPlugin(t *testing.T) {
 	ic := lua_global.GetInstallerConfig(L)
 	if ic == nil {
 		t.Error("installer config should be defined")
+		return
 	}
 	fmt.Println(ic.BinaryDirs)
 }
