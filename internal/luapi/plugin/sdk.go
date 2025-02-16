@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
@@ -14,19 +15,27 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+type PrequisiteHandler func() error
+
 /*
 SDK Versions
 */
 type Versions struct {
-	Vs             lua_global.VersionList
-	PluginFileName string
-	Lua            *lua_global.Lua
+	Lua                *lua_global.Lua
+	PluginFileName     string
+	PrequisiteHandlers map[string]PrequisiteHandler
+	Vs                 lua_global.VersionList
 }
 
 func NewVersions(fileName string) (v *Versions) {
 	return &Versions{
-		PluginFileName: fileName,
+		PluginFileName:     fileName,
+		PrequisiteHandlers: make(map[string]PrequisiteHandler),
 	}
+}
+
+func (v *Versions) RegisterPrequisiteHandler(prequisiteName string, handler PrequisiteHandler) {
+	v.PrequisiteHandlers[prequisiteName] = handler
 }
 
 func (v *Versions) loadPlugin() error {
@@ -76,20 +85,31 @@ func (v *Versions) saveToCache(pluginName string) {
 func (v *Versions) GetSdkVersions() (vs lua_global.VersionList) {
 	// load plugin.
 	if err := v.loadPlugin(); err != nil {
+		gprint.PrintError("load plugin failed: %s", v.PluginFileName)
 		return
 	}
 
 	pluginName := GetConfItemFromLua(v.Lua.L, PluginName)
 	v.loadFromCache(pluginName)
-	// TODO: prequisites check
 
 	vs = v.Vs
 	if len(vs) > 0 {
 		return
 	}
 
+	prequisite := GetConfItemFromLua(v.Lua.L, Prequisite)
+	if prequisite != "" {
+		handler, ok := v.PrequisiteHandlers[prequisite]
+		if ok && handler != nil {
+			if err := handler(); err != nil {
+				gprint.PrintError("handle prequisite failed: %s", err)
+			}
+		}
+	}
+
 	crawl := v.Lua.L.GetGlobal("crawl")
 	if crawl == nil || crawl.Type() != lua.LTFunction {
+		gprint.PrintError("invalid plugin: missing crawl function: %s", v.PluginFileName)
 		return
 	}
 
