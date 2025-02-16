@@ -3,7 +3,6 @@ package plugin
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,7 +33,6 @@ func downloadPlugins() error {
 		dUrl = strings.TrimSuffix(cfg.ReverseProxy, "/") + "/" + dUrl
 	}
 
-	fmt.Println(dUrl)
 	f.SetUrl(dUrl)
 	destDir := cnf.GetTempDir()
 

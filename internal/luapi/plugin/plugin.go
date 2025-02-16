@@ -8,6 +8,8 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
+	"github.com/gvcgo/version-manager/internal/tui/table"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 type Plugin struct {
@@ -20,12 +22,12 @@ type Plugin struct {
 }
 
 type Plugins struct {
-	plugins []Plugin
+	pls map[string]Plugin
 }
 
 func NewPlugins() *Plugins {
 	p := &Plugins{
-		plugins: []Plugin{},
+		pls: make(map[string]Plugin),
 	}
 	if ok, _ := gutils.PathIsExist(cnf.GetPluginDir()); !ok {
 		p.Update()
@@ -68,7 +70,7 @@ func (p *Plugins) LoadAll() {
 		if !DoLuaItemExist(L, InstallerConfig) || !DoLuaItemExist(L, Crawler) {
 			continue
 		}
-		p.plugins = append(p.plugins, pl)
+		p.pls[pl.PluginName] = pl
 		ll.Close()
 	}
 }
@@ -79,3 +81,31 @@ TODO:
 2. cache version list
 3. show plugin list
 */
+func (p *Plugins) GetPlugin(pName string) Plugin {
+	p.LoadAll()
+	if pl, ok := p.pls[pName]; ok {
+		return pl
+	}
+	return Plugin{}
+}
+
+func (p *Plugins) GetPluginList() (pl []Plugin) {
+	p.LoadAll()
+	for _, v := range p.pls {
+		pl = append(pl, v)
+	}
+	return
+}
+
+func (p *Plugins) GetPluginSortedRows() (rows []table.Row) {
+	p.LoadAll()
+	for _, v := range p.pls {
+		rows = append(rows, table.Row{
+			v.PluginName,
+			v.Homepage,
+			v.PluginVersion,
+		})
+	}
+	utils.SortVersionAscend(rows)
+	return
+}
