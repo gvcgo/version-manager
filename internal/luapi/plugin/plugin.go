@@ -40,6 +40,10 @@ func (p *Plugins) Update() {
 }
 
 func (p *Plugins) LoadAll() {
+	if len(p.pls) > 0 {
+		return
+	}
+
 	pDir := cnf.GetPluginDir()
 	files, _ := os.ReadDir(pDir)
 
@@ -75,12 +79,6 @@ func (p *Plugins) LoadAll() {
 	}
 }
 
-/*
-TODO:
-1. run a lua plugin
-2. cache version list
-3. show plugin list
-*/
 func (p *Plugins) GetPlugin(pName string) Plugin {
 	p.LoadAll()
 	if pl, ok := p.pls[pName]; ok {
