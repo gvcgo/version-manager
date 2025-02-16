@@ -1,7 +1,9 @@
 package plugin
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -42,16 +44,49 @@ func (v *Versions) loadPlugin() error {
 	return nil
 }
 
-// TODO: get and save sdk versions to cache files.
+func (v *Versions) loadFromCache(pluginName string) {
+	cacheFilePath := filepath.Join(cnf.GetCacheDir(), pluginName)
+	if ok, _ := gutils.PathIsExist(cacheFilePath); !ok {
+		return
+	}
+	lastModifiedTime := utils.GetFileLastModifiedTime(cacheFilePath)
+	if lastModifiedTime >= 86400 {
+		return
+	}
+	if content, err := os.ReadFile(cacheFilePath); err == nil {
+		err = json.Unmarshal(content, &v.Vs)
+		if err != nil {
+			v.Vs = make(lua_global.VersionList)
+		}
+	}
+}
+
+func (v *Versions) saveToCache(pluginName string) {
+	if len(v.Vs) == 0 {
+		return
+	}
+	cacheFilePath := filepath.Join(cnf.GetCacheDir(), pluginName)
+	if content, err := json.MarshalIndent(v.Vs, "", "  "); err == nil {
+		if len(content) > 10 {
+			os.WriteFile(cacheFilePath, content, os.ModePerm)
+		}
+	}
+}
+
 func (v *Versions) GetSdkVersions() (vs lua_global.VersionList) {
+	// load plugin.
+	if err := v.loadPlugin(); err != nil {
+		return
+	}
+
+	pluginName := GetConfItemFromLua(v.Lua.L, PluginName)
+	v.loadFromCache(pluginName)
+	// TODO: prequisites check
+
 	vs = v.Vs
 	if len(vs) > 0 {
 		return
 	}
-	if err := v.loadPlugin(); err != nil {
-		return
-	}
-	// TODO: prequisites check
 
 	crawl := v.Lua.L.GetGlobal("crawl")
 	if crawl == nil || crawl.Type() != lua.LTFunction {
@@ -75,6 +110,7 @@ func (v *Versions) GetSdkVersions() (vs lua_global.VersionList) {
 
 	if vl, ok := userData.Value.(lua_global.VersionList); ok {
 		v.Vs = vl
+		v.saveToCache(pluginName)
 	}
 	return
 }
@@ -106,4 +142,8 @@ func (v *Versions) GetInstallerConfig() (ic *lua_global.InstallerConfig) {
 
 	ic = lua_global.GetInstallerConfig(v.Lua.L)
 	return
+}
+
+func (v *Versions) CloseLua() {
+	v.Lua.Close()
 }
