@@ -1,11 +1,8 @@
 package cmds
 
 import (
-	"encoding/json"
-	"os"
-
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 )
 
 type VmrTUI struct {
@@ -19,52 +16,52 @@ func NewTUI() *VmrTUI {
 
 func (v *VmrTUI) ListSDKName() {
 	v.SList = NewSDKSearcher()
-	nextEvent, sdkName := v.SList.Show()
+	nextEvent, pluginName := v.SList.Show()
 
 	if nextEvent == KeyEventWhatsInstalled {
 		// show SDKs already installed by vmr.
-		nextEvent, sdkName = v.SList.ShowInstalledOnly()
+		nextEvent, pluginName = v.SList.ShowInstalledOnly()
 	}
 
 	switch nextEvent {
 	case KeyEventSeachVersionList:
 		// search version list for selected sdkname.
-		v.SearchVersions(sdkName, v.SList.GetSDKItemByName(sdkName))
+		v.SearchVersions(v.SList.GetSDKItemByName(pluginName))
 	case KeyEventShowLocalInstalled:
 		// show local installed versions for selected sdkname.
-		v.ShowLocalInstalled(sdkName)
+		v.ShowLocalInstalled(pluginName)
 	case KeyEventClearLocalCached:
 		// clear all cached files for selected sdkname.
-		v.ClearLocalCachedFiles(sdkName, "")
+		v.ClearLocalCachedFiles(pluginName, "")
 	case KeyEventRemoveLocalInstalled:
 		// remove all installed versions for selected sdkname.
-		v.RemoveInstalledVersions(sdkName)
+		v.RemoveInstalledVersions(pluginName)
 	default:
 	}
 }
 
-func (v *VmrTUI) SearchVersions(sdkName string, sdkItem download.SDK) {
+func (v *VmrTUI) SearchVersions(pluginItem plugin.Plugin) {
 	if v.VList == nil {
 		v.VList = NewVersionSearcher()
 	}
-	lastPressedKy, versionName := v.VList.Search(sdkName, sdkItem.Sha256)
+	lastPressedKy, versionName := v.VList.Search(pluginItem.PluginName)
 
 	switch lastPressedKy {
 	case KeyEventBacktoPreviousPage:
 		v.ListSDKName()
 	case KeyEventUseVersionGlobally:
 		vItem := v.VList.GetVersionByVersionName(versionName)
-		ins := installer.NewInstaller(sdkName, versionName, sdkItem.InstallConfSha256, vItem)
+		ins := installer.NewInstaller(pluginItem.SDKName, pluginItem.PluginName, versionName, vItem)
 		ins.SetInvokeMode(installer.ModeGlobally)
 		ins.Install()
 	case KeyEventUseVersionSessionly:
 		vItem := v.VList.GetVersionByVersionName(versionName)
-		ins := installer.NewInstaller(sdkName, versionName, sdkItem.InstallConfSha256, vItem)
+		ins := installer.NewInstaller(pluginItem.SDKName, pluginItem.PluginName, versionName, vItem)
 		ins.SetInvokeMode(installer.ModeSessionly)
 		ins.Install()
 	case KeyEventLockVersion:
 		vItem := v.VList.GetVersionByVersionName(versionName)
-		ins := installer.NewInstaller(sdkName, versionName, sdkItem.InstallConfSha256, vItem)
+		ins := installer.NewInstaller(pluginItem.SDKName, pluginItem.PluginName, versionName, vItem)
 		ins.SetInvokeMode(installer.ModeToLock)
 		ins.Install()
 	}
@@ -119,17 +116,15 @@ func (v *VmrTUI) RemoveInstalledVersions(sdkName string) {
 }
 
 func (v *VmrTUI) RemoveSelectedVersion(sdkName, versionName string) {
-	versionFilePath := download.GetVersionFilePath(sdkName)
-	content, _ := os.ReadFile(versionFilePath)
-	rawVersionList := make(download.VersionList)
-	json.Unmarshal(content, &rawVersionList)
-	installerType := "unarchiver"
-	for _, vl := range rawVersionList {
-		if len(vl) > 0 {
-			installerType = vl[0].Installer
-			break
-		}
+	pls := plugin.NewPlugins()
+	pls.LoadAll()
+	p := pls.GetPluginBySDKName(sdkName)
+	versions := plugin.NewVersions(p.PluginName)
+	if versions == nil {
+		return
 	}
-	ins := installer.NewInstaller(sdkName, versionName, "", download.Item{Installer: installerType})
+	vItem := versions.GetVersionByName(versionName)
+
+	ins := installer.NewInstaller(sdkName, p.PluginName, versionName, vItem)
 	ins.Uninstall()
 }

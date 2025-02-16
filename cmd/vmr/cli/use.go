@@ -6,8 +6,9 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/cmd/vmr/cli/vcli"
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +52,18 @@ var useCmd = &cobra.Command{
 
 		ok2, _ := cmd.Flags().GetBool("install-by-conda")
 
-		vList := download.GetVersionList(sdkName, "")
+		pls := plugin.NewPlugins()
+		pls.LoadAll()
+		p := pls.GetPluginBySDKName(sdkName)
+
+		versions := plugin.NewVersions(p.PluginName)
+		if versions == nil {
+			gprint.PrintError("No Versions Found.")
+			return
+		}
+
+		vList := versions.GetSdkVersions()
+
 		if len(vList) == 0 && !ok2 {
 			gprint.PrintError("No SDK Found.")
 			return
@@ -63,10 +75,10 @@ var useCmd = &cobra.Command{
 			gprint.PrintError("No Versions Found.")
 			return
 		} else if ok2 {
-			vItem = download.Item{
+			vItem = lua_global.Item{
 				Arch:      runtime.GOARCH,
 				Os:        runtime.GOOS,
-				Installer: download.Conda,
+				Installer: lua_global.Conda,
 			}
 		}
 

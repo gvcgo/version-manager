@@ -9,7 +9,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 )
 
 /*
@@ -65,14 +65,14 @@ var CondaSearchCommand = []string{
 search versions by Conda.
 */
 type CondaSearcher struct {
-	VersionList map[string]download.Item
+	VersionList map[string]lua_global.Item
 	SDKName     string
 	spinner     *spinner.Spinner
 }
 
 func NewCondaSearcher(sdkName string) (c *CondaSearcher) {
 	c = &CondaSearcher{
-		VersionList: make(map[string]download.Item),
+		VersionList: make(map[string]lua_global.Item),
 		SDKName:     sdkName,
 		spinner:     spinner.NewSpinner(),
 	}
@@ -124,7 +124,7 @@ func (c *CondaSearcher) ParseSearchResult(content string) (vlist []string) {
 	return
 }
 
-func (c *CondaSearcher) GetVersions() map[string]download.Item {
+func (c *CondaSearcher) GetVersions() map[string]lua_global.Item {
 	// check miniconda.
 	CheckAndInstallMiniconda()
 
@@ -141,10 +141,10 @@ func (c *CondaSearcher) GetVersions() map[string]download.Item {
 	if err == nil {
 		vlist := c.ParseSearchResult(r.String())
 		for _, verName := range vlist {
-			c.VersionList[verName] = download.Item{
+			c.VersionList[verName] = lua_global.Item{
 				Arch:      runtime.GOARCH,
 				Os:        runtime.GOOS,
-				Installer: download.Conda,
+				Installer: lua_global.Conda,
 			}
 		}
 	}

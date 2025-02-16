@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -22,14 +23,14 @@ SDK Versions
 */
 type Versions struct {
 	Lua                *lua_global.Lua
-	PluginFileName     string
+	PluginName         string
 	PrequisiteHandlers map[string]PrequisiteHandler
-	Vs                 lua_global.VersionList
+	versionList        map[string]lua_global.Item
 }
 
-func NewVersions(fileName string) (v *Versions) {
+func NewVersions(pluginName string) (v *Versions) {
 	return &Versions{
-		PluginFileName:     fileName,
+		PluginName:         pluginName,
 		PrequisiteHandlers: make(map[string]PrequisiteHandler),
 	}
 }
@@ -43,9 +44,18 @@ func (v *Versions) loadPlugin() error {
 		v.Lua = lua_global.NewLua()
 	}
 	pDir := cnf.GetPluginDir()
-	fPath := filepath.Join(pDir, v.PluginFileName)
+
+	pls := NewPlugins()
+	pls.LoadAll()
+
+	p := pls.GetPlugin(v.PluginName)
+	if p.FileName == "" {
+		return fmt.Errorf("plugin not found: %s", v.PluginName)
+	}
+
+	fPath := filepath.Join(pDir, p.FileName)
 	if ok, _ := gutils.PathIsExist(fPath); !ok {
-		return fmt.Errorf("plugin file not found: %s", v.PluginFileName)
+		return fmt.Errorf("plugin file not found: %s", v.PluginName)
 	}
 	if err := v.Lua.L.DoFile(fPath); err != nil {
 		return fmt.Errorf("failed to load plugin file: %s", err)
@@ -59,40 +69,40 @@ func (v *Versions) loadFromCache(pluginName string) {
 		return
 	}
 	lastModifiedTime := utils.GetFileLastModifiedTime(cacheFilePath)
-	if lastModifiedTime >= 86400 {
+	if lastModifiedTime >= cnf.GetCacheRetentionTime() {
 		return
 	}
 	if content, err := os.ReadFile(cacheFilePath); err == nil {
-		err = json.Unmarshal(content, &v.Vs)
+		err = json.Unmarshal(content, &v.versionList)
 		if err != nil {
-			v.Vs = make(lua_global.VersionList)
+			v.versionList = map[string]lua_global.Item{}
 		}
 	}
 }
 
 func (v *Versions) saveToCache(pluginName string) {
-	if len(v.Vs) == 0 {
+	if len(v.versionList) == 0 {
 		return
 	}
 	cacheFilePath := filepath.Join(cnf.GetCacheDir(), pluginName)
-	if content, err := json.MarshalIndent(v.Vs, "", "  "); err == nil {
+	if content, err := json.MarshalIndent(v.versionList, "", "  "); err == nil {
 		if len(content) > 10 {
 			os.WriteFile(cacheFilePath, content, os.ModePerm)
 		}
 	}
 }
 
-func (v *Versions) GetSdkVersions() (vs lua_global.VersionList) {
+func (v *Versions) GetSdkVersions() (vs map[string]lua_global.Item) {
 	// load plugin.
 	if err := v.loadPlugin(); err != nil {
-		gprint.PrintError("load plugin failed: %s", v.PluginFileName)
+		gprint.PrintError("load plugin failed: %s", v.PluginName)
 		return
 	}
 
 	pluginName := GetConfItemFromLua(v.Lua.L, PluginName)
 	v.loadFromCache(pluginName)
 
-	vs = v.Vs
+	vs = v.versionList
 	if len(vs) > 0 {
 		return
 	}
@@ -109,7 +119,7 @@ func (v *Versions) GetSdkVersions() (vs lua_global.VersionList) {
 
 	crawl := v.Lua.L.GetGlobal("crawl")
 	if crawl == nil || crawl.Type() != lua.LTFunction {
-		gprint.PrintError("invalid plugin: missing crawl function: %s", v.PluginFileName)
+		gprint.PrintError("invalid plugin: missing crawl function: %s", v.PluginName)
 		return
 	}
 
@@ -129,17 +139,23 @@ func (v *Versions) GetSdkVersions() (vs lua_global.VersionList) {
 	}
 
 	if vl, ok := userData.Value.(lua_global.VersionList); ok {
-		v.Vs = vl
+		for vName, vv := range vl {
+			for _, ver := range vv {
+				if ver.Os == runtime.GOOS && ver.Arch == runtime.GOARCH {
+					v.versionList[vName] = ver
+				}
+			}
+		}
 		v.saveToCache(pluginName)
 	}
 	return
 }
 
 func (v *Versions) GetSortedVersionList() (vs []table.Row) {
-	if len(v.Vs) == 0 {
+	if len(v.versionList) == 0 {
 		v.GetSdkVersions()
 	}
-	for vName := range v.Vs {
+	for vName := range v.versionList {
 		vs = append(vs, table.Row{
 			vName,
 		})
@@ -148,11 +164,21 @@ func (v *Versions) GetSortedVersionList() (vs []table.Row) {
 	return
 }
 
-func (v *Versions) GetVersionByName(versionName string) (sv lua_global.SDKVersion) {
-	if len(v.Vs) == 0 {
+func (v *Versions) GetLatestVersion() (versionName string, r lua_global.Item) {
+	vs := v.GetSortedVersionList()
+	if len(vs) == 0 {
+		return
+	}
+	versionName = vs[0][0]
+	r = v.GetVersionByName(versionName)
+	return
+}
+
+func (v *Versions) GetVersionByName(versionName string) (r lua_global.Item) {
+	if len(v.versionList) == 0 {
 		v.GetSdkVersions()
 	}
-	return v.Vs[versionName]
+	return v.versionList[versionName]
 }
 
 func (v *Versions) GetInstallerConfig() (ic *lua_global.InstallerConfig) {

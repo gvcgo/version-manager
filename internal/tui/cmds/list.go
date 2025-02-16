@@ -3,8 +3,8 @@ package cmds
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 	"github.com/gvcgo/version-manager/internal/utils"
@@ -26,30 +26,21 @@ Show the SDK list supported by vmr.
 */
 
 type SDKSearcher struct {
-	SdkList download.SDKList
+	plugins *plugin.Plugins
 }
 
 func NewSDKSearcher() *SDKSearcher {
 	return &SDKSearcher{
-		SdkList: make(download.SDKList),
+		plugins: plugin.NewPlugins(),
 	}
 }
 
-func (v *SDKSearcher) GetShaBySDKName(sdkName string) (ss string) {
-	if s, ok := v.SdkList[sdkName]; ok {
-		ss = s.Sha256
-	}
-	return
-}
-
-func (v *SDKSearcher) GetSDKItemByName(sdkName string) (item download.SDK) {
-	item = v.SdkList[sdkName]
+func (v *SDKSearcher) GetSDKItemByName(pluginName string) (item plugin.Plugin) {
+	item = v.plugins.GetPlugin(pluginName)
 	return
 }
 
 func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
-	v.SdkList = download.GetSDKList()
-
 	ll := table.NewList()
 	ll.SetListType(table.SDKList)
 	v.RegisterKeyEvents(ll)
@@ -61,10 +52,11 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 		w = 120
 	}
 	ll.SetHeader([]table.Column{
-		{Title: "sdkname", Width: 20},
+		{Title: "plugin_name", Width: 20},
 		{Title: "homepage", Width: w},
 	})
-	rows := download.GetSDKSortedRows(v.SdkList)
+
+	rows := v.plugins.GetPluginSortedRows()
 	if len(rows) == 0 {
 		gprint.PrintWarning("No sdk found!")
 		gprint.PrintWarning("Please check if you have a proxy or reverse proxy available.")
@@ -93,7 +85,7 @@ func (v *SDKSearcher) ShowInstalledOnly() (nextEvent, selectedItem string) {
 		{Title: "installed sdk", Width: 20},
 		{Title: "homepage", Width: w},
 	})
-	rows := download.GetSDKSortedRows(v.SdkList)
+	rows := v.plugins.GetPluginSortedRows()
 
 	installedRows := []table.Row{}
 	for _, r := range rows {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gtea/spinner"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
@@ -22,9 +22,9 @@ type CondaInstaller struct {
 	OriginSDKName string
 	SDKName       string
 	VersionName   string
-	Version       download.Item
+	Version       lua_global.Item
 	spinner       *spinner.Spinner
-	installConf   download.InstallerConfig
+	installConf   *lua_global.InstallerConfig
 	signal        chan struct{}
 }
 
@@ -36,17 +36,18 @@ func NewCondaInstaller() (c *CondaInstaller) {
 	return
 }
 
-func (c *CondaInstaller) SetInstallConf(iconf download.InstallerConfig) {
+func (c *CondaInstaller) SetInstallConf(iconf *lua_global.InstallerConfig) {
 	c.installConf = iconf
 }
 
-func (c *CondaInstaller) Initiate(originSDKName, versionName string, version download.Item) {
+func (c *CondaInstaller) Initiate(originSDKName, versionName string, version lua_global.Item) {
 	c.OriginSDKName = originSDKName
 	c.VersionName = versionName
 	c.Version = version
 	c.FormatSDKName()
 }
 
+// TODO: remove format sdk name.
 func (c *CondaInstaller) FormatSDKName() {
 	if c.OriginSDKName == "pypy" {
 		c.SDKName = "python"

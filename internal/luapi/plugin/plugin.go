@@ -87,6 +87,16 @@ func (p *Plugins) GetPlugin(pName string) Plugin {
 	return Plugin{}
 }
 
+func (p *Plugins) GetPluginBySDKName(sdkName string) Plugin {
+	p.LoadAll()
+	for _, v := range p.pls {
+		if v.SDKName == sdkName {
+			return v
+		}
+	}
+	return Plugin{}
+}
+
 func (p *Plugins) GetPluginList() (pl []Plugin) {
 	p.LoadAll()
 	for _, v := range p.pls {

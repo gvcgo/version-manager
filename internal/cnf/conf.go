@@ -132,6 +132,7 @@ type VMRConf struct {
 	UseCustomedMirrors  bool   `json,toml:"use_customed_mirrors"`
 	AllowNestedSessions bool   `json,toml:"allow_nested_sessions"`
 	GithubToken         string `json,toml:"github_token"`
+	CacheRetentionTime  int64  `json,toml:"cache_retention_time"` // in seconds.
 }
 
 func NewVMRConf() (v *VMRConf) {
@@ -233,5 +234,13 @@ func (v *VMRConf) SetGithubToken(token string) {
 		return
 	}
 	v.GithubToken = token
+	v.Save()
+}
+
+func (v *VMRConf) SetCacheRetentionTime(t int64) {
+	v.Load()
+	if t > 0 {
+		v.CacheRetentionTime = t
+	}
 	v.Save()
 }

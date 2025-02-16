@@ -11,6 +11,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
@@ -21,8 +22,8 @@ type ArchiverInstaller struct {
 	OriginSDKName string
 	SDKName       string
 	VersionName   string
-	Version       download.Item
-	installConf   download.InstallerConfig
+	Version       lua_global.Item
+	installConf   *lua_global.InstallerConfig
 	dirFinder     *utils.HomeDirFinder
 }
 
@@ -33,11 +34,11 @@ func NewArchiverInstaller() (a *ArchiverInstaller) {
 	return
 }
 
-func (a *ArchiverInstaller) SetInstallConf(iconf download.InstallerConfig) {
+func (a *ArchiverInstaller) SetInstallConf(iconf *lua_global.InstallerConfig) {
 	a.installConf = iconf
 }
 
-func (a *ArchiverInstaller) Initiate(originSDKName, versionName string, version download.Item) {
+func (a *ArchiverInstaller) Initiate(originSDKName, versionName string, version lua_global.Item) {
 	a.OriginSDKName = originSDKName
 	a.VersionName = versionName
 	a.Version = version

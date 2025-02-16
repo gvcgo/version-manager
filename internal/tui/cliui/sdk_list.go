@@ -8,38 +8,24 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 type SDKSearcher struct {
-	SdkList download.SDKList
+	Plugins *plugin.Plugins
 }
 
 func NewSDKSearcher() *SDKSearcher {
 	return &SDKSearcher{
-		SdkList: make(download.SDKList),
+		Plugins: plugin.NewPlugins(),
 	}
-}
-
-func (v *SDKSearcher) GetShaBySDKName(sdkName string) (ss string) {
-	if s, ok := v.SdkList[sdkName]; ok {
-		ss = s.Sha256
-	}
-	return
-}
-
-func (v *SDKSearcher) GetSDKItemByName(sdkName string) (item download.SDK) {
-	item = v.SdkList[sdkName]
-	return
 }
 
 func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
-	v.SdkList = download.GetSDKList()
-
 	ll := table.NewList()
 	ll.SetListType(table.SDKList)
 	v.RegisterKeyEvents(ll)
@@ -54,7 +40,7 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: "sdkname", Width: 20},
 		{Title: "homepage", Width: w},
 	})
-	rows := download.GetSDKSortedRows(v.SdkList)
+	rows := v.Plugins.GetPluginSortedRows()
 	if len(rows) == 0 {
 		gprint.PrintWarning("No sdk found!")
 		gprint.PrintWarning("Please check if you have a proxy or reverse proxy available.")
@@ -83,8 +69,8 @@ func (v *SDKSearcher) ShowInstalledOnly() (nextEvent, selectedItem string) {
 		{Title: "installed sdk", Width: 20},
 		{Title: "homepage", Width: w},
 	})
-	rows := download.GetSDKSortedRows(v.SdkList)
 
+	rows := v.Plugins.GetPluginSortedRows()
 	installedRows := []table.Row{}
 	for _, r := range rows {
 		if install.IsSDKInstalledByVMR(r[0]) {
@@ -111,9 +97,7 @@ func (v *SDKSearcher) PrintInstalledSDKs() {
 }
 
 func (v *SDKSearcher) GetInstalledSDKList() (sdkList []string) {
-	v.SdkList = download.GetSDKList()
-	rows := download.GetSDKSortedRows(v.SdkList)
-
+	rows := v.Plugins.GetPluginSortedRows()
 	installedRows := []table.Row{}
 	for _, r := range rows {
 		if install.IsSDKInstalledByVMR(r[0]) {

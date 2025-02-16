@@ -1,12 +1,10 @@
 package vcli
 
 import (
-	"encoding/json"
-	"os"
 	"strings"
 
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -41,18 +39,16 @@ var UninstallVersionCmd = &cobra.Command{
 			lif := installer.NewIVFinder(sdkName)
 			lif.UninstallAllVersions()
 		} else {
-			versionFilePath := download.GetVersionFilePath(sdkName)
-			content, _ := os.ReadFile(versionFilePath)
-			rawVersionList := make(download.VersionList)
-			json.Unmarshal(content, &rawVersionList)
-			installerType := "unarchiver"
-			for _, vl := range rawVersionList {
-				if len(vl) > 0 {
-					installerType = vl[0].Installer
-					break
-				}
+			pls := plugin.NewPlugins()
+			pls.LoadAll()
+			p := pls.GetPluginBySDKName(sdkName)
+
+			v := plugin.NewVersions(p.PluginName)
+			if v == nil {
+				return
 			}
-			ins := installer.NewInstaller(sdkName, version, "", download.Item{Installer: installerType})
+			vItem := v.GetVersionByName(version)
+			ins := installer.NewInstaller(p.SDKName, p.PluginName, version, vItem)
 			ins.Uninstall()
 		}
 	},

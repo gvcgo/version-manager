@@ -9,7 +9,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 )
 
 func init() {
@@ -23,7 +23,7 @@ const (
 /*
 post-installation handler for PHP.
 */
-func PostInstallForPHP(versionName string, version download.Item) {
+func PostInstallForPHP(versionName string, version lua_global.Item) {
 	if !strings.Contains(version.Url, "github.com") {
 		return
 	}

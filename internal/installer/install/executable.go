@@ -13,6 +13,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
@@ -174,11 +175,11 @@ type ExeInstaller struct {
 	OriginSDKName string
 	SDKName       string
 	VersionName   string
-	Version       download.Item
+	Version       lua_global.Item
 	Fetcher       *request.Fetcher
 	spinner       *spinner.Spinner
 	downloader    *download.Downloader
-	installConf   download.InstallerConfig
+	installConf   *lua_global.InstallerConfig
 	signal        chan struct{}
 }
 
@@ -191,11 +192,11 @@ func NewExeInstaller() (ei *ExeInstaller) {
 	return
 }
 
-func (ei *ExeInstaller) SetInstallConf(iconf download.InstallerConfig) {
+func (ei *ExeInstaller) SetInstallConf(iconf *lua_global.InstallerConfig) {
 	ei.installConf = iconf
 }
 
-func (ei *ExeInstaller) Initiate(originSDKName, versionName string, version download.Item) {
+func (ei *ExeInstaller) Initiate(originSDKName, versionName string, version lua_global.Item) {
 	ei.OriginSDKName = originSDKName
 	ei.VersionName = versionName
 	ei.Version = version

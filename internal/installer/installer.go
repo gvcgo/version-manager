@@ -9,9 +9,10 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/installer/post"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/gvcgo/version-manager/internal/shell"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/utils"
@@ -27,8 +28,8 @@ const (
 )
 
 type SDKInstaller interface {
-	Initiate(originSDKName, versionName string, version download.Item)
-	SetInstallConf(iconf download.InstallerConfig)
+	Initiate(originSDKName, versionName string, version lua_global.Item)
+	SetInstallConf(iconf *lua_global.InstallerConfig)
 	FormatSDKName()
 	GetInstallDir() string
 	GetSymbolLinkPath() string
@@ -39,37 +40,41 @@ type SDKInstaller interface {
 SDK Installer.
 */
 type Installer struct {
-	OriginSDKName string
+	PluginName    string
+	SDKName       string
 	VersionName   string
-	Version       download.Item
+	Version       lua_global.Item
 	sdkInstaller  SDKInstaller
-	installerConf download.InstallerConfig
+	installerConf *lua_global.InstallerConfig
 	Shell         shell.Sheller
 	Mode          InvokeMode
 	NoEnvs        bool
 }
 
-func NewInstaller(originSDKName, versionName, intallSha256 string, version download.Item) (i *Installer) {
+func NewInstaller(sdkName, pluginName, versionName string, version lua_global.Item) (i *Installer) {
 	i = &Installer{
-		OriginSDKName: originSDKName,
-		VersionName:   versionName,
-		Version:       version,
-		Shell:         shell.NewShell(),
-		Mode:          ModeGlobally,
-		NoEnvs:        false,
+		PluginName:  pluginName,
+		SDKName:     sdkName,
+		VersionName: versionName,
+		Version:     version,
+		Shell:       shell.NewShell(),
+		Mode:        ModeGlobally,
+		NoEnvs:      false,
 	}
 	switch version.Installer {
-	case download.Conda, download.CondaForge:
+	case lua_global.Conda, lua_global.CondaForge:
 		i.sdkInstaller = install.NewCondaInstaller()
-	case download.Coursier:
+	case lua_global.Coursier:
 		i.sdkInstaller = install.NewCoursierInstaller()
-	case download.Executable, download.Dpkg, download.Rpm:
+	case lua_global.Executable, lua_global.Dpkg, lua_global.Rpm:
 		i.sdkInstaller = install.NewExeInstaller()
 	default:
 		i.sdkInstaller = install.NewArchiverInstaller()
 	}
-	i.sdkInstaller.Initiate(originSDKName, versionName, version)
-	i.installerConf = download.GetSDKInstallationConfig(originSDKName, intallSha256)
+	i.sdkInstaller.Initiate(sdkName, versionName, version)
+
+	vv := plugin.NewVersions(pluginName)
+	i.installerConf = vv.GetInstallerConfig()
 	i.sdkInstaller.SetInstallConf(i.installerConf)
 	return
 }
@@ -107,7 +112,7 @@ func (i *Installer) CollectEnvs(basePath string) map[string][]string {
 		return result
 	}
 	if ok, _ := gutils.PathIsExist(basePath); ok {
-		binDirList := []download.DirPath{}
+		binDirList := []lua_global.DirPath{}
 		dd := i.installerConf.BinaryDirs
 		if dd != nil {
 			switch runtime.GOOS {
@@ -121,7 +126,7 @@ func (i *Installer) CollectEnvs(basePath string) map[string][]string {
 			}
 		}
 		if len(binDirList) == 0 {
-			binDirList = append(binDirList, download.DirPath{})
+			binDirList = append(binDirList, lua_global.DirPath{})
 		}
 		for _, dirPath := range binDirList {
 			pList := append([]string{basePath}, dirPath...)
@@ -135,7 +140,7 @@ func (i *Installer) CollectEnvs(basePath string) map[string][]string {
 		aa := i.installerConf.AdditionalEnvs
 		for _, addEnv := range aa {
 			if len(addEnv.Value) == 0 {
-				addEnv.Value = append(addEnv.Value, download.DirPath{})
+				addEnv.Value = append(addEnv.Value, lua_global.DirPath{})
 			}
 			dirList := []string{}
 			for _, dirPath := range addEnv.Value {
@@ -204,9 +209,9 @@ func (i *Installer) IsInstalled() bool {
 func (i *Installer) Install() {
 	// check prequisite.
 	switch i.Version.Installer {
-	case download.Conda, download.CondaForge:
+	case lua_global.Conda, lua_global.CondaForge:
 		CheckAndInstallMiniconda()
-	case download.Coursier:
+	case lua_global.Coursier:
 		CheckAndInstallCoursier()
 	default:
 	}
@@ -214,11 +219,11 @@ func (i *Installer) Install() {
 	if !i.IsInstalled() {
 		i.sdkInstaller.Install()
 		// post-install handler.
-		if handler, ok := post.PostInstallHandlers[i.OriginSDKName]; ok {
+		if handler, ok := post.PostInstallHandlers[i.PluginName]; ok {
 			handler(i.VersionName, i.Version)
 		}
 	} else if i.Mode == ModeGlobally {
-		gprint.PrintInfo("%s %s is already installed.", i.OriginSDKName, i.VersionName)
+		gprint.PrintInfo("%s %s is already installed.", i.PluginName, i.VersionName)
 	}
 
 	if i.Mode == ModeGlobally {
@@ -231,7 +236,7 @@ func (i *Installer) Install() {
 		}
 
 		// terminal.ModifyPathForPty(i.OriginSDKName)
-		RemoveGlobalSDKPathTemporarily(i.OriginSDKName)
+		RemoveGlobalSDKPathTemporarily(i.PluginName)
 		// Enable temporary envs.
 		os.Setenv(AddToPathTemporarillyEnvName, "1")
 		i.AddEnvsTemporarilly()
@@ -244,11 +249,11 @@ func (i *Installer) Install() {
 
 func (i *Installer) writeLockFile() {
 	l := NewVLocker()
-	l.Save(i.OriginSDKName, i.VersionName)
+	l.Save(i.PluginName, i.VersionName)
 }
 
 func (i *Installer) Uninstall() {
-	ivFinder := NewIVFinder(i.OriginSDKName)
+	ivFinder := NewIVFinder(i.PluginName)
 	_, current := ivFinder.FindAll()
 	installDir := i.sdkInstaller.GetInstallDir()
 	installDir = strings.TrimSuffix(installDir, "<current>")

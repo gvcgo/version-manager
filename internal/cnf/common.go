@@ -147,3 +147,12 @@ func GetGithubToken() string {
 	cnf.Load()
 	return cnf.GithubToken
 }
+
+func GetCacheRetentionTime() int64 {
+	cnf := NewVMRConf()
+	cnf.Load()
+	if cnf.CacheRetentionTime == 0 {
+		return 86400
+	}
+	return cnf.CacheRetentionTime
+}

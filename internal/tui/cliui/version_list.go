@@ -4,8 +4,9 @@ import (
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 )
@@ -13,14 +14,14 @@ import (
 type VersionSearcher struct {
 	SDKName          string
 	ToShowList       bool
-	filteredVersions map[string]download.Item
+	filteredVersions map[string]lua_global.Item
 	ToSearchByConda  bool
 }
 
 func NewVersionSearcher() (sv *VersionSearcher) {
 	sv = &VersionSearcher{
 		ToShowList:       true,
-		filteredVersions: make(map[string]download.Item),
+		filteredVersions: make(map[string]lua_global.Item),
 		ToSearchByConda:  false,
 	}
 	return
@@ -30,7 +31,7 @@ func (s *VersionSearcher) EnableCondaSearch() {
 	s.ToSearchByConda = true
 }
 
-func (s *VersionSearcher) GetVersionByVersionName(vName string) (item download.Item) {
+func (s *VersionSearcher) GetVersionByVersionName(vName string) (item lua_global.Item) {
 	item = s.filteredVersions[vName]
 	return
 }
@@ -38,7 +39,13 @@ func (s *VersionSearcher) GetVersionByVersionName(vName string) (item download.I
 func (s *VersionSearcher) Search(sdkName, newSha256 string) (nextEvent, selectedItem string) {
 	s.SDKName = sdkName
 	if !s.ToSearchByConda {
-		s.filteredVersions = download.GetVersionList(sdkName, newSha256)
+		pls := plugin.NewPlugins()
+		pls.LoadAll()
+		p := pls.GetPluginBySDKName(sdkName)
+		versions := plugin.NewVersions(p.PluginName)
+		if versions != nil {
+			s.filteredVersions = versions.GetSdkVersions()
+		}
 	} else {
 		condaSearcher := installer.NewCondaSearcher(sdkName)
 		s.filteredVersions = condaSearcher.GetVersions()
@@ -68,7 +75,17 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 		{Title: s.SDKName, Width: 20},
 		{Title: "installer", Width: w},
 	})
-	rows := download.GetVersionsSortedRows(s.filteredVersions)
+
+	pls := plugin.NewPlugins()
+	pls.LoadAll()
+	p := pls.GetPluginBySDKName(s.SDKName)
+	versions := plugin.NewVersions(p.PluginName)
+	defer versions.CloseLua()
+	if versions == nil {
+		return
+	}
+	rows := versions.GetSortedVersionList()
+
 	if len(rows) == 0 {
 		gprint.PrintWarning("No versions found for current platform.")
 		return

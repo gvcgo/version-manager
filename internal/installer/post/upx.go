@@ -7,7 +7,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 )
 
 func init() {
@@ -21,7 +21,7 @@ const (
 /*
 post-installation handler for UPX.
 */
-func PostInstallForUPX(versionName string, version download.Item) {
+func PostInstallForUPX(versionName string, version lua_global.Item) {
 	versionDir := cnf.GetVersionsDir()
 	d := filepath.Join(versionDir, fmt.Sprintf("%s_versions", UPXSdkName))
 	upxInstallDir := filepath.Join(d, fmt.Sprintf("%s-%s", UPXSdkName, versionName))

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 )
 
 const (
@@ -32,11 +32,12 @@ func IsCoursierInstalled() bool {
 func installPrequisite(sdkName string) {
 	// add envs temporarily, so the following command will easilly find prequisites.
 	os.Setenv(AddToPathTemporarillyEnvName, "1")
-	vName, vItem := download.GetLatestVersionBySDKName(sdkName)
+	pls := plugin.NewPlugins()
+	p := pls.GetPluginBySDKName(sdkName)
+	versions := plugin.NewVersions(p.PluginName)
 
-	sdkList := download.GetSDKList()
-	sdkItem := sdkList[sdkName]
-	ins := NewInstaller(sdkName, vName, sdkItem.InstallConfSha256, vItem)
+	vName, vItem := versions.GetLatestVersion()
+	ins := NewInstaller(sdkName, p.PluginName, vName, vItem)
 	ins.Install()
 }
 
