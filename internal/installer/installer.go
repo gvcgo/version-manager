@@ -28,6 +28,7 @@ const (
 )
 
 type SDKInstaller interface {
+	// TODO: use plugin-name and sdk-name instead of FormatSDKName.
 	Initiate(originSDKName, versionName string, version lua_global.Item)
 	SetInstallConf(iconf *lua_global.InstallerConfig)
 	FormatSDKName()
