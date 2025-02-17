@@ -5,7 +5,6 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/luapi/plugin"
-	"github.com/gvcgo/version-manager/internal/terminal"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
@@ -45,16 +44,7 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 	ll.SetListType(table.SDKList)
 	v.RegisterKeyEvents(ll)
 
-	_, w, _ := terminal.GetTerminalSize()
-	if w > 30 {
-		w -= 30
-	} else {
-		w = 120
-	}
-	ll.SetHeader([]table.Column{
-		{Title: "plugin_name", Width: 20},
-		{Title: "homepage", Width: w},
-	})
+	ll.SetHeader(GetTableHeader("sdk_name"))
 
 	rows := v.plugins.GetPluginSortedRows()
 	if len(rows) == 0 {
@@ -75,16 +65,7 @@ func (v *SDKSearcher) ShowInstalledOnly() (nextEvent, selectedItem string) {
 	ll.SetListType(table.SDKList)
 	v.RegisterKeyEvents(ll)
 
-	_, w, _ := terminal.GetTerminalSize()
-	if w > 30 {
-		w -= 30
-	} else {
-		w = 120
-	}
-	ll.SetHeader([]table.Column{
-		{Title: "installed sdk", Width: 20},
-		{Title: "homepage", Width: w},
-	})
+	ll.SetHeader(GetTableHeader("installed_sdk"))
 	rows := v.plugins.GetPluginSortedRows()
 
 	installedRows := []table.Row{}

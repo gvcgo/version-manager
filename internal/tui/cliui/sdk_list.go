@@ -10,7 +10,7 @@ import (
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/installer/install"
 	"github.com/gvcgo/version-manager/internal/luapi/plugin"
-	"github.com/gvcgo/version-manager/internal/terminal"
+	"github.com/gvcgo/version-manager/internal/tui/cmds"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
@@ -30,16 +30,7 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 	ll.SetListType(table.SDKList)
 	v.RegisterKeyEvents(ll)
 
-	_, w, _ := terminal.GetTerminalSize()
-	if w > 30 {
-		w -= 30
-	} else {
-		w = 120
-	}
-	ll.SetHeader([]table.Column{
-		{Title: "sdkname", Width: 20},
-		{Title: "homepage", Width: w},
-	})
+	ll.SetHeader(cmds.GetTableHeader("sdk_name"))
 	rows := v.Plugins.GetPluginSortedRows()
 	if len(rows) == 0 {
 		gprint.PrintWarning("No sdk found!")
@@ -59,16 +50,7 @@ func (v *SDKSearcher) ShowInstalledOnly() (nextEvent, selectedItem string) {
 	ll.SetListType(table.SDKList)
 	v.RegisterKeyEvents(ll)
 
-	_, w, _ := terminal.GetTerminalSize()
-	if w > 30 {
-		w -= 30
-	} else {
-		w = 120
-	}
-	ll.SetHeader([]table.Column{
-		{Title: "installed sdk", Width: 20},
-		{Title: "homepage", Width: w},
-	})
+	ll.SetHeader(cmds.GetTableHeader("installed_sdk"))
 
 	rows := v.Plugins.GetPluginSortedRows()
 	installedRows := []table.Row{}

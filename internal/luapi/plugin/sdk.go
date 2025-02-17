@@ -32,6 +32,7 @@ func NewVersions(pluginName string) (v *Versions) {
 	return &Versions{
 		PluginName:         pluginName,
 		PrequisiteHandlers: make(map[string]PrequisiteHandler),
+		versionList:        map[string]lua_global.Item{},
 	}
 }
 

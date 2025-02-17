@@ -110,8 +110,9 @@ func (p *Plugins) GetPluginSortedRows() (rows []table.Row) {
 	for _, v := range p.pls {
 		rows = append(rows, table.Row{
 			v.PluginName,
-			v.Homepage,
 			v.PluginVersion,
+			v.SDKName,
+			v.Homepage,
 		})
 	}
 	utils.SortVersionAscend(rows)
