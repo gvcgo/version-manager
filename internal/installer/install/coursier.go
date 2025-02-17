@@ -20,13 +20,13 @@ const (
 Install use coursier.
 */
 type CoursierInstaller struct {
-	OriginSDKName string
-	SDKName       string
-	VersionName   string
-	Version       lua_global.Item
-	spinner       *spinner.Spinner
-	installConf   *lua_global.InstallerConfig
-	signal        chan struct{}
+	PluginName  string
+	SDKName     string
+	VersionName string
+	Version     lua_global.Item
+	spinner     *spinner.Spinner
+	installConf *lua_global.InstallerConfig
+	signal      chan struct{}
 }
 
 func NewCoursierInstaller() (c *CoursierInstaller) {
@@ -41,20 +41,16 @@ func (c *CoursierInstaller) SetInstallConf(iconf *lua_global.InstallerConfig) {
 	c.installConf = iconf
 }
 
-func (c *CoursierInstaller) Initiate(originSDKName, versionName string, version lua_global.Item) {
-	c.OriginSDKName = originSDKName
+func (c *CoursierInstaller) Initiate(pluginName, sdkName, versionName string, version lua_global.Item) {
+	c.PluginName = pluginName
+	c.SDKName = sdkName
 	c.VersionName = versionName
 	c.Version = version
-	c.FormatSDKName()
-}
-
-func (c *CoursierInstaller) FormatSDKName() {
-	c.SDKName = c.OriginSDKName
 }
 
 func (c *CoursierInstaller) GetInstallDir() string {
 	d := GetSDKVersionDir(c.SDKName)
-	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, c.OriginSDKName, c.VersionName))
+	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, c.PluginName, c.VersionName))
 }
 
 func (c *CoursierInstaller) GetSymbolLinkPath() string {
@@ -82,10 +78,10 @@ func (c *CoursierInstaller) Install() {
 		"install",
 		"-q",
 		fmt.Sprintf("--install-dir=%s", c.GetInstallDir()),
-		fmt.Sprintf("%s:%s", c.OriginSDKName, version),
+		fmt.Sprintf("%s:%s", c.PluginName, version),
 	)
 
-	c.spinner.SetTitle(fmt.Sprintf("Coursier installing %s", c.OriginSDKName))
+	c.spinner.SetTitle(fmt.Sprintf("Coursier installing %s", c.PluginName))
 	c.spinner.SetSweepFunc(func() {
 		task.Cancel()
 		c.signal <- struct{}{}

@@ -28,10 +28,8 @@ const (
 )
 
 type SDKInstaller interface {
-	// TODO: use plugin-name and sdk-name instead of FormatSDKName.
-	Initiate(originSDKName, versionName string, version lua_global.Item)
+	Initiate(pluginName, sdkName, versionName string, version lua_global.Item)
 	SetInstallConf(iconf *lua_global.InstallerConfig)
-	FormatSDKName()
 	GetInstallDir() string
 	GetSymbolLinkPath() string
 	Install()
@@ -72,7 +70,8 @@ func NewInstaller(sdkName, pluginName, versionName string, version lua_global.It
 	default:
 		i.sdkInstaller = install.NewArchiverInstaller()
 	}
-	i.sdkInstaller.Initiate(sdkName, versionName, version)
+
+	i.sdkInstaller.Initiate(pluginName, sdkName, versionName, version)
 
 	vv := plugin.NewVersions(pluginName)
 	i.installerConf = vv.GetInstallerConfig()

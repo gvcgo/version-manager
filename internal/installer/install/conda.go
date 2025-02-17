@@ -19,13 +19,13 @@ const (
 Install using conda.
 */
 type CondaInstaller struct {
-	OriginSDKName string
-	SDKName       string
-	VersionName   string
-	Version       lua_global.Item
-	spinner       *spinner.Spinner
-	installConf   *lua_global.InstallerConfig
-	signal        chan struct{}
+	PluginName  string
+	SDKName     string
+	VersionName string
+	Version     lua_global.Item
+	spinner     *spinner.Spinner
+	installConf *lua_global.InstallerConfig
+	signal      chan struct{}
 }
 
 func NewCondaInstaller() (c *CondaInstaller) {
@@ -40,25 +40,16 @@ func (c *CondaInstaller) SetInstallConf(iconf *lua_global.InstallerConfig) {
 	c.installConf = iconf
 }
 
-func (c *CondaInstaller) Initiate(originSDKName, versionName string, version lua_global.Item) {
-	c.OriginSDKName = originSDKName
+func (c *CondaInstaller) Initiate(pluginName, sdkName, versionName string, version lua_global.Item) {
+	c.PluginName = pluginName
+	c.SDKName = sdkName
 	c.VersionName = versionName
 	c.Version = version
-	c.FormatSDKName()
-}
-
-// TODO: remove format sdk name.
-func (c *CondaInstaller) FormatSDKName() {
-	if c.OriginSDKName == "pypy" {
-		c.SDKName = "python"
-	} else {
-		c.SDKName = c.OriginSDKName
-	}
 }
 
 func (c *CondaInstaller) GetInstallDir() string {
 	d := GetSDKVersionDir(c.SDKName)
-	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, c.OriginSDKName, c.VersionName))
+	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, c.PluginName, c.VersionName))
 }
 
 func (c *CondaInstaller) GetSymbolLinkPath() string {
@@ -82,11 +73,11 @@ func (c *CondaInstaller) Install() {
 		condaCommand, "create",
 		"-q", "-y",
 		fmt.Sprintf("--prefix=%s", c.GetInstallDir()),
-		"-c", "conda-forge", c.OriginSDKName,
-		fmt.Sprintf("%s=%s", c.OriginSDKName, c.VersionName),
+		"-c", "conda-forge", c.PluginName,
+		fmt.Sprintf("%s=%s", c.PluginName, c.VersionName),
 	)
 
-	c.spinner.SetTitle(fmt.Sprintf("Conda installing %s", c.OriginSDKName))
+	c.spinner.SetTitle(fmt.Sprintf("Conda installing %s", c.PluginName))
 	c.spinner.SetSweepFunc(func() {
 		task.Cancel()
 		c.signal <- struct{}{}

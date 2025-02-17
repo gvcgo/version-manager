@@ -172,15 +172,15 @@ func InstallStandAloneExecutables(exePath, installDir string) (task *utils.SysCo
 5. unix-like executable
 */
 type ExeInstaller struct {
-	OriginSDKName string
-	SDKName       string
-	VersionName   string
-	Version       lua_global.Item
-	Fetcher       *request.Fetcher
-	spinner       *spinner.Spinner
-	downloader    *download.Downloader
-	installConf   *lua_global.InstallerConfig
-	signal        chan struct{}
+	PluginName  string
+	SDKName     string
+	VersionName string
+	Version     lua_global.Item
+	Fetcher     *request.Fetcher
+	spinner     *spinner.Spinner
+	downloader  *download.Downloader
+	installConf *lua_global.InstallerConfig
+	signal      chan struct{}
 }
 
 func NewExeInstaller() (ei *ExeInstaller) {
@@ -196,20 +196,16 @@ func (ei *ExeInstaller) SetInstallConf(iconf *lua_global.InstallerConfig) {
 	ei.installConf = iconf
 }
 
-func (ei *ExeInstaller) Initiate(originSDKName, versionName string, version lua_global.Item) {
-	ei.OriginSDKName = originSDKName
+func (ei *ExeInstaller) Initiate(pluginName, sdkName, versionName string, version lua_global.Item) {
+	ei.PluginName = pluginName
+	ei.SDKName = sdkName
 	ei.VersionName = versionName
 	ei.Version = version
-	ei.FormatSDKName()
-}
-
-func (ei *ExeInstaller) FormatSDKName() {
-	ei.SDKName = ei.OriginSDKName
 }
 
 func (ei *ExeInstaller) GetInstallDir() string {
 	d := GetSDKVersionDir(ei.SDKName)
-	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, ei.OriginSDKName, ei.VersionName))
+	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, ei.PluginName, ei.VersionName))
 }
 
 func (ei *ExeInstaller) GetSymbolLinkPath() string {
@@ -234,13 +230,13 @@ func (ei *ExeInstaller) RenameFile() {
 }
 
 func (ei *ExeInstaller) Install() {
-	localPath := ei.downloader.Download(ei.OriginSDKName, ei.VersionName, ei.Version)
+	localPath := ei.downloader.Download(ei.PluginName, ei.VersionName, ei.Version)
 	if localPath == "" {
 		return
 	}
 	var task *utils.SysCommandRunner
 
-	switch ei.OriginSDKName {
+	switch ei.PluginName {
 	case MinicondaSDKName:
 		task = InstallMiniconda(localPath, ei.GetInstallDir())
 	case ErlangSDKName, ElixirSDKName:
@@ -252,7 +248,7 @@ func (ei *ExeInstaller) Install() {
 		ei.RenameFile()
 	}
 
-	ei.spinner.SetTitle(fmt.Sprintf("Installing %s", ei.OriginSDKName))
+	ei.spinner.SetTitle(fmt.Sprintf("Installing %s", ei.PluginName))
 	ei.spinner.SetSweepFunc(func() {
 		if task != nil {
 			task.Cancel()
