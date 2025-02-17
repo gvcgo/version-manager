@@ -47,16 +47,12 @@ var useCmd = &cobra.Command{
 			return
 		}
 
-		sdkName := vl[0]
+		pluginName := vl[0]
 		versionName := vl[1]
 
 		ok2, _ := cmd.Flags().GetBool("install-by-conda")
 
-		pls := plugin.NewPlugins()
-		pls.LoadAll()
-		p := pls.GetPluginBySDKName(sdkName)
-
-		versions := plugin.NewVersions(p.PluginName)
+		versions := plugin.NewVersions(pluginName)
 		if versions == nil {
 			gprint.PrintError("No Versions Found.")
 			return
@@ -82,7 +78,7 @@ var useCmd = &cobra.Command{
 			}
 		}
 
-		ins := installer.NewInstaller(sdkName, versionName, "", vItem)
+		ins := installer.NewInstaller(pluginName, versionName, "", vItem)
 
 		if ok2 {
 			// If an SDK is installed by Conda only, and it is not supported by VMR yet,
