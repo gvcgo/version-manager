@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -67,13 +68,29 @@ func (v *Versions) loadPlugin() error {
 	return nil
 }
 
+func (v *Versions) getCacheFilePath(pluginName string) string {
+	cacheDir := cnf.GetCacheDir()
+	versionCacheDir := filepath.Join(cacheDir, pluginName)
+	if ok, _ := gutils.PathIsExist(versionCacheDir); !ok {
+		os.MkdirAll(versionCacheDir, os.ModePerm)
+	} else {
+		ss, err := os.Stat(versionCacheDir)
+		if err == nil && !ss.IsDir() {
+			os.RemoveAll(versionCacheDir)
+			os.MkdirAll(versionCacheDir, os.ModePerm)
+		}
+	}
+	return filepath.Join(versionCacheDir, fmt.Sprintf("%s.versions.json", pluginName))
+}
+
 func (v *Versions) loadFromCache(pluginName string) {
-	cacheFilePath := filepath.Join(cnf.GetCacheDir(), pluginName)
+	cacheFilePath := v.getCacheFilePath(pluginName)
 	if ok, _ := gutils.PathIsExist(cacheFilePath); !ok {
 		return
 	}
 	lastModifiedTime := utils.GetFileLastModifiedTime(cacheFilePath)
-	if lastModifiedTime >= cnf.GetCacheRetentionTime() {
+	timeLag := time.Now().Unix() - lastModifiedTime
+	if timeLag > cnf.GetCacheRetentionTime() {
 		return
 	}
 	if content, err := os.ReadFile(cacheFilePath); err == nil {
@@ -88,7 +105,7 @@ func (v *Versions) saveToCache(pluginName string) {
 	if len(v.versionList) == 0 {
 		return
 	}
-	cacheFilePath := filepath.Join(cnf.GetCacheDir(), pluginName)
+	cacheFilePath := v.getCacheFilePath(pluginName)
 	if content, err := json.MarshalIndent(v.versionList, "", "  "); err == nil {
 		if len(content) > 10 {
 			os.WriteFile(cacheFilePath, content, os.ModePerm)
@@ -111,15 +128,15 @@ func (v *Versions) GetSdkVersions() (vs map[string]lua_global.Item) {
 		return
 	}
 
-	prequisite := GetConfItemFromLua(v.Lua.L, Prequisite)
-	if prequisite != "" {
-		handler, ok := v.PrequisiteHandlers[prequisite]
-		if ok && handler != nil {
-			if err := handler(); err != nil {
-				gprint.PrintError("handle prequisite failed: %s", err)
-			}
-		}
-	}
+	// prequisite := GetConfItemFromLua(v.Lua.L, Prequisite)
+	// if prequisite != "" {
+	// 	handler, ok := v.PrequisiteHandlers[prequisite]
+	// 	if ok && handler != nil {
+	// 		if err := handler(); err != nil {
+	// 			gprint.PrintError("handle prequisite failed: %s", err)
+	// 		}
+	// 	}
+	// }
 
 	crawl := v.Lua.L.GetGlobal("crawl")
 	if crawl == nil || crawl.Type() != lua.LTFunction {
