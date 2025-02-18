@@ -16,7 +16,7 @@ var UninstallVersionCmd = &cobra.Command{
 	Aliases: []string{"uni", "r"},
 	GroupID: GroupID,
 	Short:   "Uninstall versions for an SDK.",
-	Long:    "Example: vmr uninstall sdkname@version or sdkname@all.",
+	Long:    "Example: vmr uninstall pluginname@version or pluginname@all.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -32,23 +32,20 @@ var UninstallVersionCmd = &cobra.Command{
 			cmd.Help()
 			return
 		}
-		sdkName := sList[0]
+		pluginName := sList[0]
 		version := sList[1]
 
 		if version == "all" {
-			lif := installer.NewIVFinder(sdkName)
+			lif := installer.NewIVFinder(pluginName)
 			lif.UninstallAllVersions()
 		} else {
-			pls := plugin.NewPlugins()
-			pls.LoadAll()
-			p := pls.GetPluginBySDKName(sdkName)
-
-			v := plugin.NewVersions(p.PluginName)
+			v := plugin.NewVersions(pluginName)
 			if v == nil {
 				return
 			}
+			sdkName := v.GetSDKName()
 			vItem := v.GetVersionByName(version)
-			ins := installer.NewInstaller(p.SDKName, p.PluginName, version, vItem)
+			ins := installer.NewInstaller(sdkName, pluginName, version, vItem)
 			ins.Uninstall()
 		}
 	},

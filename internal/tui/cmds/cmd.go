@@ -14,7 +14,7 @@ func NewTUI() *VmrTUI {
 	return &VmrTUI{}
 }
 
-func (v *VmrTUI) ListSDKName() {
+func (v *VmrTUI) ListPluginName() {
 	v.SList = NewSDKSearcher()
 	nextEvent, pluginName := v.SList.Show()
 
@@ -48,7 +48,7 @@ func (v *VmrTUI) SearchVersions(pluginItem plugin.Plugin) {
 
 	switch lastPressedKy {
 	case KeyEventBacktoPreviousPage:
-		v.ListSDKName()
+		v.ListPluginName()
 	case KeyEventUseVersionGlobally:
 		vItem := v.VList.GetVersionByVersionName(versionName)
 		ins := installer.NewInstaller(pluginItem.SDKName, pluginItem.PluginName, versionName, vItem)
@@ -67,64 +67,65 @@ func (v *VmrTUI) SearchVersions(pluginItem plugin.Plugin) {
 	}
 }
 
-func (v *VmrTUI) ShowLocalInstalled(sdkName string) {
+func (v *VmrTUI) ShowLocalInstalled(pluginName string) {
 	if v.VList == nil {
 		v.VList = NewVersionSearcher()
 	}
 	li := NewLocalInstalled()
-	li.Search(sdkName)
+	li.Search(pluginName)
 	nextEvent, selectedVersion := li.Show()
 
 	switch nextEvent {
 	case KeyEventBacktoPreviousPage:
-		v.ListSDKName()
+		v.ListPluginName()
 	case KeyEventClearCachedFileForAVersion:
 		// clear the cached files for selected version.
-		v.ClearLocalCachedFiles(sdkName, selectedVersion)
+		v.ClearLocalCachedFiles(pluginName, selectedVersion)
 	case KeyEventRemoveAnInstalledVersion:
 		// remove the selected version.
-		v.RemoveSelectedVersion(sdkName, selectedVersion)
+		v.RemoveSelectedVersion(pluginName, selectedVersion)
 	case KeyEventLockVersion:
 		if v.VList == nil {
 			v.VList = NewVersionSearcher()
 		}
 		vItem := v.VList.GetVersionByVersionName(selectedVersion)
-		ins := installer.NewInstaller(sdkName, selectedVersion, "", vItem)
+		sdkName := v.VList.GetSDKName(pluginName)
+		ins := installer.NewInstaller(sdkName, pluginName, selectedVersion, vItem)
 		ins.SetInvokeMode(installer.ModeToLock)
 		ins.Install()
 	case KeyEventUseVersionGlobally:
 		vItem := v.VList.GetVersionByVersionName(selectedVersion)
-		ins := installer.NewInstaller(sdkName, selectedVersion, "", vItem)
+		sdkName := v.VList.GetSDKName(pluginName)
+		ins := installer.NewInstaller(sdkName, pluginName, selectedVersion, vItem)
 		ins.SetInvokeMode(installer.ModeGlobally)
 		ins.Install()
 	case KeyEventUseVersionSessionly:
 		vItem := v.VList.GetVersionByVersionName(selectedVersion)
-		ins := installer.NewInstaller(sdkName, selectedVersion, "", vItem)
+		sdkName := v.VList.GetSDKName(pluginName)
+		ins := installer.NewInstaller(sdkName, pluginName, selectedVersion, vItem)
 		ins.SetInvokeMode(installer.ModeSessionly)
 		ins.Install()
 	}
 }
 
-func (v *VmrTUI) ClearLocalCachedFiles(sdkName, versionName string) {
-	cf := installer.NewCachedFileFinder(sdkName, versionName)
+func (v *VmrTUI) ClearLocalCachedFiles(pluginName, versionName string) {
+	cf := installer.NewCachedFileFinder(pluginName, versionName)
 	cf.Delete()
 }
 
-func (v *VmrTUI) RemoveInstalledVersions(sdkName string) {
-	lif := installer.NewIVFinder(sdkName)
+func (v *VmrTUI) RemoveInstalledVersions(pluginName string) {
+	lif := installer.NewIVFinder(pluginName)
 	lif.UninstallAllVersions()
 }
 
-func (v *VmrTUI) RemoveSelectedVersion(sdkName, versionName string) {
-	pls := plugin.NewPlugins()
-	pls.LoadAll()
-	p := pls.GetPluginBySDKName(sdkName)
-	versions := plugin.NewVersions(p.PluginName)
+func (v *VmrTUI) RemoveSelectedVersion(pluginName, versionName string) {
+	versions := plugin.NewVersions(pluginName)
 	if versions == nil {
 		return
 	}
+	sdkName := versions.GetSDKName()
 	vItem := versions.GetVersionByName(versionName)
 
-	ins := installer.NewInstaller(sdkName, p.PluginName, versionName, vItem)
+	ins := installer.NewInstaller(sdkName, pluginName, versionName, vItem)
 	ins.Uninstall()
 }

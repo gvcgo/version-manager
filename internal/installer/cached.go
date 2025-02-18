@@ -12,17 +12,17 @@ import (
 Handle cached files.
 */
 type CachedFileFinder struct {
-	SDKName     string
+	PluginName  string
 	VersionName string
 }
 
-func NewCachedFileFinder(sdkName string, versionName ...string) *CachedFileFinder {
+func NewCachedFileFinder(pluginName string, versionName ...string) *CachedFileFinder {
 	vName := ""
 	if len(versionName) > 0 {
 		vName = versionName[0]
 	}
 	return &CachedFileFinder{
-		SDKName:     sdkName,
+		PluginName:  pluginName,
 		VersionName: vName,
 	}
 }
@@ -31,16 +31,15 @@ func (cf *CachedFileFinder) Delete() {
 	cacheDir := cnf.GetCacheDir()
 
 	if cf.VersionName == "" {
-		cachedSDKName := filepath.Join(cacheDir, cf.SDKName)
+		cachedSDKName := filepath.Join(cacheDir, cf.PluginName)
 		dList, _ := os.ReadDir(cachedSDKName)
 		for _, d := range dList {
 			if d.IsDir() {
 				os.RemoveAll(filepath.Join(cachedSDKName, d.Name()))
 			}
 		}
-
 	} else {
-		dd := filepath.Join(cacheDir, cf.SDKName, cf.VersionName)
+		dd := filepath.Join(cacheDir, cf.PluginName, cf.VersionName)
 		dd = strings.TrimSuffix(dd, "<current>")
 		os.RemoveAll(dd)
 	}

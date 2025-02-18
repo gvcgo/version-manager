@@ -25,7 +25,7 @@ func New(gitTag, gitHash string) (c *Cli) {
 			Long:  "vmr <Command> <SubCommand> --flags args...",
 			Run: func(cmd *cobra.Command, args []string) {
 				ll := cmds.NewTUI()
-				ll.ListSDKName()
+				ll.ListPluginName()
 			},
 		},
 		groupID: vcli.GroupID,

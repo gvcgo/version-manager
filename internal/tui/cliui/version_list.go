@@ -12,7 +12,7 @@ import (
 )
 
 type VersionSearcher struct {
-	SDKName          string
+	PluginName       string
 	ToShowList       bool
 	filteredVersions map[string]lua_global.Item
 	ToSearchByConda  bool
@@ -36,18 +36,13 @@ func (s *VersionSearcher) GetVersionByVersionName(vName string) (item lua_global
 	return
 }
 
-func (s *VersionSearcher) Search(sdkName, newSha256 string) (nextEvent, selectedItem string) {
-	s.SDKName = sdkName
+func (s *VersionSearcher) Search(pluginName, newSha256 string) (nextEvent, selectedItem string) {
+	s.PluginName = pluginName
 	if !s.ToSearchByConda {
-		pls := plugin.NewPlugins()
-		pls.LoadAll()
-		p := pls.GetPluginBySDKName(sdkName)
-		versions := plugin.NewVersions(p.PluginName)
-		if versions != nil {
-			s.filteredVersions = versions.GetSdkVersions()
-		}
+		versions := plugin.NewVersions(pluginName)
+		s.filteredVersions = versions.GetSdkVersions()
 	} else {
-		condaSearcher := installer.NewCondaSearcher(sdkName)
+		condaSearcher := installer.NewCondaSearcher(pluginName)
 		s.filteredVersions = condaSearcher.GetVersions()
 	}
 	if s.ToShowList {
@@ -72,14 +67,14 @@ func (s *VersionSearcher) Show() (nextEvent, selectedItem string) {
 		w = 120
 	}
 	ll.SetHeader([]table.Column{
-		{Title: s.SDKName, Width: 20},
+		{Title: s.PluginName, Width: 20},
 		{Title: "installer", Width: w},
 	})
 
-	pls := plugin.NewPlugins()
-	pls.LoadAll()
-	p := pls.GetPluginBySDKName(s.SDKName)
-	versions := plugin.NewVersions(p.PluginName)
+	if s.PluginName == "" {
+		return
+	}
+	versions := plugin.NewVersions(s.PluginName)
 	defer versions.CloseLua()
 	if versions == nil {
 		return

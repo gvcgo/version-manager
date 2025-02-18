@@ -29,15 +29,13 @@ func IsCoursierInstalled() bool {
 	return err == nil
 }
 
-func installPrequisite(sdkName string) {
+func installPrequisite(pluginName string) {
 	// add envs temporarily, so the following command will easilly find prequisites.
 	os.Setenv(AddToPathTemporarillyEnvName, "1")
-	pls := plugin.NewPlugins()
-	p := pls.GetPluginBySDKName(sdkName)
-	versions := plugin.NewVersions(p.PluginName)
-
+	versions := plugin.NewVersions(pluginName)
+	sdkName := versions.GetSDKName()
 	vName, vItem := versions.GetLatestVersion()
-	ins := NewInstaller(sdkName, p.PluginName, vName, vItem)
+	ins := NewInstaller(sdkName, pluginName, vName, vItem)
 	ins.Install()
 }
 

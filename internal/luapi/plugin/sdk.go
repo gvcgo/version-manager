@@ -24,6 +24,7 @@ SDK Versions
 type Versions struct {
 	Lua                *lua_global.Lua
 	PluginName         string
+	SDKName            string
 	PrequisiteHandlers map[string]PrequisiteHandler
 	versionList        map[string]lua_global.Item
 }
@@ -61,6 +62,8 @@ func (v *Versions) loadPlugin() error {
 	if err := v.Lua.L.DoFile(fPath); err != nil {
 		return fmt.Errorf("failed to load plugin file: %s", err)
 	}
+
+	v.SDKName = GetConfItemFromLua(v.Lua.L, SDKName)
 	return nil
 }
 
@@ -189,6 +192,13 @@ func (v *Versions) GetInstallerConfig() (ic *lua_global.InstallerConfig) {
 
 	ic = lua_global.GetInstallerConfig(v.Lua.L)
 	return
+}
+
+func (v *Versions) GetSDKName() string {
+	if err := v.loadPlugin(); err != nil {
+		return ""
+	}
+	return v.SDKName
 }
 
 func (v *Versions) CloseLua() {

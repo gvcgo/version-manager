@@ -55,6 +55,7 @@ func (v *SDKSearcher) Show() (nextEvent, selectedItem string) {
 	ll.SetRows(rows)
 	ll.Run()
 
+	// selected plugin name.
 	selectedItem = ll.GetSelected()
 	nextEvent = ll.NextEvent
 	return

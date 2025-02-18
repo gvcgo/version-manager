@@ -18,16 +18,15 @@ import (
 
 type InstalledVersionFinder struct {
 	PluginName        string
-	SDKName           string
 	InstalledVersions []string
 	CurrentVersion    string
 	Installer         *Installer
 }
 
-func NewIVFinder(sdkName string) (i *InstalledVersionFinder) {
+func NewIVFinder(pluginName string) (i *InstalledVersionFinder) {
 	pls := plugin.NewPlugins()
 	pls.LoadAll()
-	p := pls.GetPluginBySDKName(sdkName)
+	p := pls.GetPlugin(pluginName)
 
 	versions := plugin.NewVersions(p.PluginName)
 	if versions == nil {
@@ -38,8 +37,7 @@ func NewIVFinder(sdkName string) (i *InstalledVersionFinder) {
 
 	i = &InstalledVersionFinder{
 		PluginName: p.PluginName,
-		SDKName:    sdkName,
-		Installer:  NewInstaller(sdkName, p.PluginName, "", lua_global.Item{Installer: vItem.Installer}),
+		Installer:  NewInstaller(p.SDKName, p.PluginName, "", lua_global.Item{Installer: vItem.Installer}),
 	}
 	return
 }

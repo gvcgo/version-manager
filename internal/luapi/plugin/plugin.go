@@ -79,9 +79,9 @@ func (p *Plugins) LoadAll() {
 	}
 }
 
-func (p *Plugins) GetPlugin(pName string) Plugin {
+func (p *Plugins) GetPlugin(pluginName string) Plugin {
 	p.LoadAll()
-	if pl, ok := p.pls[pName]; ok {
+	if pl, ok := p.pls[pluginName]; ok {
 		return pl
 	}
 	return Plugin{}

@@ -36,6 +36,13 @@ func NewVersionSearcher() (sv *VersionSearcher) {
 	return
 }
 
+func (s *VersionSearcher) GetSDKName(pluginName string) string {
+	if s.versions == nil {
+		s.versions = plugin.NewVersions(pluginName)
+	}
+	return s.versions.GetSDKName()
+}
+
 func (s *VersionSearcher) GetVersionByVersionName(vName string) (item lua_global.Item) {
 	if s.versions == nil {
 		return
