@@ -35,7 +35,7 @@ var (
 To be compiled.
 */
 func main() {
-	// os.Setenv(cnf.VMRReverseProxyEnv, "https://proxy.vmr.us.kg/proxy/")
+	// os.Setenv(cnf.VMRReverseProxyEnv, "https://proxy.0002099.xyz/proxy/")
 	cmd := cli.New(GitTag, GitHash)
 	cmd.Run()
 }

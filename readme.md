@@ -25,7 +25,7 @@
 
 ------
 
-<div align=center><img src="https://image-acc.vmr.us.kg/vmr.gif"></div>
+<div align=center><img src="https://image-acc.0002099.xyz/vmr.gif"></div>
 
 ------
 <p id="1"></p>  
@@ -60,11 +60,11 @@ Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none o
 
 - MacOS/Linux
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
+curl --proto '=https' --tlsv1.2 -sSf https://scripts.0002099.xyz | sh
 ```
 - Windows
 ```bash
-powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
+powershell -c "irm https://scripts.0002099.xyz/windows | iex"
 ```
 
 **Note**: Please remember to read the [docs](https://vdocs.vmr.us.kg/), as the problems you encounter may be caused by your improper usage.

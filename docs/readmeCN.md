@@ -26,7 +26,7 @@
 ------
 
 <!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
-<div align=center><img src="https://image-acc.vmr.us.kg/vmr.gif"></div>
+<div align=center><img src="https://image-acc.0002099.xyz/vmr.gif"></div>
 
 ------
 <p id="1"></p>  
@@ -61,11 +61,11 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 
 - MacOS/Linux
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
+curl --proto '=https' --tlsv1.2 -sSf https://scripts.0002099.xyz | sh
 ```
 - Windows
 ```bash
-powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
+powershell -c "irm https://scripts.0002099.xyz/windows | iex"
 ```
 
 **注意**：安装之后，请记得阅读[文档](https://vdocs.vmr.us.kg/zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。

@@ -22,7 +22,7 @@
 package main
 
 func main() {
-	// os.Setenv(conf.VMReverseProxyEnvName, "https://proxy.vmr.us.kg/proxy/")
+	// os.Setenv(conf.VMReverseProxyEnvName, "https://proxy.0002099.xyz/proxy/")
 	// register.RunInstaller(register.VersionKeeper["python"])
 	// fmt.Println(os.Environ())
 	// pt := terminal.NewPtyTerminal("go")

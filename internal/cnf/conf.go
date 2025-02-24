@@ -16,7 +16,7 @@ func init() {
 }
 
 const (
-	DefaultReverseProxy       string = "https://proxy.vmr.us.kg/proxy/"
+	DefaultReverseProxy       string = "https://proxy.0002099.xyz/proxy/"
 	DefaultHostUrl            string = "https://raw.githubusercontent.com/gvcgo/vsources/main"
 	SDKNameListFileUrl        string = `/sdk-list.version.json`
 	VersionFileUrlPattern     string = `/%s.version.json`
