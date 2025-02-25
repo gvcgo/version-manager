@@ -3,9 +3,9 @@ name: Report Bugs
 about: Template for Bug Report
 ---
 <!-- 
-Before you report an issue, Please make sure you have read the docs: https://vdocs.vmr.us.kg/
+Before you report an issue, Please make sure you have read the docs: https://vmrdocs.0002099.xyz/
 
-在提issue之前，请确保您已经阅读了文档: https://vdocs.vmr.us.kg/zh-cn/
+在提issue之前，请确保您已经阅读了文档: https://vmrdocs.0002099.xyz/zh-cn/
 -->
 
 ## Platform Info
