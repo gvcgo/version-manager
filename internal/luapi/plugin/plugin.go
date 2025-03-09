@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
@@ -36,7 +37,9 @@ func NewPlugins() *Plugins {
 }
 
 func (p *Plugins) Update() {
-	UpdatePlugins()
+	if err := UpdatePlugins(); err != nil {
+		gprint.PrintError("update plugins failed: %s", err)
+	}
 }
 
 func (p *Plugins) LoadAll() {
@@ -56,7 +59,9 @@ func (p *Plugins) LoadAll() {
 		}
 		ll := lua_global.NewLua()
 		L := ll.L
-		L.DoFile(filepath.Join(pDir, f.Name()))
+		if err := L.DoFile(filepath.Join(pDir, f.Name())); err != nil {
+			continue
+		}
 		pl.PluginName = GetConfItemFromLua(L, PluginName)
 		if pl.PluginName == "" {
 			continue
