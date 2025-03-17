@@ -19,7 +19,7 @@ const (
 )
 
 var WinScript string = `cd %HOMEPATH%
-powershell -c "irm https://scripts.vmr.us.kg/windows | iex"`
+powershell -c "irm https://scripts.0002099.xyz/windows | iex"`
 
 var WinMingwScript string = `#!/bin/sh
 cd ~
@@ -27,7 +27,7 @@ powershell %s`
 
 var UnixScript string = `#!/bin/sh
 cd ~
-curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh`
+curl --proto '=https' --tlsv1.2 -sSf https://scripts.0002099.xyz | sh`
 
 func setUpdateForWindows() {
 	scriptPath := filepath.Join(cnf.GetVMRWorkDir(), fmt.Sprintf("%s.bat", updateScriptName))

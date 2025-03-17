@@ -28,7 +28,7 @@ var setReverseProxyCmd = &cobra.Command{
 	Aliases: []string{"sr", "srp"},
 	GroupID: vcli.GroupID,
 	Short:   "Sets reverse proxy for version manager.",
-	Long:    "Example: vmr sr https://proxy.vmr.us.kg/proxy/",
+	Long:    "Example: vmr sr https://proxy.0002099.xyz/proxy/",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
