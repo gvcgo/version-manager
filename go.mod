@@ -11,8 +11,9 @@ require (
 	github.com/creack/termios v0.0.0-20160714173321-88d0029e36a1
 	github.com/erikgeiser/promptkit v0.9.0
 	github.com/gogf/gf/v2 v2.6.1
+	github.com/gvcgo/gocui v0.1.0
 	github.com/gvcgo/goutils v1.0.8
-	github.com/mattn/go-runewidth v0.0.15
+	github.com/mattn/go-runewidth v0.0.16
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
 	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -37,6 +38,9 @@ require (
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/gdamore/encoding v1.0.1 // indirect
+	github.com/gdamore/tcell/v2 v2.8.0 // indirect
+	github.com/go-errors/errors v1.0.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -58,7 +62,7 @@ require (
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
-	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tklauser/go-sysconf v0.3.14 // indirect
 	github.com/tklauser/numcpus v0.8.0 // indirect
