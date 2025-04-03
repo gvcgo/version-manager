@@ -179,7 +179,8 @@ func (s *Shell) SetEnv(key, value string) {
 	if key == PathEnvName {
 		return
 	}
-	err := s.Key.SetStringValue(key, value)
+	// err := s.Key.SetStringValue(key, value)
+	err := s.Key.SetExpandStringValue(key, value)
 	if err != nil {
 		gprint.PrintError("Set env '%s=%s' failed: %+v", key, value, err)
 		return
@@ -218,7 +219,8 @@ func (s *Shell) SetPath(path string) {
 	}
 	if !strings.Contains(oldPathValue, path) {
 		newPathValue := path + ";" + oldPathValue
-		err := s.Key.SetStringValue(PathEnvName, newPathValue)
+		// err := s.Key.SetStringValue(PathEnvName, newPathValue)
+		err := s.Key.SetExpandStringValue(PathEnvName, newPathValue)
 		if err != nil {
 			gprint.PrintError("Set env $path failed: %s, %+v", path, err)
 			return
@@ -241,7 +243,8 @@ func (s *Shell) UnsetPath(path string) {
 	}
 	if strings.Contains(oldPathValue, path) {
 		newPathValue := strings.ReplaceAll(strings.ReplaceAll(oldPathValue, path, ""), ";;", ";")
-		err := s.Key.SetStringValue(PathEnvName, newPathValue)
+		// err := s.Key.SetStringValue(PathEnvName, newPathValue)
+		err := s.Key.SetExpandStringValue(PathEnvName, newPathValue)
 		if err != nil {
 			gprint.PrintError("Unset env $path failed: %s, %+v", path, err)
 			return
