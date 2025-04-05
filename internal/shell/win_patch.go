@@ -58,7 +58,7 @@ func GetMingwBashProfilePath() (path string) {
 }
 
 const (
-	MingwBashExportPattern = `export PATH="$PATH:%s"`
+	MingwBashExportPattern = `export PATH="${PATH}:%s"`
 )
 
 func HandleVmrRelatedPathEnvsAlreadyExist() {
@@ -121,12 +121,12 @@ func AddExportLine(oldContent string, exportLine string) (newContent string) {
 cd hook for Mingw bash shell.
 */
 const VmrMingwBashCdHook = `# cd hook start
-export PATH=%s:"${PATH}"
+export PATH="%s:${PATH}"
 
-if [ -z "$(alias|grep cdhook)" ]; then
+if ! alias | grep -q cdhook; then
 	cdhook() {
 		if [ $# -eq 0 ]; then
-			cd
+			cd || true
 		else
 			cd "$@" && vmr use -E
 		fi
@@ -134,9 +134,9 @@ if [ -z "$(alias|grep cdhook)" ]; then
 	alias cd='cdhook'
 fi
 
-if [ -z "${VMR_CD_INIT}" ]; then
+if [ -z "${VMR_CD_INIT:-}" ]; then
         VMR_CD_INIT="vmr_cd_init"
-        cd "$(pwd)"
+        cd "$(pwd)" || true
 fi
 # cd hook end`
 
