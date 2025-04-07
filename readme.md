@@ -10,6 +10,7 @@
 [![Issues Card](https://img.shields.io/badge/Issues-vmr-pink.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/issues)
 [![Versions Repo Card](https://img.shields.io/badge/Versions-repo-blue.svg?style=for-the-badge)](https://github.com/gvcgo/resources)
 [![Go Reference](https://pkg.go.dev/badge/github.com/gvcgo/version-manager.svg)](https://pkg.go.dev/github.com/gvcgo/version-manager)
+[![codecov](https://codecov.io/gh/gvcgo/version-manager/graph/badge.svg?token=ITQNVHMKRH)](https://codecov.io/gh/gvcgo/version-manager)
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmeCN.md) | [En](https://github.com/gvcgo/version-manager)
 
