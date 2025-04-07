@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -18,6 +19,10 @@ func TestGoPlugin(t *testing.T) {
 
 	ll := lua_global.NewLua()
 	defer ll.L.Close()
+
+	if ok, _ := gutils.PathIsExist(goPluginPath); !ok {
+		return
+	}
 
 	if err := ll.L.DoFile(goPluginPath); err != nil {
 		t.Error(err)
@@ -85,6 +90,10 @@ func TestMinicondaPlugin(t *testing.T) {
 	fmt.Println("xxx-----")
 	ll := lua_global.NewLua()
 	defer ll.L.Close()
+	if ok, _ := gutils.PathIsExist(minicondaPluginPath); !ok {
+		return
+	}
+
 	if err := ll.L.DoFile(minicondaPluginPath); err != nil {
 		t.Error(err)
 	}
@@ -139,6 +148,10 @@ func TestCoursierPlugin(t *testing.T) {
 
 	ll := lua_global.NewLua()
 	defer ll.L.Close()
+	if ok, _ := gutils.PathIsExist(coursierPluginPath); !ok {
+		return
+	}
+
 	if err := ll.L.DoFile(coursierPluginPath); err != nil {
 		t.Error(err)
 	}
@@ -193,6 +206,10 @@ func TestLuaPlugin(t *testing.T) {
 
 	ll := lua_global.NewLua()
 	defer ll.L.Close()
+	if ok, _ := gutils.PathIsExist(luaPluginPath); !ok {
+		return
+	}
+
 	if err := ll.L.DoFile(luaPluginPath); err != nil {
 		t.Error(err)
 	}
