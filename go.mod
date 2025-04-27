@@ -15,6 +15,7 @@ require (
 	github.com/gvcgo/goutils v1.0.8
 	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/mattn/go-runewidth v0.0.16
+	github.com/mholt/archives v0.1.1
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
 	github.com/pelletier/go-toml/v2 v2.0.7
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -60,7 +61,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
-	github.com/mholt/archives v0.1.1 // indirect
 	github.com/minio/minlz v1.0.0 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
