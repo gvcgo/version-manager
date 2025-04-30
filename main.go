@@ -21,6 +21,13 @@
 
 package main
 
+import (
+	"fmt"
+	"os"
+
+	"golang.org/x/term"
+)
+
 func main() {
 	// os.Setenv(conf.VMReverseProxyEnvName, "https://proxy.0002099.xyz/proxy/")
 	// register.RunInstaller(register.VersionKeeper["python"])
@@ -88,4 +95,11 @@ func main() {
 	// 	"/home/moqsien/.vmr/cache/jdk/21.0.3.0_12/",
 	// )
 	// fmt.Println(err)
+	// searcher.ShowTable()
+	fd := int(os.Stdout.Fd())
+	width, height, err := term.GetSize(fd)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("h: ", height, "w:", width)
 }
