@@ -218,6 +218,7 @@ func (s *Shell) SetPath(path string) {
 		return
 	}
 	if !strings.Contains(oldPathValue, path) {
+    // fixed path in windows setting 's bug for path display
 		newPathValue := oldPathValue + ";" + path
 		// err := s.Key.SetStringValue(PathEnvName, newPathValue)
 		err := s.Key.SetExpandStringValue(PathEnvName, newPathValue)

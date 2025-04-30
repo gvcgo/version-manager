@@ -32,7 +32,7 @@ if ( "$sysType" -match "arm" )
 $version="v0.1.8"
 
 $filename="vmr_windows-" + $arch + ".zip"
-$download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
+$download_url="https://proxy.0002099.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
 
 $url=$download_url + $version + "/" + $filename
 

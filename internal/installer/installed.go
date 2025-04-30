@@ -1,14 +1,14 @@
 package installer
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 )
 
 /*
@@ -17,27 +17,27 @@ import (
 */
 
 type InstalledVersionFinder struct {
-	OriginSDKName     string
+	PluginName        string
 	InstalledVersions []string
 	CurrentVersion    string
 	Installer         *Installer
 }
 
-func NewIVFinder(sdkName string) (i *InstalledVersionFinder) {
-	versionFilePath := download.GetVersionFilePath(sdkName)
-	content, _ := os.ReadFile(versionFilePath)
-	rawVersionList := make(download.VersionList)
-	json.Unmarshal(content, &rawVersionList)
-	installerType := "unarchiver"
-	for _, vl := range rawVersionList {
-		if len(vl) > 0 {
-			installerType = vl[0].Installer
-			break
-		}
+func NewIVFinder(pluginName string) (i *InstalledVersionFinder) {
+	pls := plugin.NewPlugins()
+	pls.LoadAll()
+	p := pls.GetPlugin(pluginName)
+
+	versions := plugin.NewVersions(p.PluginName)
+	if versions == nil {
+		return nil
 	}
+
+	_, vItem := versions.GetLatestVersion()
+
 	i = &InstalledVersionFinder{
-		OriginSDKName: sdkName,
-		Installer:     NewInstaller(sdkName, "", "", download.Item{Installer: installerType}),
+		PluginName: p.PluginName,
+		Installer:  NewInstaller(p.SDKName, p.PluginName, "", lua_global.Item{Installer: vItem.Installer}),
 	}
 	return
 }
@@ -49,7 +49,7 @@ func (i *InstalledVersionFinder) findCurrentVersion(symbolPath string) {
 
 	slink, _ := os.Readlink(symbolPath)
 	fName := filepath.Base(slink)
-	namePrefix := fmt.Sprintf("%s-", i.OriginSDKName)
+	namePrefix := fmt.Sprintf("%s-", i.PluginName)
 	if strings.HasPrefix(fName, namePrefix) {
 		i.CurrentVersion = strings.TrimPrefix(fName, namePrefix)
 	}
@@ -68,7 +68,7 @@ func (i *InstalledVersionFinder) FindAll() (r []string, current string) {
 	}
 	i.findCurrentVersion(symbolPath)
 
-	namePrefix := fmt.Sprintf("%s-", i.OriginSDKName)
+	namePrefix := fmt.Sprintf("%s-", i.PluginName)
 	dList, _ := os.ReadDir(versionDir)
 	for _, d := range dList {
 		if d.IsDir() && strings.HasPrefix(d.Name(), namePrefix) {

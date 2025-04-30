@@ -25,7 +25,7 @@ func New(gitTag, gitHash string) (c *Cli) {
 			Long:  "vmr <Command> <SubCommand> --flags args...",
 			Run: func(cmd *cobra.Command, args []string) {
 				ll := cmds.NewTUI()
-				ll.ListSDKName()
+				ll.ListPluginName()
 			},
 		},
 		groupID: vcli.GroupID,
@@ -69,6 +69,7 @@ func (c *Cli) initiate() {
 	c.rootCmd.AddCommand(vcli.SetupAutoCompletions)
 	c.rootCmd.AddCommand(vcli.ToggleAllowNestedSessions)
 	c.rootCmd.AddCommand(vcli.IsSessionMode)
+	c.rootCmd.AddCommand(vcli.UpdatePlugins)
 }
 
 func (c *Cli) Run() {

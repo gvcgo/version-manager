@@ -30,6 +30,9 @@ func Unzip(srcPath, dstDir string) (err error) {
 	// use unzip command in mingw bash.
 	if runtime.GOOS == gutils.Windows && !IsMingWBash() {
 		// expand -r file.zip C:\Users\username\Desktop\extracted
+		pathString := os.Getenv("PATH")
+		newPathString := fmt.Sprintf("%s;%s", `C:\Windows\System32`, pathString)
+		os.Setenv("PATH", newPathString)
 		_, err = gutils.ExecuteSysCommand(true, "",
 			"powershell",
 			"expand",

@@ -35,11 +35,11 @@ if ( "$sysType" -match "arm" )
 # $version="v0.6.2"
 
 # $filename="vmr_windows-" + $arch + ".zip"
-# $download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
+# $download_url="https://proxy.0002099.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
 
 # $url=$download_url + $version + "/" + $filename
 
-$url="https://packages.vmr.us.kg/windows/" + $arch
+$url="https://packages.0002099.xyz/windows/" + $arch
 $filename="vmr_windows-" + $arch + ".zip"
 
 Write-Host "Downloading files..."

@@ -11,7 +11,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
@@ -45,7 +45,7 @@ func MoonbitChmod(moonbitInstallDir string) {
 	}
 }
 
-func PostInstallForMoonbit(versionName string, version download.Item) {
+func PostInstallForMoonbit(versionName string, version lua_global.Item) {
 	versionDir := cnf.GetVersionsDir()
 	d := filepath.Join(versionDir, fmt.Sprintf("%s_versions", MoonbitSdkName))
 	moonbitInstallDir := filepath.Join(d, fmt.Sprintf("%s-%s", MoonbitSdkName, versionName))

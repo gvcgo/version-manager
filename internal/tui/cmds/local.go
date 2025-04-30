@@ -18,7 +18,7 @@ const (
 
 type LocalInstalled struct {
 	finder         *installer.InstalledVersionFinder
-	SDKName        string
+	PluginName     string
 	CurrentVersion string
 	VersionList    []string
 }
@@ -28,9 +28,9 @@ func NewLocalInstalled() (l *LocalInstalled) {
 	return
 }
 
-func (l *LocalInstalled) Search(sdkName string) {
-	l.SDKName = sdkName
-	l.finder = installer.NewIVFinder(sdkName)
+func (l *LocalInstalled) Search(pluginName string) {
+	l.PluginName = pluginName
+	l.finder = installer.NewIVFinder(pluginName)
 	l.VersionList, l.CurrentVersion = l.finder.FindAll()
 }
 
@@ -47,7 +47,7 @@ func (l *LocalInstalled) Show() (nextEvent, selectedItem string) {
 		w = 120
 	}
 	ll.SetHeader([]table.Column{
-		{Title: fmt.Sprintf("%s installed versions", l.SDKName), Width: 80},
+		{Title: fmt.Sprintf("%s installed versions", l.PluginName), Width: 80},
 	})
 
 	rows := []table.Row{}
@@ -60,7 +60,7 @@ func (l *LocalInstalled) Show() (nextEvent, selectedItem string) {
 		})
 	}
 	if len(rows) == 0 {
-		gprint.PrintInfo("No versions found for %s", l.SDKName)
+		gprint.PrintInfo("No versions found for %s", l.PluginName)
 		return
 	}
 	ll.SetRows(rows)

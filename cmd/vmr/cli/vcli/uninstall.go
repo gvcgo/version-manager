@@ -1,12 +1,10 @@
 package vcli
 
 import (
-	"encoding/json"
-	"os"
 	"strings"
 
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +16,7 @@ var UninstallVersionCmd = &cobra.Command{
 	Aliases: []string{"uni", "r"},
 	GroupID: GroupID,
 	Short:   "Uninstall versions for an SDK.",
-	Long:    "Example: vmr uninstall sdkname@version or sdkname@all.",
+	Long:    "Example: vmr uninstall pluginname@version or pluginname@all.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()
@@ -34,25 +32,20 @@ var UninstallVersionCmd = &cobra.Command{
 			cmd.Help()
 			return
 		}
-		sdkName := sList[0]
+		pluginName := sList[0]
 		version := sList[1]
 
 		if version == "all" {
-			lif := installer.NewIVFinder(sdkName)
+			lif := installer.NewIVFinder(pluginName)
 			lif.UninstallAllVersions()
 		} else {
-			versionFilePath := download.GetVersionFilePath(sdkName)
-			content, _ := os.ReadFile(versionFilePath)
-			rawVersionList := make(download.VersionList)
-			json.Unmarshal(content, &rawVersionList)
-			installerType := "unarchiver"
-			for _, vl := range rawVersionList {
-				if len(vl) > 0 {
-					installerType = vl[0].Installer
-					break
-				}
+			v := plugin.NewVersions(pluginName)
+			if v == nil {
+				return
 			}
-			ins := installer.NewInstaller(sdkName, version, "", download.Item{Installer: installerType})
+			sdkName := v.GetSDKName()
+			vItem := v.GetVersionByName(version)
+			ins := installer.NewInstaller(sdkName, pluginName, version, vItem)
 			ins.Uninstall()
 		}
 	},

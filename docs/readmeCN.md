@@ -10,6 +10,7 @@
 [![issues card](https://img.shields.io/badge/issues-vmr-pink.svg?style=for-the-badge)](https://github.com/gvcgo/version-manager/issues)
 [![versions repo card](https://img.shields.io/badge/versions-repo-blue.svg?style=for-the-badge)](https://github.com/gvcgo/resources)
 [![Go Reference](https://pkg.go.dev/badge/github.com/gvcgo/version-manager.svg)](https://pkg.go.dev/github.com/gvcgo/version-manager)
+[![codecov](https://codecov.io/gh/gvcgo/version-manager/graph/badge.svg?token=ITQNVHMKRH)](https://codecov.io/gh/gvcgo/version-manager)
 
 [中文](https://github.com/gvcgo/version-manager/blob/main/docs/readmecn.md) | [en](https://github.com/gvcgo/version-manager)
 
@@ -26,7 +27,7 @@
 ------
 
 <!-- ![demo](https://cdn.jsdelivr.net/gh/moqsien/img_repo@main/vmr.gif) -->
-<div align=center><img src="https://image-acc.vmr.us.kg/vmr.gif"></div>
+<div align=center><img src="https://image-acc.0002099.xyz/vmr.gif"></div>
 
 ------
 <p id="1"></p>  
@@ -37,7 +38,7 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 
 你可能已经听说过fnm，gvm，nvm，pyenv，phpenv等SDK版本管理工具。然而，它们很多都不能管理多种编程语言。像asdf-vm这样的管理器支持多种语言，但只适用于类unix系统，并且看起来非常复杂。因此，VMR的出现主要就是为了解决这些问题。
 
-[查看详细文档](https://vdocs.vmr.us.kg/zh-cn/)
+[查看详细文档](https://vmrdocs.0002099.xyz/zh-cn/)
 
 ------
 
@@ -61,20 +62,20 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 
 - MacOS/Linux
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.us.kg | sh
+curl --proto '=https' --tlsv1.2 -sSf https://scripts.0002099.xyz | sh
 ```
 - Windows
 ```bash
-powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
+powershell -c "irm https://scripts.0002099.xyz/windows | iex"
 ```
 
-**注意**：安装之后，请记得阅读[文档](https://vdocs.vmr.us.kg/zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。
+**注意**：安装之后，请记得阅读[文档](https://vmrdocs.0002099.xyz/zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。
 
 ------
 
 ### 支持的部分SDK
 
-[bun](https://bun.sh/), [clang](https://clang.llvm.org/), [clojure](https://clojure.org/), [codon](https://github.com/exaloop/codon), [crystal](https://crystal-lang.org/), [deno](https://deno.com/), [dlang](https://dlang.org/), [dotnet](https://dotnet.microsoft.com/), [elixir](https://elixir-lang.org/), [erlang](https://www.erlang.org/), [flutter](https://flutter.dev/), [gcc](https://gcc.gnu.org/), [gleam](https://gleam.run/), [go](https://go.dev/), [groovy](http://www.groovy-lang.org/), [jdk](https://bell-sw.com/pages/downloads/), [julia](https://julialang.org/), [kotlin](https://kotlinlang.org/), [lfortran](https://lfortran.org/), [lua](https://www.lua.org/), [nim](https://nim-lang.org/), [node](https://nodejs.org/en), [odin](http://odin-lang.org/), [perl](https://www.perl.org/), [php](https://www.php.net/), [pypy](https://www.pypy.org/), [python](https://www.python.org/), [r](https://www.r-project.org/), [ruby](https://www.ruby-lang.org/en/), [rust](https://www.rust-lang.org/), [scala](https://www.scala-lang.org/), [typst](https://typst.app/), [v](https://vlang.io/), [zig](https://ziglang.org/), [以及更多...](https://vdocs.vmr.us.kg/zh-cn/starts/sdklist/#supported-lsp)
+[bun](https://bun.sh/), [clang](https://clang.llvm.org/), [clojure](https://clojure.org/), [codon](https://github.com/exaloop/codon), [crystal](https://crystal-lang.org/), [deno](https://deno.com/), [dlang](https://dlang.org/), [dotnet](https://dotnet.microsoft.com/), [elixir](https://elixir-lang.org/), [erlang](https://www.erlang.org/), [flutter](https://flutter.dev/), [gcc](https://gcc.gnu.org/), [gleam](https://gleam.run/), [go](https://go.dev/), [groovy](http://www.groovy-lang.org/), [jdk](https://bell-sw.com/pages/downloads/), [julia](https://julialang.org/), [kotlin](https://kotlinlang.org/), [lfortran](https://lfortran.org/), [lua](https://www.lua.org/), [nim](https://nim-lang.org/), [node](https://nodejs.org/en), [odin](http://odin-lang.org/), [perl](https://www.perl.org/), [php](https://www.php.net/), [pypy](https://www.pypy.org/), [python](https://www.python.org/), [r](https://www.r-project.org/), [ruby](https://www.ruby-lang.org/en/), [rust](https://www.rust-lang.org/), [scala](https://www.scala-lang.org/), [typst](https://typst.app/), [v](https://vlang.io/), [zig](https://ziglang.org/), [以及更多...](https://vmrdocs.0002099.xyz/zh-cn/starts/sdklist/#supported-lsp)
 
 ------
 <p id="9"></p>  
@@ -98,7 +99,7 @@ powershell -c "irm https://scripts.vmr.us.kg/windows | iex"
 
 ### 特别感谢
 
-<div></a><a href="https://conda-forge.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/anaconda/anaconda-original-wordmark.svg" align="middle" height="128" /></a><a href="https://servicecomb.apache.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apache/apache-original-wordmark.svg" align="middle" height="128"/></a><a href="https://code.visualstudio.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original-wordmark.svg" align="middle" width="64"/></a><a href="https://register.us.kg/"><img src="https://register.us.kg/static/img/logo.jpg" align="middle" width="64"/><a href="https://www.cloudflare.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cloudflare/cloudflare-original-wordmark.svg" align="middle" width="64" /></a></div>
+<div></a><a href="https://conda-forge.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/anaconda/anaconda-original-wordmark.svg" align="middle" height="128" /></a><a href="https://servicecomb.apache.org/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apache/apache-original-wordmark.svg" align="middle" height="128"/></a><a href="https://code.visualstudio.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original-wordmark.svg" align="middle" width="64"/></a><a href="https://register.us.kg/"><img src="https://dash.domain.digitalplat.org/static/img/logo.jpg" align="middle" width="64"/><a href="https://www.cloudflare.com/"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cloudflare/cloudflare-original-wordmark.svg" align="middle" width="64" /></a></div>
 
 <!-- <a href="https://evolution-host.com/"><img src="https://evolution-host.com/images/branding/newLogoBlack.png" align="middle" width="64"/> -->
 

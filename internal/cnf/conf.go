@@ -110,6 +110,15 @@ func GetSDKInstallationConfDir() string {
 }
 
 /*
+Plugin directory is for storing lua plugins.
+*/
+func GetPluginDir() string {
+	pDir := filepath.Join(GetVMRWorkDir(), "plugins")
+	os.MkdirAll(pDir, os.ModePerm)
+	return pDir
+}
+
+/*
 ==============================
 vmr config file.
 ==============================
@@ -122,6 +131,8 @@ type VMRConf struct {
 	ThreadNum           int    `json,toml:"download_thread_num"`
 	UseCustomedMirrors  bool   `json,toml:"use_customed_mirrors"`
 	AllowNestedSessions bool   `json,toml:"allow_nested_sessions"`
+	GithubToken         string `json,toml:"github_token"`
+	CacheRetentionTime  int64  `json,toml:"cache_retention_time"` // in seconds.
 }
 
 func NewVMRConf() (v *VMRConf) {
@@ -215,4 +226,21 @@ func (v *VMRConf) ToggleAllowNestedSessions() bool {
 	v.AllowNestedSessions = !v.AllowNestedSessions
 	v.Save()
 	return v.AllowNestedSessions
+}
+
+func (v *VMRConf) SetGithubToken(token string) {
+	v.Load()
+	if token == "" {
+		return
+	}
+	v.GithubToken = token
+	v.Save()
+}
+
+func (v *VMRConf) SetCacheRetentionTime(t int64) {
+	v.Load()
+	if t > 0 {
+		v.CacheRetentionTime = t
+	}
+	v.Save()
 }

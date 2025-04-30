@@ -46,7 +46,7 @@ main() {
     local os_arch="$(uname -m)"
 
     # local version="v0.6.2"
-    # local download_url="https://proxy.vmr.us.kg/proxy/https://github.com/gvcgo/version-manager/releases/download/"
+    # local download_url="https://proxy.0002099.xyz/proxy/https://github.com/gvcgo/version-manager/releases/download/"
     # local osType="linux"
     # if [ "$os_type" = "Darwin" ]; then
     #     osType="darwin"
@@ -71,7 +71,7 @@ main() {
     if  [ "$os_arch" = "arm64" ] || [ "$os_arch" = "aarch64" ]; then
         osArch="arm64"
     fi
-    local url="https://packages.vmr.us.kg/$osType/$osArch"
+    local url="https://packages.0002099.xyz/$osType/$osArch"
     local filename="vmr_$osType-$osArch.zip"
 
     echo "$url"

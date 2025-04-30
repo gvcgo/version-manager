@@ -21,12 +21,8 @@
 
 package main
 
-import (
-	"github.com/gvcgo/version-manager/internal/installer"
-)
-
 func main() {
-	// os.Setenv(conf.VMReverseProxyEnvName, "https://proxy.vmr.us.kg/proxy/")
+	// os.Setenv(conf.VMReverseProxyEnvName, "https://proxy.0002099.xyz/proxy/")
 	// register.RunInstaller(register.VersionKeeper["python"])
 	// fmt.Println(os.Environ())
 	// pt := terminal.NewPtyTerminal("go")
@@ -80,7 +76,7 @@ func main() {
 	// s := ShellRegExp.FindString(string(content))
 	// fmt.Println(s)
 
-	installer.TestCondaSearcher()
+	// installer.TestCondaSearcher()
 
 	// _, err := gutils.ExecuteSysCommand(
 	// 	true,

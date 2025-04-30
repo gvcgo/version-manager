@@ -6,8 +6,9 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/version-manager/cmd/vmr/cli/vcli"
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -46,12 +47,19 @@ var useCmd = &cobra.Command{
 			return
 		}
 
-		sdkName := vl[0]
+		pluginName := vl[0]
 		versionName := vl[1]
 
 		ok2, _ := cmd.Flags().GetBool("install-by-conda")
 
-		vList := download.GetVersionList(sdkName, "")
+		versions := plugin.NewVersions(pluginName)
+		if versions == nil {
+			gprint.PrintError("No Versions Found.")
+			return
+		}
+
+		vList := versions.GetSdkVersions()
+
 		if len(vList) == 0 && !ok2 {
 			gprint.PrintError("No SDK Found.")
 			return
@@ -63,14 +71,14 @@ var useCmd = &cobra.Command{
 			gprint.PrintError("No Versions Found.")
 			return
 		} else if ok2 {
-			vItem = download.Item{
+			vItem = lua_global.Item{
 				Arch:      runtime.GOARCH,
 				Os:        runtime.GOOS,
-				Installer: download.Conda,
+				Installer: lua_global.Conda,
 			}
 		}
 
-		ins := installer.NewInstaller(sdkName, versionName, "", vItem)
+		ins := installer.NewInstaller(pluginName, versionName, "", vItem)
 
 		if ok2 {
 			// If an SDK is installed by Conda only, and it is not supported by VMR yet,

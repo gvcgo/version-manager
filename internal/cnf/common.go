@@ -141,3 +141,18 @@ func GetFetcher(dUrl string) (fetcher *request.Fetcher) {
 	}
 	return
 }
+
+func GetGithubToken() string {
+	cnf := NewVMRConf()
+	cnf.Load()
+	return cnf.GithubToken
+}
+
+func GetCacheRetentionTime() int64 {
+	cnf := NewVMRConf()
+	cnf.Load()
+	if cnf.CacheRetentionTime == 0 {
+		return 86400
+	}
+	return cnf.CacheRetentionTime
+}

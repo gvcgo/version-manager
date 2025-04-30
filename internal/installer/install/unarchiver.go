@@ -11,6 +11,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	"github.com/gvcgo/version-manager/internal/utils"
 )
 
@@ -18,12 +19,12 @@ import (
 Install use unarchiver.
 */
 type ArchiverInstaller struct {
-	OriginSDKName string
-	SDKName       string
-	VersionName   string
-	Version       download.Item
-	installConf   download.InstallerConfig
-	dirFinder     *utils.HomeDirFinder
+	PluginName  string
+	SDKName     string
+	VersionName string
+	Version     lua_global.Item
+	installConf *lua_global.InstallerConfig
+	dirFinder   *utils.HomeDirFinder
 }
 
 func NewArchiverInstaller() (a *ArchiverInstaller) {
@@ -33,24 +34,20 @@ func NewArchiverInstaller() (a *ArchiverInstaller) {
 	return
 }
 
-func (a *ArchiverInstaller) SetInstallConf(iconf download.InstallerConfig) {
+func (a *ArchiverInstaller) SetInstallConf(iconf *lua_global.InstallerConfig) {
 	a.installConf = iconf
 }
 
-func (a *ArchiverInstaller) Initiate(originSDKName, versionName string, version download.Item) {
-	a.OriginSDKName = originSDKName
+func (a *ArchiverInstaller) Initiate(pluginName, sdkName, versionName string, version lua_global.Item) {
+	a.PluginName = pluginName
+	a.SDKName = sdkName
 	a.VersionName = versionName
 	a.Version = version
-	a.FormatSDKName()
-}
-
-func (a *ArchiverInstaller) FormatSDKName() {
-	a.SDKName = a.OriginSDKName
 }
 
 func (a *ArchiverInstaller) GetInstallDir() string {
 	d := GetSDKVersionDir(a.SDKName)
-	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, a.OriginSDKName, a.VersionName))
+	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, a.PluginName, a.VersionName))
 }
 
 func (a *ArchiverInstaller) GetSymbolLinkPath() string {
@@ -94,7 +91,7 @@ func (a *ArchiverInstaller) Install() {
 
 	// Download archived files.
 	dd := download.NewDownloader()
-	fPath := dd.Download(a.OriginSDKName, a.VersionName, a.Version)
+	fPath := dd.Download(a.PluginName, a.VersionName, a.Version)
 	if ok, _ := gutils.PathIsExist(fPath); !ok || fPath == "" {
 		return
 	}

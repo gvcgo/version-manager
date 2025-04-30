@@ -10,6 +10,7 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/request"
 	"github.com/gvcgo/version-manager/internal/cnf"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 )
 
 /*
@@ -21,7 +22,7 @@ type Downloader struct {
 	Fetcher     *request.Fetcher
 	SDKName     string
 	VersionName string
-	Version     Item
+	Version     lua_global.Item
 }
 
 func NewDownloader() (d *Downloader) {
@@ -42,7 +43,7 @@ func (d *Downloader) getLocalFilePath() string {
 	return filepath.Join(dd, filename)
 }
 
-func (d *Downloader) Download(OriginSDKName, versionName string, version Item, force ...bool) (fPath string) {
+func (d *Downloader) Download(OriginSDKName, versionName string, version lua_global.Item, force ...bool) (fPath string) {
 	if version.Url == "" {
 		return
 	}

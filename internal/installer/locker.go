@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/version-manager/internal/download"
 	"github.com/gvcgo/version-manager/internal/installer/install"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	"github.com/gvcgo/version-manager/internal/shell/sh"
 	"github.com/gvcgo/version-manager/internal/terminal"
 )
@@ -121,7 +121,7 @@ func (v *VersionLocker) HookForCdCommand() {
 	os.Setenv(AddToPathTemporarillyEnvName, "1")
 	for sdkName, versionName := range v.VersionOfSDKs {
 		RemoveGlobalSDKPathTemporarily(sdkName)
-		ins := NewInstaller(sdkName, versionName, "", download.Item{})
+		ins := NewInstaller(sdkName, versionName, "", lua_global.Item{})
 		// follow the order.
 		ins.AddEnvsTemporarilly()
 	}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
-	"github.com/gvcgo/version-manager/internal/download"
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 )
 
 func init() {
@@ -21,7 +21,7 @@ const (
 /*
 post-installation handler for Zig.
 */
-func PostInstallForZig(versionName string, version download.Item) {
+func PostInstallForZig(versionName string, version lua_global.Item) {
 	versionDir := cnf.GetVersionsDir()
 	d := filepath.Join(versionDir, fmt.Sprintf("%s_versions", ZigSdkName))
 	zigInstallDir := filepath.Join(d, fmt.Sprintf("%s-%s", ZigSdkName, versionName))
