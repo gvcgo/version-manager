@@ -36,3 +36,5 @@ test.sh
 *.fish
 *.cast
 *.gif
+
+.idea

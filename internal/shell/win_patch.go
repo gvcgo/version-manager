@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	VMR_VERSIONS_ENV    = "VMR_VERSIONS"
-	VMR_VERSIONS_PREFIX = `%VMR_VERSIONS%`
+	VMR_VERSIONS_ENV    = "_VMR_VERSIONS"
+	VMR_VERSIONS_PREFIX = `%_VMR_VERSIONS%`
 )
 
 var VersionsDir = cnf.GetVersionsDir()
