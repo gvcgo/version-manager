@@ -24,7 +24,6 @@ const (
 )
 
 var (
-	helpStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFA500")).Render
 	titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#abebc6")).Render
 )
 
