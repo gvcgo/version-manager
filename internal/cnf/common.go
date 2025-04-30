@@ -57,8 +57,8 @@ func GetReverseProxyUri(dUrl, localProxy string) string {
 		return ""
 	}
 	rp := os.Getenv(VMRReverseProxyEnv)
-	if rp == "" && strings.Contains(dUrl, "github") {
-		rp = DefaultReverseProxy
+	if rp == "" {
+		return ""
 	}
 
 	if !strings.HasSuffix(rp, "/") {
