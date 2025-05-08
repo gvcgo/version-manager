@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#abebc6")).Render
+	titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#abebc6"))
 )
 
 type (
@@ -112,11 +112,13 @@ func (p *Progress) View() string {
 	}
 	title := fmt.Sprintf("[%s] %s %s", p.title, p.getDownloadInfo(), p.getDownloadedPercentage())
 
-	return lipgloss.JoinVertical(
-		lipgloss.Left, titleStyle(title),
+	s := lipgloss.JoinVertical(
+		lipgloss.Left,
+		titleStyle.Render(title),
 		p.model.View(),
 		helpStyle(`Press "q" to quit.`),
 	)
+	return FocusedBorderStyle.Render(s)
 }
 
 func (p *Progress) Write(partial []byte) (int, error) {
