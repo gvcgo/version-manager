@@ -1,6 +1,7 @@
 package cnf
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,13 +17,15 @@ func init() {
 }
 
 const (
-	DefaultReverseProxy       string = "https://proxy.0002099.xyz/proxy/"
+	DefaultDomain             string = "vmr.dpdns.org"
 	DefaultHostUrl            string = "https://raw.githubusercontent.com/gvcgo/vsources/main"
 	SDKNameListFileUrl        string = `/sdk-list.version.json`
 	VersionFileUrlPattern     string = `/%s.version.json`
 	SDKInstallationUrlPattern string = `install/%s.toml`
 	VMRWorkDirName            string = ".vmr"
 )
+
+var DefaultReverseProxy string = fmt.Sprintf("https://proxy.%s/proxy/", DefaultDomain)
 
 /*
 Envs

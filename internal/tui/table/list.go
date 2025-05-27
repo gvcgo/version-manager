@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gogf/gf/v2/util/gutil"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/version-manager/internal/cnf"
 )
 
 type ListType string
@@ -211,7 +212,7 @@ func (l *List) renderHelpInfo() (count int, s string) {
 			lines = append(lines, fmt.Sprintf(pattern, key, event.HelpInfo))
 		}
 	}
-	lines = append(lines, "See docs: https://vmrdocs.0002099.xyz/")
+	lines = append(lines, fmt.Sprintf("See docs: https://vmrdocs.%s/", cnf.DefaultDomain))
 	return len(lines), JoinVertical(lipgloss.Left, lines...)
 }
 
