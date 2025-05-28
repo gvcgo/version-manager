@@ -33,7 +33,7 @@ func (l *Lua) SetGlobal(name string, fn lua.LGFunction) {
 }
 
 func (l *Lua) init() {
-	l.SetGlobal("getResponse", GetResponse)
+	l.SetGlobal("vmrGetResponse", GetResponse)
 	// goquery
 	l.SetGlobal("initSelection", InitSelection)
 	l.SetGlobal("find", Find)
@@ -50,22 +50,22 @@ func (l *Lua) init() {
 	l.SetGlobal("getByIndex", GetGJsonFromSliceByIndex) // for array
 	l.SetGlobal("sliceEach", GetGJsonSliceEach)
 	// utils
-	l.SetGlobal("getOsArch", GetOsArch)
-	l.SetGlobal("regexpFindString", RegExpFindString)
-	l.SetGlobal("hasPrefix", HasPrefix)
-	l.SetGlobal("hasSuffix", HasSuffix)
-	l.SetGlobal("contains", Contains)
-	l.SetGlobal("trimPrefix", TrimPrefix)
-	l.SetGlobal("trimSuffix", TrimSuffix)
-	l.SetGlobal("trim", Trim)
-	l.SetGlobal("trimSpace", TrimSpace)
-	l.SetGlobal("sprintf", Sprintf)
-	l.SetGlobal("urlJoin", UrlJoin)
-	l.SetGlobal("lenString", LenString)
+	l.SetGlobal("vmrGetOsArch", GetOsArch)
+	l.SetGlobal("vmrRegexpFindString", RegExpFindString)
+	l.SetGlobal("vmrHasPrefix", HasPrefix)
+	l.SetGlobal("vmrHasSuffix", HasSuffix)
+	l.SetGlobal("vmrContains", Contains)
+	l.SetGlobal("vmrTrimPrefix", TrimPrefix)
+	l.SetGlobal("vmrTrimSuffix", TrimSuffix)
+	l.SetGlobal("vmrTrim", Trim)
+	l.SetGlobal("vmrTrimSpace", TrimSpace)
+	l.SetGlobal("vmrSprintf", Sprintf)
+	l.SetGlobal("vmrUrlJoin", UrlJoin)
+	l.SetGlobal("vmrLenString", LenString)
 	// version
-	l.SetGlobal("newVersionList", NewVersionList)
-	l.SetGlobal("addItem", AddItem)
-	l.SetGlobal("mergeVersionList", MergeVersionList)
+	l.SetGlobal("vmrNewVersionList", NewVersionList)
+	l.SetGlobal("vmrAddItem", AddItem)
+	l.SetGlobal("vmrMergeVersionList", MergeVersionList)
 	// github
 	l.SetGlobal("getGithubRelease", GetGithubRelease)
 	// installer_config
@@ -75,7 +75,7 @@ func (l *Lua) init() {
 	l.SetGlobal("addBinaryDirs", AddBinaryDirs)
 	l.SetGlobal("addAdditionalEnvs", AddAdditionalEnvs)
 	// conda
-	l.SetGlobal("searchByConda", SearchByConda)
+	l.SetGlobal("vmrSearchByConda", SearchByConda)
 }
 
 func (l *Lua) GetLState() *lua.LState {
