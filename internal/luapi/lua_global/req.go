@@ -13,6 +13,11 @@ const (
 	ProxyEnvName string = "VCOLLECTOR_PROXY"
 )
 
+/*
+lua:
+timeout = 10
+response_str = vmrGetResponse(url, timeout, { ["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36" })
+*/
 func GetResponse(L *lua.LState) int {
 	dUrl := L.ToString(1)
 	timeout := L.ToInt(2)

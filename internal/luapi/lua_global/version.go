@@ -31,6 +31,9 @@ type SDKVersion []Item
 
 type VersionList map[string]SDKVersion
 
+/*
+lua: vl = vmrNewVersionList()
+*/
 func NewVersionList(L *lua.LState) int {
 	ud := L.NewUserData()
 	ud.Value = make(VersionList)
@@ -38,6 +41,12 @@ func NewVersionList(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+vl = vmrNewVersionList()
+item = { ["url"] = "xxx", ["arch"] = "xxx", ["os"] = "xxx" }
+vmrAddItem(vl, versionName, item)
+*/
 func AddItem(L *lua.LState) int {
 	ud := L.ToUserData(1)
 	if ud == nil {
@@ -85,6 +94,12 @@ func AddItem(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+vl1 = vmrNewVersionList()
+vl2 = vmrNewVersionList()
+vl = vmrMergeVersionList(vl1, vl2)
+*/
 func MergeVersionList(L *lua.LState) int {
 	ud := L.ToUserData(1)
 	if ud == nil {

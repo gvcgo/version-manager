@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -79,7 +80,7 @@ var CondaSearchCommand = []string{
 
 func GetVersionForPlatform(platform, sdkName string) (vlist []string) {
 	homeDir, _ := os.UserHomeDir()
-	_cmd := append([]string{}, CondaSearchCommand...)
+	_cmd := slices.Clone(CondaSearchCommand)
 	_cmd = append(_cmd, "--subdir", platform, "--full-name", sdkName)
 	r, err := gutils.ExecuteSysCommand(true, homeDir, _cmd...)
 	if err == nil {

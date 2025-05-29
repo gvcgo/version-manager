@@ -10,12 +10,18 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+/*
+lua: os, arch = vmrGetOsArch()
+*/
 func GetOsArch(L *lua.LState) int {
 	L.Push(lua.LString(runtime.GOOS))
 	L.Push(lua.LString(runtime.GOARCH))
 	return 2
 }
 
+/*
+lua: r = vmrRegExpFindString(pattern, string)
+*/
 func RegExpFindString(L *lua.LState) int {
 	patternStr := L.ToString(1)
 	content := L.ToString(2)
@@ -29,6 +35,9 @@ func RegExpFindString(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: bool = vmrHasPrefix(string, prefix)
+*/
 func HasPrefix(L *lua.LState) int {
 	str := L.ToString(1)
 	prefix := L.ToString(2)
@@ -37,6 +46,9 @@ func HasPrefix(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: bool = vmrHasSuffix(string, suffix)
+*/
 func HasSuffix(L *lua.LState) int {
 	str := L.ToString(1)
 	suffix := L.ToString(2)
@@ -45,6 +57,9 @@ func HasSuffix(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: bool = vmrContains(string, substring)
+*/
 func Contains(L *lua.LState) int {
 	str := L.ToString(1)
 	substr := L.ToString(2)
@@ -53,6 +68,9 @@ func Contains(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: s = vmrTrimPrefix(string, prefix)
+*/
 func TrimPrefix(L *lua.LState) int {
 	str := L.ToString(1)
 	prefix := L.ToString(2)
@@ -61,6 +79,9 @@ func TrimPrefix(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: s = vmrTrimSuffix(string, suffix)
+*/
 func TrimSuffix(L *lua.LState) int {
 	str := L.ToString(1)
 	suffix := L.ToString(2)
@@ -69,6 +90,9 @@ func TrimSuffix(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: s = vmrTrim(string, substring)
+*/
 func Trim(L *lua.LState) int {
 	str := L.ToString(1)
 	s := L.ToString(2)
@@ -77,6 +101,9 @@ func Trim(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: s = vmrTrimSpace(string)
+*/
 func TrimSpace(L *lua.LState) int {
 	str := L.ToString(1)
 	result := strings.TrimSpace(str)
@@ -84,6 +111,9 @@ func TrimSpace(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: string = vmrSprintf(pattern, {s1, s2, s3, ...})
+*/
 func Sprintf(L *lua.LState) int {
 	pattern := L.ToString(1)
 	array := L.ToTable(2)
@@ -97,6 +127,9 @@ func Sprintf(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: s = vmrUrlJoin(base, path)
+*/
 func UrlJoin(L *lua.LState) int {
 	base := L.ToString(1)
 	paths := L.ToString(2)
@@ -105,6 +138,9 @@ func UrlJoin(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua: int = vmrLenString(string)
+*/
 func LenString(L *lua.LState) int {
 	str := L.ToString(1)
 	L.Push(lua.LNumber(len(str)))

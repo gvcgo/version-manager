@@ -35,12 +35,12 @@ func (l *Lua) SetGlobal(name string, fn lua.LGFunction) {
 func (l *Lua) init() {
 	l.SetGlobal("vmrGetResponse", GetResponse)
 	// goquery
-	l.SetGlobal("initSelection", InitSelection)
-	l.SetGlobal("find", Find)
-	l.SetGlobal("eq", Eq)
-	l.SetGlobal("attr", Attr)
-	l.SetGlobal("text", Text)
-	l.SetGlobal("each", Each)
+	l.SetGlobal("vmrInitSelection", InitSelection)
+	l.SetGlobal("vmrFind", Find)
+	l.SetGlobal("vmrEq", Eq)
+	l.SetGlobal("vmrAttr", Attr)
+	l.SetGlobal("vmrText", Text)
+	l.SetGlobal("vmrEach", Each)
 	// gjson
 	l.SetGlobal("initGJson", InitGJson)
 	l.SetGlobal("getString", GetGJsonString)
@@ -69,11 +69,11 @@ func (l *Lua) init() {
 	// github
 	l.SetGlobal("getGithubRelease", GetGithubRelease)
 	// installer_config
-	l.SetGlobal("newInstallerConfig", NewInstallerConf)
-	l.SetGlobal("addFlagFiles", AddFlagFiles)
-	l.SetGlobal("enableFlagDirExcepted", EnableFlagDirExcepted)
-	l.SetGlobal("addBinaryDirs", AddBinaryDirs)
-	l.SetGlobal("addAdditionalEnvs", AddAdditionalEnvs)
+	l.SetGlobal("vmrNewInstallerConfig", NewInstallerConf)
+	l.SetGlobal("vmrAddFlagFiles", AddFlagFiles)
+	l.SetGlobal("vmrEnableFlagDirExcepted", EnableFlagDirExcepted)
+	l.SetGlobal("vmrAddBinaryDirs", AddBinaryDirs)
+	l.SetGlobal("vmrAddAdditionalEnvs", AddAdditionalEnvs)
 	// conda
 	l.SetGlobal("vmrSearchByConda", SearchByConda)
 }

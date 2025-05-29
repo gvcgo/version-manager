@@ -31,6 +31,14 @@ func initDocument(resp string) *goquery.Document {
 	return doc
 }
 
+/*
+lua:
+url = "https://www.bing.com"
+timeout = 10
+headers = { ["User-Agent"] ="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+resp = vmrGetResponse(url, timeout, headers)
+selection = vmrInitSelection(resp, "li")
+*/
 func InitSelection(L *lua.LState) int {
 	resp := L.ToUserData(1)
 	if resp == nil {
@@ -47,6 +55,15 @@ func InitSelection(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+url = "https://www.bing.com"
+timeout = 10
+headers = { ["User-Agent"] ="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+resp = vmrGetResponse(url, timeout, headers)
+selection = vmrInitSelection(resp, "li")
+selection = vmrFind(selection, "a")
+*/
 func Find(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
@@ -59,6 +76,15 @@ func Find(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+url = "https://www.bing.com"
+timeout = 10
+headers = { ["User-Agent"] ="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+resp = vmrGetResponse(url, timeout, headers)
+selection = vmrInitSelection(resp, "li")
+selection = vmrEq(selection, 0)
+*/
 func Eq(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
@@ -71,11 +97,20 @@ func Eq(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+url = "https://www.bing.com"
+timeout = 10
+headers = { ["User-Agent"] ="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+resp = vmrGetResponse(url, timeout, headers)
+selection = vmrInitSelection(resp, "a")
+string = vmrAttr(selection, "href")
+*/
 func Attr(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
-		prepareResult(L, nil)
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 	attrName := L.ToString(2)
 	value := s.AttrOr(attrName, "")
@@ -83,6 +118,15 @@ func Attr(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+url = "https://www.bing.com"
+timeout = 10
+headers = { ["User-Agent"] ="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+resp = vmrGetResponse(url, timeout, headers)
+selection = vmrInitSelection(resp, "a")
+string = vmrText(selection)
+*/
 func Text(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
@@ -94,6 +138,22 @@ func Text(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+url = "https://www.bing.com"
+timeout = 10
+headers = { ["User-Agent"] ="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+resp = vmrGetResponse(url, timeout, headers)
+s = initSelection(resp, "li")
+function parseLiItem(i, ss)
+
+	local node = vmrFind(ss, "a")
+	local href = vmrAttr(node, "href")
+	print(href)
+
+end
+vmrEach(s, parseLiItem)
+*/
 func Each(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {

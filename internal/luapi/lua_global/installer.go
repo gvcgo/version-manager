@@ -55,6 +55,9 @@ func NewInstallerConfig() (ic *InstallerConfig) {
 	return
 }
 
+/*
+lua: ic = vmrNewInstallerConfig()
+*/
 func NewInstallerConf(L *lua.LState) int {
 	ud := L.NewUserData()
 	ud.Value = NewInstallerConfig()
@@ -70,6 +73,12 @@ func checkInstallerConfig(L *lua.LState, n int) *InstallerConfig {
 	return nil
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+os, arch = vmrGetOsArch()
+ic = vmrAddFlagFiles(ic, os, {"a", "b", "c", ...})
+*/
 func AddFlagFiles(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
@@ -106,6 +115,11 @@ func AddFlagFiles(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+ic = vmrEnableFlagDirExcepted(ic)
+*/
 func EnableFlagDirExcepted(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
@@ -119,6 +133,12 @@ func EnableFlagDirExcepted(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+os, arch = vmrGetOsArch()
+ic = vmrAddBinaryDirs(ic, os, {"usr", "bin", ...})
+*/
 func AddBinaryDirs(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
@@ -156,6 +176,14 @@ func AddBinaryDirs(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+os, arch = vmrGetOsArch()
+envPath = {"usr", "bin", ...}
+limitedVersions = "<=1.8"
+ic = vmrAddAdditionalEnvs(ic, envNameStr, envPath, limitedVersions)
+*/
 func AddAdditionalEnvs(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
