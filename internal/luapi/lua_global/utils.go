@@ -147,3 +147,7 @@ func LenString(L *lua.LState) int {
 	L.Push(lua.LNumber(len(str)))
 	return 1
 }
+
+// TODO: execute system command
+
+// TODO: check prequisite

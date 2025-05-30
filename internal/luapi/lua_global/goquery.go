@@ -8,7 +8,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-func prepareResult(L *lua.LState, result interface{}) {
+func prepareResult(L *lua.LState, result any) {
 	ud := L.NewUserData()
 	ud.Value = result
 	L.Push(ud)
@@ -42,12 +42,13 @@ selection = vmrInitSelection(resp, "li")
 func InitSelection(L *lua.LState) int {
 	resp := L.ToUserData(1)
 	if resp == nil {
-		return 0
+		prepareResult(L, nil)
+		return 1
 	}
 	doc := initDocument(gconv.String(resp.Value))
 	if doc == nil {
 		prepareResult(L, nil)
-		return 0
+		return 1
 	}
 	selector := L.ToString(2)
 	s := doc.Find(selector)
@@ -68,7 +69,7 @@ func Find(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
 		prepareResult(L, nil)
-		return 0
+		return 1
 	}
 	selector := L.ToString(2)
 	s = s.Find(selector)
@@ -89,7 +90,7 @@ func Eq(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
 		prepareResult(L, nil)
-		return 0
+		return 1
 	}
 	index := L.ToInt(2)
 	s = s.Eq(index)
@@ -131,7 +132,7 @@ func Text(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
 		prepareResult(L, nil)
-		return 0
+		return 1
 	}
 	value := s.Text()
 	L.Push(lua.LString(value))
@@ -157,7 +158,6 @@ vmrEach(s, parseLiItem)
 func Each(L *lua.LState) int {
 	s := checkSelection(L)
 	if s == nil {
-		prepareResult(L, nil)
 		return 0
 	}
 

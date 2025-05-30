@@ -67,7 +67,7 @@ func copyPlugins() {
 	}
 }
 
-func updateInfo() {
+func GetPluginFileList() []gh.RepoFile {
 	cfg := cnf.NewVMRConf()
 	cfg.Load()
 
@@ -76,8 +76,11 @@ func updateInfo() {
 	}
 
 	github := gh.NewGh(PluginRepo, cfg.GithubToken, cfg.ProxyUri, cfg.ReverseProxy)
-	fileList := github.GetFileList()
+	return github.GetFileList()
+}
 
+func updateInfo() {
+	fileList := GetPluginFileList()
 	result, _ := json.Marshal(fileList)
 	infoFilePath := filepath.Join(cnf.GetPluginDir(), PluginInfoFileName)
 	os.WriteFile(infoFilePath, result, os.ModePerm)

@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -12,9 +13,12 @@ const (
 	PluginVersion LuaConfItem = "plugin_version"
 	Prequisite    LuaConfItem = "prequisite"
 	Homepage      LuaConfItem = "homepage"
+	Crawler       LuaConfItem = "crawl"
 )
 
-func GetConfItemFromLua(L *lua.LState, item LuaConfItem) (result string) {
+var InstallerConfig LuaConfItem = LuaConfItem(lua_global.InstallerConfigName)
+
+func GetLuaConfItemString(L *lua.LState, item LuaConfItem) (result string) {
 	v := L.GetGlobal(string(item))
 	if v == nil {
 		return
@@ -35,12 +39,7 @@ func GetConfItemFromLua(L *lua.LState, item LuaConfItem) (result string) {
 	return
 }
 
-const (
-	InstallerConfig LuaConfItem = "ic"
-	Crawler         LuaConfItem = "crawl"
-)
-
-func DoLuaItemExist(L *lua.LState, item LuaConfItem) bool {
+func DoesLuaItemExist(L *lua.LState, item LuaConfItem) bool {
 	v := L.GetGlobal(string(item))
 	return v.String() != "nil"
 }
