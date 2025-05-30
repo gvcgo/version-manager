@@ -42,13 +42,13 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrText", Text)
 	l.SetGlobal("vmrEach", Each)
 	// gjson
-	l.SetGlobal("initGJson", InitGJson)
-	l.SetGlobal("getString", GetGJsonString)
-	l.SetGlobal("getInt", GetGJsonInt)
-	l.SetGlobal("getByKey", GetGJsonFromMapByKey) // for dict
-	l.SetGlobal("mapEach", GetGJsonMapEach)
-	l.SetGlobal("getByIndex", GetGJsonFromSliceByIndex) // for array
-	l.SetGlobal("sliceEach", GetGJsonSliceEach)
+	l.SetGlobal("vmrInitGJson", InitGJson)
+	l.SetGlobal("vmrGetString", GetGJsonString)
+	l.SetGlobal("vmrGetInt", GetGJsonInt)
+	l.SetGlobal("vmrGetByKey", GetGJsonFromMapByKey) // for dict
+	l.SetGlobal("vmrMapEach", GetGJsonMapEach)
+	l.SetGlobal("vmrGetByIndex", GetGJsonFromSliceByIndex) // for array
+	l.SetGlobal("vmrSliceEach", GetGJsonSliceEach)
 	// utils
 	l.SetGlobal("vmrGetOsArch", GetOsArch)
 	l.SetGlobal("vmrRegexpFindString", RegExpFindString)
@@ -67,7 +67,7 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrAddItem", AddItem)
 	l.SetGlobal("vmrMergeVersionList", MergeVersionList)
 	// github
-	l.SetGlobal("getGithubRelease", GetGithubRelease)
+	l.SetGlobal("vmrGetGithubRelease", GetGithubRelease)
 	// installer_config
 	l.SetGlobal("vmrNewInstallerConfig", NewInstallerConf)
 	l.SetGlobal("vmrAddFlagFiles", AddFlagFiles)

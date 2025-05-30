@@ -155,23 +155,31 @@ func SearchVersions(sdkName string) (result map[string][]string) {
 
 func SearchByConda(L *lua.LState) int {
 	ud := L.ToUserData(1)
+
 	if ud == nil {
-		return 0
+		r := L.NewUserData()
+		r.Value = nil
+		L.Push(r)
+		return 1
 	}
 	vl, ok := ud.Value.(VersionList)
 
 	if !ok || vl == nil {
-		return 0
+		r := L.NewUserData()
+		r.Value = nil
+		L.Push(r)
+		return 1
 	}
 
 	sdkName := L.ToString(2)
 	if sdkName == "" {
-		return 0
+		r := L.NewUserData()
+		r.Value = nil
+		L.Push(r)
+		return 1
 	}
 
 	versions := SearchVersions(sdkName)
-
-	result := VersionList{}
 
 	for platform, versionList := range versions {
 		pList := strings.Split(platform, "/")
@@ -184,15 +192,15 @@ func SearchByConda(L *lua.LState) int {
 				Arch:      pList[1],
 				Installer: "conda",
 			}
-			if _, ok := result[vv]; !ok {
-				result[vv] = SDKVersion{}
+			if _, ok := vl[vv]; !ok {
+				vl[vv] = SDKVersion{}
 			}
-			result[vv] = append(result[vv], item)
+			vl[vv] = append(vl[vv], item)
 		}
 	}
 
 	r := L.NewUserData()
-	r.Value = result
+	r.Value = vl
 	L.Push(r)
 	return 1
 }

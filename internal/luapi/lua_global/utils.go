@@ -26,7 +26,8 @@ func RegExpFindString(L *lua.LState) int {
 	patternStr := L.ToString(1)
 	content := L.ToString(2)
 	if patternStr == "" || content == "" {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 
 	re := regexp.MustCompile(patternStr)

@@ -1,11 +1,15 @@
 package lua_global
 
-import "testing"
+import (
+	"fmt"
+	"testing"
 
-var githubScript = `print("------------github------------")
+	lua "github.com/yuin/gopher-lua"
+)
 
+var githubScript = `
 function tagFilter(str)
-	local s = regexpFindString("v\\d+(.\\d+){2}", str)
+	local s = vmrRegexpFindString("v\\d+(.\\d+){2}", str)
 	if s ~= "" then
 		return true
 	end
@@ -13,48 +17,48 @@ function tagFilter(str)
 end
 
 function versionParser(str)
-	local s = regexpFindString("v(\\d+)(.\\d+){2}", str)
-	s = trimPrefix(s, "v")
+	local s = vmrRegexpFindString("v(\\d+)(.\\d+){2}", str)
+	s = vmrTrimPrefix(s, "v")
 	return s
 end
 
 function fileFilter(str)
-	if contains(str, "profile") then
+	if vmrContains(str, "profile") then
 		return false
 	end
-	if contains(str, "baseline") then
+	if vmrContains(str, "baseline") then
 		return false
 	end
-	if hasSuffix(str, ".txt") then
+	if vmrHasSuffix(str, ".txt") then
 		return false
 	end
-	if hasSuffix(str, ".txt.asc") then
+	if vmrHasSuffix(str, ".txt.asc") then
 		return false
 	end
-	if hasSuffix(str, "musl.zip") then
+	if vmrHasSuffix(str, "musl.zip") then
 		return false
 	end
 	return true
 end
 
 function archParser(str)
-	if contains(str, "-x64") then
+	if vmrContains(str, "-x64") then
 		return "amd64"
 	end
-	if contains(str, "-aarch64") then
+	if vmrContains(str, "-aarch64") then
 		return "arm64"
 	end
 	return ""
 end
 
 function osParser(str)
-	if contains(str, "linux") then
+	if vmrContains(str, "linux") then
 		return "linux"
 	end
-	if contains(str, "darwin") then
+	if vmrContains(str, "darwin") then
 		return "darwin"
 	end
-	if contains(str, "windows") then
+	if vmrContains(str, "windows") then
 		return "windows"
 	end
 	return ""
@@ -64,16 +68,25 @@ function installerGetter(str)
 	return "unarchiver"
 end
 
-local result = getGithubRelease("oven-sh/bun", tagFilter, versionParser, fileFilter, archParser, osParser, installerGetter)
+result = vmrGetGithubRelease("oven-sh/bun", tagFilter, versionParser, fileFilter, archParser, osParser, installerGetter)
 print(result)
 `
 
 func TestGithub(t *testing.T) {
-	ll := NewLua()
-	defer ll.Close()
-	L := ll.GetLState()
-
-	if err := L.DoString(githubScript); err != nil {
+	l, err := ExecuteLuaScriptL(githubScript)
+	if err != nil {
 		t.Error(err)
+	} else {
+		v := l.GetGlobal("result")
+
+		if v.Type() == lua.LTUserData {
+			ud := v.(*lua.LUserData)
+			if ud == nil {
+				return
+			}
+			if vl, ok := ud.Value.(VersionList); ok {
+				_, _ = fmt.Printf("version list: %+v\n", vl)
+			}
+		}
 	}
 }

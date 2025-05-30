@@ -36,7 +36,7 @@ func TestAddItem(t *testing.T) {
 		["lts"] = "",
 		["extra"] = ""
 	}
-	vmrAddItem(vl, "v0.0.1", item)
+	vl = vmrAddItem(vl, "v0.0.1", item)
 	print(vl)
 	`
 	if l, err := ExecuteLuaScriptL(script); err != nil {

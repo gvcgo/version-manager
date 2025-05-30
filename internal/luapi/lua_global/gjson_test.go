@@ -1,39 +1,44 @@
 package lua_global
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+
+	lua "github.com/yuin/gopher-lua"
+)
 
 var jsonScript = `local headers = {}
 headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
 local url = "https://mirrors.tuna.tsinghua.edu.cn/julia-releases/bin/versions.json"
 
-local resp = getResponse(url, 10,headers)
-local j = initGJson(resp)
-
-print("----------------gjson----------------")
+local resp = vmrGetResponse(url, 10,headers)
+local j = vmrInitGJson(resp)
+vl = vmrNewVersionList()
 
 function parseMapA(k, v)
-	local jj = initGJson(v)
-	
-	local stable = getString(jj, "stable")
+	local jj = vmrInitGJson(v)
+
+	local stable = vmrGetString(jj, "stable")
 	if stable ~= "true" then
 		return
 	end
 
 	function parseSlice(idx, vvv)
-		local mapJ = initGJson(vvv)
-		local item = {}
-		item["version"] = getString(mapJ, "version")
-		item["url"] = getString(mapJ, "url")
-		item["sha256"] = getString(mapJ, "sha256")
-		item["os"] = getString(mapJ, "os")
-		item["arch"] = getString(mapJ, "arch")
-		item["size"] = getInt(mapJ, "size")
-		-- print(item.url)
+		local mapJ = vmrInitGJson(vvv)
+		item = {}
+		item["version"] = vmrGetString(mapJ, "version")
+		item["url"] = vmrGetString(mapJ, "url")
+		item["sha256"] = vmrGetString(mapJ, "sha256")
+		item["os"] = vmrGetString(mapJ, "os")
+		item["arch"] = vmrGetString(mapJ, "arch")
+		item["size"] = vmrGetInt(mapJ, "size")
+		vl = vmrAddItem(vl, item.version,item)
 	end
-	sliceEach(jj, "files", parseSlice)
+	vmrSliceEach(jj, "files", parseSlice)
 end
 
-mapEach(j, ".", parseMapA)
+vmrMapEach(j, ".", parseMapA)
+print(vl)
 `
 
 func TestGJson(t *testing.T) {
@@ -43,5 +48,21 @@ func TestGJson(t *testing.T) {
 
 	if err := L.DoString(jsonScript); err != nil {
 		t.Error(err)
+	}
+	if l, err := ExecuteLuaScriptL(jsonScript); err != nil {
+		t.Error(err)
+	} else {
+		defer l.Close()
+		v := l.GetGlobal("vl")
+
+		if v.Type() == lua.LTUserData {
+			ud := v.(*lua.LUserData)
+			if ud == nil {
+				return
+			}
+			if vl, ok := ud.Value.(VersionList); ok {
+				_, _ = fmt.Printf("versionList: %+v", vl)
+			}
+		}
 	}
 }

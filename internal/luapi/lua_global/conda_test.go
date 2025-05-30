@@ -1,10 +1,12 @@
 package lua_global
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gvcgo/version-manager/internal/utils"
 	"github.com/stretchr/testify/assert"
+	lua "github.com/yuin/gopher-lua"
 )
 
 func ExecuteLuaScript(script string) error {
@@ -19,13 +21,26 @@ func TestConda(t *testing.T) {
 		return
 	}
 
-	var condaScript = `print("-----------------conda-------------------")
-	local vl = newVersionList()
-	local result = vmrSearchByConda(vl, "php")
-	print(result)
+	var condaScript = `
+	vl = vmrNewVersionList()
+	vl = vmrSearchByConda(vl, "php")
+	print(vl)
 	`
-	if err := ExecuteLuaScript(condaScript); err != nil {
+	if l, err := ExecuteLuaScriptL(condaScript); err != nil {
 		t.Error(err)
+	} else {
+		defer l.Close()
+		v := l.GetGlobal("vl")
+
+		if v.Type() == lua.LTUserData {
+			ud := v.(*lua.LUserData)
+			if ud == nil {
+				return
+			}
+			if vl, ok := ud.Value.(VersionList); ok {
+				fmt.Println("versionList: ", vl)
+			}
+		}
 	}
 }
 

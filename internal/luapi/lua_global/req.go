@@ -50,7 +50,8 @@ func GetResponse(L *lua.LState) int {
 
 	resp, code := fetcher.GetString()
 	if code != 200 || resp == "" {
-		return 0
+		prepareResult(L, "")
+		return 1
 	}
 	prepareResult(L, resp)
 	return 1

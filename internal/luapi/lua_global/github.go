@@ -10,6 +10,11 @@ import (
 )
 
 func githubBoolFuncCall(L *lua.LState, cb *lua.LFunction, arg string) bool {
+	defer func() {
+		if err := recover(); err != nil {
+			L.Push(lua.LBool(false))
+		}
+	}()
 	if err := L.CallByParam(lua.P{
 		Fn:      cb,
 		NRet:    1,
@@ -25,6 +30,11 @@ func githubBoolFuncCall(L *lua.LState, cb *lua.LFunction, arg string) bool {
 }
 
 func githubStringFuncCall(L *lua.LState, cb *lua.LFunction, arg string) string {
+	defer func() {
+		if err := recover(); err != nil {
+			L.Push(lua.LString(""))
+		}
+	}()
 	if err := L.CallByParam(lua.P{
 		Fn:      cb,
 		NRet:    1,
@@ -39,10 +49,20 @@ func githubStringFuncCall(L *lua.LState, cb *lua.LFunction, arg string) string {
 	return ""
 }
 
+/*
+lua:
+vl = vmrNewVersionList()
+vl = vmrGetGithubRelease(repoNameStr, tagFilterFunc, versionParserFunc, fileFilterFunc, archParserFunc, osParserFunc, installerGetterFunc)
+*/
 func GetGithubRelease(L *lua.LState) int {
 	repoName := L.ToString(1)
+
+	result := VersionList{}
 	if repoName == "" {
-		return 0
+		ud := L.NewUserData()
+		ud.Value = result
+		L.Push(ud)
+		return 1
 	}
 	cfg := cnf.NewVMRConf()
 	cfg.Load()
@@ -60,8 +80,6 @@ func GetGithubRelease(L *lua.LState) int {
 	archParser := L.ToFunction(5)
 	osParser := L.ToFunction(6)
 	installerGetter := L.ToFunction(7)
-
-	result := make(VersionList)
 
 	for _, rItem := range rl {
 		if !githubBoolFuncCall(L, tagFilter, rItem.TagName) {
@@ -98,7 +116,6 @@ func GetGithubRelease(L *lua.LState) int {
 		}
 	}
 
-	// fmt.Println("******$$$$$$$", result["1.2.2"])
 	ud := L.NewUserData()
 	ud.Value = result
 	L.Push(ud)
