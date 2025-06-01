@@ -23,6 +23,7 @@ type Result struct {
 
 type Plugin struct {
 	FileName      string `json:"file_name"`
+	FileContent   string `json:"file_content"`
 	PluginName    string `json:"plugin_name"`
 	PluginVersion string `json:"plugin_version"`
 	SDKName       string `json:"sdk_name"`
@@ -45,17 +46,26 @@ func (p *Plugin) getPluginFilePath() string {
 	return filepath.Join(pDir, p.FileName)
 }
 
-func (p *Plugin) Load() error {
-	pluginPath := p.getPluginFilePath()
-	if ok, _ := gutils.PathIsExist(pluginPath); !ok {
-		return fmt.Errorf("plugin file not found: %s", pluginPath)
-	}
+func (p *Plugin) LuaDo() error {
 	if p.result.Lua == nil {
 		p.result.Lua = lua_global.NewLua()
 	}
+	if p.FileName != "" {
+		pluginPath := p.getPluginFilePath()
+		if ok, _ := gutils.PathIsExist(pluginPath); !ok {
+			return fmt.Errorf("plugin file not found: %s", pluginPath)
+		}
+	} else if p.FileContent != "" {
+		if err := p.result.Lua.L.DoString(p.FileContent); err != nil {
+			return fmt.Errorf("failed to load plugin: %s", err)
+		}
+	}
+	return nil
+}
 
-	if err := p.result.Lua.L.DoFile(pluginPath); err != nil {
-		return fmt.Errorf("failed to load plugin file: %s, %s", pluginPath, err)
+func (p *Plugin) Load() error {
+	if err := p.LuaDo(); err != nil {
+		return err
 	}
 
 	L := p.result.Lua.L
