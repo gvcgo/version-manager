@@ -65,6 +65,8 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrGetOsEnv", GetOsEnv)
 	l.SetGlobal("vmrSetOsEnv", SetOsEnv)
 	l.SetGlobal("vmrExecSystemCmd", ExecSystemCmd)
+	l.SetGlobal("vmrReadFile", ReadFile)
+	l.SetGlobal("vmrWriteFile", WriteFile)
 	// version
 	l.SetGlobal("vmrNewVersionList", NewVersionList)
 	l.SetGlobal("vmrAddItem", AddItem)

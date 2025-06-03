@@ -203,3 +203,40 @@ func ExecSystemCmd(L *lua.LState) int {
 
 	return 2
 }
+
+/*
+lua: string = vmrReadFile(filePath string)
+*/
+func ReadFile(L *lua.LState) int {
+	filePath := L.ToString(1)
+	if filePath == "" {
+		L.Push(lua.LString(""))
+		return 1
+	}
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		L.Push(lua.LString(""))
+		return 1
+	}
+	L.Push(lua.LString(string(content)))
+	return 1
+}
+
+/*
+lua: bool = vmrWriteFile(filePath string)
+*/
+func WriteFile(L *lua.LState) int {
+	filePath := L.ToString(1)
+	content := L.ToString(2)
+	if filePath == "" {
+		L.Push(lua.LFalse)
+		return 1
+	}
+	err := os.WriteFile(filePath, []byte(content), os.ModePerm)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}
