@@ -3,10 +3,12 @@ package lua_global
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"runtime"
 	"strings"
 
+	"github.com/gvcgo/version-manager/internal/utils"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -148,6 +150,56 @@ func LenString(L *lua.LState) int {
 	return 1
 }
 
-// TODO: execute system command
+/*
+lua: string = vmrGetEnv(key string)
+*/
+func GetOsEnv(L *lua.LState) int {
+	key := L.ToString(1)
+	if key == "" {
+		L.Push(lua.LString(""))
+		return 1
+	}
+	L.Push(lua.LString(os.Getenv(key)))
+	return 1
+}
 
-// TODO: check prequisite
+/*
+lua: bool = vmrSetOsEnv()
+*/
+func SetOsEnv(L *lua.LState) int {
+	key := L.ToString(1)
+	value := L.ToString(2)
+	err := os.Setenv(key, value)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}
+
+/*
+lua: result string, ok bool = vmrExecSystemCmd(to_collect_output bool, workdir string, args {a, b, c, d, ...})
+*/
+func ExecSystemCmd(L *lua.LState) int {
+	toCollectOutput := L.ToBool(1)
+	workDir := L.ToString(2)
+
+	args := make([]string, 0)
+	array := L.ToTable(3)
+	array.ForEach(func(l1, l2 lua.LValue) {
+		args = append(args, l2.String())
+	})
+
+	runner := utils.NewSysCommandRunner(toCollectOutput, workDir, args...)
+	err := runner.Run()
+	result := runner.GetOutput()
+	L.Push(lua.LString(result))
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+
+	return 2
+}

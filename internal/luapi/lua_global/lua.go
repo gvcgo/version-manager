@@ -62,6 +62,9 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrSprintf", Sprintf)
 	l.SetGlobal("vmrUrlJoin", UrlJoin)
 	l.SetGlobal("vmrLenString", LenString)
+	l.SetGlobal("vmrGetOsEnv", GetOsEnv)
+	l.SetGlobal("vmrSetOsEnv", SetOsEnv)
+	l.SetGlobal("vmrExecSystemCmd", ExecSystemCmd)
 	// version
 	l.SetGlobal("vmrNewVersionList", NewVersionList)
 	l.SetGlobal("vmrAddItem", AddItem)
