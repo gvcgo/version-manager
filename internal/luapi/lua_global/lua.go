@@ -60,6 +60,7 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrTrim", Trim)
 	l.SetGlobal("vmrTrimSpace", TrimSpace)
 	l.SetGlobal("vmrToLower", ToLower)
+	l.SetGlobal("vmrSplit", Split)
 	l.SetGlobal("vmrSprintf", Sprintf)
 	l.SetGlobal("vmrUrlJoin", UrlJoin)
 	l.SetGlobal("vmrLenString", LenString)
