@@ -124,6 +124,28 @@ func ToLower(L *lua.LState) int {
 }
 
 /*
+lua: array, length = vmrSplit(string, sep)
+*/
+func Split(L *lua.LState) int {
+	content := L.ToString(1)
+	sep := L.ToString(2)
+
+	if content == "" || sep == "" {
+		L.Push(&lua.LTable{})
+		L.Push(lua.LNumber(0))
+		return 2
+	}
+	result := strings.Split(content, sep)
+	table := &lua.LTable{}
+	for _, item := range result {
+		table.Append(lua.LString(item))
+	}
+	L.Push(table)
+	L.Push(lua.LNumber(len(result)))
+	return 2
+}
+
+/*
 lua: string = vmrSprintf(pattern, {s1, s2, s3, ...})
 */
 func Sprintf(L *lua.LState) int {

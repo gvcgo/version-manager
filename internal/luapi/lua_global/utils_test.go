@@ -85,6 +85,25 @@ func TestTrimSpace(t *testing.T) {
 	}
 }
 
+func TestToLower(t *testing.T) {
+	script := `s = vmrToLower("ABC")
+	print(s)
+	`
+	if err := ExecuteLuaScript(script); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSplit(t *testing.T) {
+	script := `list, len = vmrSplit("a,b,c", ",")
+	print(list[1])
+	print(len)
+	`
+	if err := ExecuteLuaScript(script); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestSprintf(t *testing.T) {
 	script := `s = vmrSprintf("abc %s", {"def"})
 	print(s)
