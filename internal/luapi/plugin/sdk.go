@@ -64,7 +64,7 @@ func (v *Versions) loadPlugin() error {
 		return fmt.Errorf("failed to load plugin file: %s", err)
 	}
 
-	v.SDKName = GetConfItemFromLua(v.Lua.L, SDKName)
+	v.SDKName = GetLuaConfItemString(v.Lua.L, SDKName)
 	return nil
 }
 
@@ -120,7 +120,7 @@ func (v *Versions) GetSdkVersions() (vs map[string]lua_global.Item) {
 		return
 	}
 
-	pluginName := GetConfItemFromLua(v.Lua.L, PluginName)
+	pluginName := GetLuaConfItemString(v.Lua.L, PluginName)
 	v.loadFromCache(pluginName)
 
 	vs = v.versionList
@@ -138,7 +138,7 @@ func (v *Versions) GetSdkVersions() (vs map[string]lua_global.Item) {
 	// 	}
 	// }
 
-	crawl := v.Lua.L.GetGlobal("crawl")
+	crawl := v.Lua.L.GetGlobal(string(Crawler))
 	if crawl == nil || crawl.Type() != lua.LTFunction {
 		gprint.PrintError("invalid plugin: missing crawl function: %s", v.PluginName)
 		return

@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/luapi/plugin"
+	"github.com/gvcgo/version-manager/internal/utils"
 )
 
 const (
@@ -19,16 +19,6 @@ Automatically detects and installs prerequisites for the installer.
 2. coursier latest
 */
 
-func IsMinicondaInstalled() bool {
-	_, err := gutils.ExecuteSysCommand(true, "", "conda", "--help")
-	return err == nil
-}
-
-func IsCoursierInstalled() bool {
-	_, err := gutils.ExecuteSysCommand(true, "", "cs", "--help")
-	return err == nil
-}
-
 func installPrequisite(pluginName string) {
 	// add envs temporarily, so the following command will easilly find prequisites.
 	os.Setenv(AddToPathTemporarillyEnvName, "1")
@@ -40,14 +30,14 @@ func installPrequisite(pluginName string) {
 }
 
 func CheckAndInstallMiniconda() {
-	if !IsMinicondaInstalled() {
+	if !utils.IsMinicondaInstalled() {
 		gprint.PrintInfo("Installing miniconda first: ")
 		installPrequisite(MinicondaSDKName)
 	}
 }
 
 func CheckAndInstallCoursier() {
-	if !IsCoursierInstalled() {
+	if !utils.IsCoursierInstalled() {
 		gprint.PrintInfo("Installing coursier first: ")
 		installPrequisite(CoursierSDKName)
 	}

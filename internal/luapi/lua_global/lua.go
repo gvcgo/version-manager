@@ -33,49 +33,57 @@ func (l *Lua) SetGlobal(name string, fn lua.LGFunction) {
 }
 
 func (l *Lua) init() {
-	l.SetGlobal("getResponse", GetResponse)
+	l.SetGlobal("vmrGetResponse", GetResponse)
 	// goquery
-	l.SetGlobal("initSelection", InitSelection)
-	l.SetGlobal("find", Find)
-	l.SetGlobal("eq", Eq)
-	l.SetGlobal("attr", Attr)
-	l.SetGlobal("text", Text)
-	l.SetGlobal("each", Each)
+	l.SetGlobal("vmrInitSelection", InitSelection)
+	l.SetGlobal("vmrFind", Find)
+	l.SetGlobal("vmrEq", Eq)
+	l.SetGlobal("vmrAttr", Attr)
+	l.SetGlobal("vmrText", Text)
+	l.SetGlobal("vmrEach", Each)
 	// gjson
-	l.SetGlobal("initGJson", InitGJson)
-	l.SetGlobal("getString", GetGJsonString)
-	l.SetGlobal("getInt", GetGJsonInt)
-	l.SetGlobal("getByKey", GetGJsonFromMapByKey) // for dict
-	l.SetGlobal("mapEach", GetGJsonMapEach)
-	l.SetGlobal("getByIndex", GetGJsonFromSliceByIndex) // for array
-	l.SetGlobal("sliceEach", GetGJsonSliceEach)
+	l.SetGlobal("vmrInitGJson", InitGJson)
+	l.SetGlobal("vmrGetString", GetGJsonString)
+	l.SetGlobal("vmrGetInt", GetGJsonInt)
+	l.SetGlobal("vmrGetByKey", GetGJsonFromMapByKey) // for dict
+	l.SetGlobal("vmrMapEach", GetGJsonMapEach)
+	l.SetGlobal("vmrGetByIndex", GetGJsonFromSliceByIndex) // for array
+	l.SetGlobal("vmrSliceEach", GetGJsonSliceEach)
 	// utils
-	l.SetGlobal("getOsArch", GetOsArch)
-	l.SetGlobal("regexpFindString", RegExpFindString)
-	l.SetGlobal("hasPrefix", HasPrefix)
-	l.SetGlobal("hasSuffix", HasSuffix)
-	l.SetGlobal("contains", Contains)
-	l.SetGlobal("trimPrefix", TrimPrefix)
-	l.SetGlobal("trimSuffix", TrimSuffix)
-	l.SetGlobal("trim", Trim)
-	l.SetGlobal("trimSpace", TrimSpace)
-	l.SetGlobal("sprintf", Sprintf)
-	l.SetGlobal("urlJoin", UrlJoin)
-	l.SetGlobal("lenString", LenString)
+	l.SetGlobal("vmrGetOsArch", GetOsArch)
+	l.SetGlobal("vmrRegexpFindString", RegExpFindString)
+	l.SetGlobal("vmrHasPrefix", HasPrefix)
+	l.SetGlobal("vmrHasSuffix", HasSuffix)
+	l.SetGlobal("vmrContains", Contains)
+	l.SetGlobal("vmrTrimPrefix", TrimPrefix)
+	l.SetGlobal("vmrTrimSuffix", TrimSuffix)
+	l.SetGlobal("vmrTrim", Trim)
+	l.SetGlobal("vmrTrimSpace", TrimSpace)
+	l.SetGlobal("vmrToLower", ToLower)
+	l.SetGlobal("vmrSprintf", Sprintf)
+	l.SetGlobal("vmrUrlJoin", UrlJoin)
+	l.SetGlobal("vmrLenString", LenString)
+	l.SetGlobal("vmrGetOsEnv", GetOsEnv)
+	l.SetGlobal("vmrSetOsEnv", SetOsEnv)
+	l.SetGlobal("vmrExecSystemCmd", ExecSystemCmd)
+	l.SetGlobal("vmrReadFile", ReadFile)
+	l.SetGlobal("vmrWriteFile", WriteFile)
+	l.SetGlobal("vmrCopyFile", CopyFile)
+	l.SetGlobal("vmrCopyDir", CopyDir)
 	// version
-	l.SetGlobal("newVersionList", NewVersionList)
-	l.SetGlobal("addItem", AddItem)
-	l.SetGlobal("mergeVersionList", MergeVersionList)
+	l.SetGlobal("vmrNewVersionList", NewVersionList)
+	l.SetGlobal("vmrAddItem", AddItem)
+	l.SetGlobal("vmrMergeVersionList", MergeVersionList)
 	// github
-	l.SetGlobal("getGithubRelease", GetGithubRelease)
+	l.SetGlobal("vmrGetGithubRelease", GetGithubRelease)
 	// installer_config
-	l.SetGlobal("newInstallerConfig", NewInstallerConf)
-	l.SetGlobal("addFlagFiles", AddFlagFiles)
-	l.SetGlobal("enableFlagDirExcepted", EnableFlagDirExcepted)
-	l.SetGlobal("addBinaryDirs", AddBinaryDirs)
-	l.SetGlobal("addAdditionalEnvs", AddAdditionalEnvs)
+	l.SetGlobal("vmrNewInstallerConfig", NewInstallerConf)
+	l.SetGlobal("vmrAddFlagFiles", AddFlagFiles)
+	l.SetGlobal("vmrEnableFlagDirExcepted", EnableFlagDirExcepted)
+	l.SetGlobal("vmrAddBinaryDirs", AddBinaryDirs)
+	l.SetGlobal("vmrAddAdditionalEnvs", AddAdditionalEnvs)
 	// conda
-	l.SetGlobal("searchByConda", SearchByConda)
+	l.SetGlobal("vmrSearchByConda", SearchByConda)
 }
 
 func (l *Lua) GetLState() *lua.LState {

@@ -63,6 +63,7 @@ func (c *CoursierInstaller) Install() {
 
 	/*
 		https://get-coursier.io/docs/cli-install
+		TODO: cs -J-Dhttps.proxyHost="127.0.0.1" -J-Dhttps.proxyPort=2023 install --install-dir="/Users/moqsien/.vmr/versions/scala_versions/2.12.15" scala:2.12.15 scalac:2.12.15  --verbose
 	*/
 	version := strings.TrimSuffix(c.VersionName, "-LTS")
 	version = strings.TrimSuffix(version, "-lts")

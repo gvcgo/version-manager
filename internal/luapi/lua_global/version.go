@@ -31,6 +31,9 @@ type SDKVersion []Item
 
 type VersionList map[string]SDKVersion
 
+/*
+lua: vl = vmrNewVersionList()
+*/
 func NewVersionList(L *lua.LState) int {
 	ud := L.NewUserData()
 	ud.Value = make(VersionList)
@@ -38,20 +41,47 @@ func NewVersionList(L *lua.LState) int {
 	return 1
 }
 
+func GetStringFromLTable(table *lua.LTable, key string) string {
+	if table == nil {
+		return ""
+	}
+	value := table.RawGetString(key).String()
+	if value == "nil" {
+		return ""
+	}
+	return value
+}
+
+/*
+lua:
+vl = vmrNewVersionList()
+item = { ["url"] = "xxx", ["arch"] = "xxx", ["os"] = "xxx" }
+vmrAddItem(vl, versionName, item)
+*/
 func AddItem(L *lua.LState) int {
+
 	ud := L.ToUserData(1)
 	if ud == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = nil
+		L.Push(result)
+		return 1
 	}
 	vl, ok := ud.Value.(VersionList)
 
 	if !ok || vl == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = nil
+		L.Push(result)
+		return 1
 	}
 
 	versionStr := L.ToString(2)
 	if versionStr == "" {
-		return 0
+		result := L.NewUserData()
+		result.Value = vl
+		L.Push(result)
+		return 1
 	}
 
 	vSdk, ok2 := vl[versionStr]
@@ -61,49 +91,69 @@ func AddItem(L *lua.LState) int {
 
 	itemTable := L.ToTable(3)
 	if itemTable == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = vl
+		L.Push(result)
+		return 1
 	}
 
-	item := Item{
-		Url:       itemTable.RawGetString("url").String(),
-		Arch:      itemTable.RawGetString("arch").String(),
-		Os:        itemTable.RawGetString("os").String(),
-		Sum:       itemTable.RawGetString("sum").String(),
-		SumType:   itemTable.RawGetString("sum_type").String(),
-		Size:      gconv.Int64(itemTable.RawGetString("size").String()),
-		Installer: itemTable.RawGetString("installer").String(),
-		LTS:       itemTable.RawGetString("lts").String(),
-		Extra:     itemTable.RawGetString("extra").String(),
-	}
+	item := Item{}
+	item.Url = GetStringFromLTable(itemTable, "url")
+	item.Arch = GetStringFromLTable(itemTable, "arch")
+	item.Os = GetStringFromLTable(itemTable, "os")
+	item.Sum = GetStringFromLTable(itemTable, "sum")
+	item.SumType = GetStringFromLTable(itemTable, "sum_type")
+	item.Size = gconv.Int64(GetStringFromLTable(itemTable, "size"))
+	item.Installer = GetStringFromLTable(itemTable, "installer")
+	item.LTS = GetStringFromLTable(itemTable, "lts")
+	item.Extra = GetStringFromLTable(itemTable, "extra")
 
 	vSdk = append(vSdk, item)
 	vl[versionStr] = vSdk
 
 	result := L.NewUserData()
-	result.Value = item
+	result.Value = vl
 	L.Push(result)
 	return 1
 }
 
+/*
+lua:
+vl1 = vmrNewVersionList()
+vl2 = vmrNewVersionList()
+vl = vmrMergeVersionList(vl1, vl2)
+*/
 func MergeVersionList(L *lua.LState) int {
 	ud := L.ToUserData(1)
 	if ud == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = nil
+		L.Push(result)
+		return 1
 	}
 	vl, ok := ud.Value.(VersionList)
 
 	if !ok || vl == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = nil
+		L.Push(result)
+		return 1
 	}
 
 	ud2 := L.ToUserData(2)
 	if ud2 == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = vl
+		L.Push(result)
+		return 1
 	}
 	vl2, ok2 := ud2.Value.(VersionList)
 
 	if !ok2 || vl2 == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = vl
+		L.Push(result)
+		return 1
 	}
 
 	for k, v := range vl2 {

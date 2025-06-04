@@ -55,6 +55,9 @@ func NewInstallerConfig() (ic *InstallerConfig) {
 	return
 }
 
+/*
+lua: ic = vmrNewInstallerConfig()
+*/
 func NewInstallerConf(L *lua.LState) int {
 	ud := L.NewUserData()
 	ud.Value = NewInstallerConfig()
@@ -70,10 +73,19 @@ func checkInstallerConfig(L *lua.LState, n int) *InstallerConfig {
 	return nil
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+os, arch = vmrGetOsArch()
+ic = vmrAddFlagFiles(ic, os, {"a", "b", "c", ...})
+*/
 func AddFlagFiles(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = ic
+		L.Push(result)
+		return 1
 	}
 	osStr := L.ToString(2)
 
@@ -96,7 +108,10 @@ func AddFlagFiles(L *lua.LState) int {
 		case "darwin":
 			ic.FlagFiles.MacOS = append(ic.FlagFiles.MacOS, value...)
 		default:
-			return 0
+			result := L.NewUserData()
+			result.Value = ic
+			L.Push(result)
+			return 1
 		}
 	}
 
@@ -106,10 +121,18 @@ func AddFlagFiles(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+ic = vmrEnableFlagDirExcepted(ic)
+*/
 func EnableFlagDirExcepted(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = ic
+		L.Push(result)
+		return 1
 	}
 	ic.FlagDirExcepted = true
 
@@ -119,10 +142,19 @@ func EnableFlagDirExcepted(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+os, arch = vmrGetOsArch()
+ic = vmrAddBinaryDirs(ic, os, {"usr", "bin", ...}) -- multi binary dirs can be added.
+*/
 func AddBinaryDirs(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = ic
+		L.Push(result)
+		return 1
 	}
 
 	osStr := L.ToString(2)
@@ -146,7 +178,10 @@ func AddBinaryDirs(L *lua.LState) int {
 		case "darwin":
 			ic.BinaryDirs.MacOS = append(ic.BinaryDirs.MacOS, value)
 		default:
-			return 0
+			result := L.NewUserData()
+			result.Value = ic
+			L.Push(result)
+			return 1
 		}
 	}
 
@@ -156,10 +191,21 @@ func AddBinaryDirs(L *lua.LState) int {
 	return 1
 }
 
+/*
+lua:
+ic = vmrNewInstallerConfig()
+os, arch = vmrGetOsArch()
+envPath = {"usr", "bin", ...}
+limitedVersions = "<=1.8"
+ic = vmrAddAdditionalEnvs(ic, envNameStr, envPath, limitedVersions)
+*/
 func AddAdditionalEnvs(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)
 	if ic == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = ic
+		L.Push(result)
+		return 1
 	}
 
 	envName := L.ToString(2)
@@ -167,7 +213,10 @@ func AddAdditionalEnvs(L *lua.LState) int {
 	version := L.ToString(4)
 
 	if envName == "" || envPath == nil {
-		return 0
+		result := L.NewUserData()
+		result.Value = ic
+		L.Push(result)
+		return 1
 	}
 
 	value := AdditionalEnv{

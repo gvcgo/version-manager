@@ -18,16 +18,24 @@ const (
 	updateScriptName string = "vmr-update"
 )
 
-var WinScript string = `cd %HOMEPATH%
-powershell -c "irm https://scripts.0002099.xyz/windows | iex"`
+var (
+	WinS string = `cd %HOMEPATH%
+powershell -c "irm https://scripts.%s/windows | iex"`
+
+	WinScript string = fmt.Sprintf(WinS, cnf.DefaultDomain)
+)
 
 var WinMingwScript string = `#!/bin/sh
 cd ~
 powershell %s`
 
-var UnixScript string = `#!/bin/sh
+var (
+	UnixS string = `#!/bin/sh
 cd ~
-curl --proto '=https' --tlsv1.2 -sSf https://scripts.0002099.xyz | sh`
+curl --proto '=https' --tlsv1.2 -sSf https://scripts.%s | sh`
+
+	UnixScript string = fmt.Sprintf(UnixS, cnf.DefaultDomain)
+)
 
 func setUpdateForWindows() {
 	scriptPath := filepath.Join(cnf.GetVMRWorkDir(), fmt.Sprintf("%s.bat", updateScriptName))

@@ -19,7 +19,7 @@ func InitGJson(L *lua.LState) int {
 	arg := L.ToUserData(1)
 	if j, err := gjson.LoadJson(gconv.String(arg.Value)); err != nil {
 		prepareResult(L, nil)
-		return 0
+		return 1
 	} else {
 		j.SetViolenceCheck(true)
 		prepareResult(L, j)
@@ -30,12 +30,14 @@ func InitGJson(L *lua.LState) int {
 func GetGJsonString(L *lua.LState) int {
 	j := checkGJson(L)
 	if j == nil {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 
 	jPath := L.ToString(2)
 	if jPath == "" {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 	res := j.Get(jPath).String()
 	L.Push(lua.LString(res))
@@ -45,12 +47,14 @@ func GetGJsonString(L *lua.LState) int {
 func GetGJsonInt(L *lua.LState) int {
 	j := checkGJson(L)
 	if j == nil {
-		return 0
+		L.Push(lua.LNumber(0))
+		return 1
 	}
 
 	jPath := L.ToString(2)
 	if jPath == "" {
-		return 0
+		L.Push(lua.LNumber(0))
+		return 1
 	}
 	res := j.Get(jPath).Int()
 	L.Push(lua.LNumber(res))
@@ -89,15 +93,18 @@ func GetGJsonMapEach(L *lua.LState) int {
 func GetGJsonFromMapByKey(L *lua.LState) int {
 	j := checkGJson(L)
 	if j == nil {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 	jPath := L.ToString(2)
 	if jPath == "" {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 	res := j.Get(jPath).Map()
 	if res == nil {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 
 	key := L.ToString(3)
@@ -144,20 +151,24 @@ func GetGJsonSliceEach(L *lua.LState) int {
 func GetGJsonFromSliceByIndex(L *lua.LState) int {
 	j := checkGJson(L)
 	if j == nil {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 	jPath := L.ToString(2)
 	if jPath == "" {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 	res := j.Get(jPath).Array()
 	if res == nil {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 
 	index := L.ToInt(3)
 	if index < 1 || index > len(res) {
-		return 0
+		L.Push(lua.LString(""))
+		return 1
 	}
 	val := res[index-1]
 	L.Push(lua.LString(gconv.String(val)))

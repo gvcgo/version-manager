@@ -1,125 +1,308 @@
 package plugin
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"runtime"
+	"time"
 
-	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/luapi/lua_global"
 	"github.com/gvcgo/version-manager/internal/tui/table"
 	"github.com/gvcgo/version-manager/internal/utils"
+	lua "github.com/yuin/gopher-lua"
 )
+
+type Result struct {
+	Lua         *lua_global.Lua
+	VersionList map[string]lua_global.Item
+}
 
 type Plugin struct {
 	FileName      string `json:"file_name"`
+	FileContent   string `json:"file_content"`
 	PluginName    string `json:"plugin_name"`
 	PluginVersion string `json:"plugin_version"`
 	SDKName       string `json:"sdk_name"`
 	Prequisite    string `json:"prequisite"`
 	Homepage      string `json:"homepage"`
+	result        Result
 }
 
-type Plugins struct {
-	pls map[string]Plugin
-}
-
-func NewPlugins() *Plugins {
-	p := &Plugins{
-		pls: make(map[string]Plugin),
-	}
-	if ok, _ := gutils.PathIsExist(cnf.GetPluginDir()); !ok {
-		p.Update()
-	}
-	return p
-}
-
-func (p *Plugins) Update() {
-	if err := UpdatePlugins(); err != nil {
-		gprint.PrintError("update plugins failed: %s", err)
+func NewPlugin(fileName string) *Plugin {
+	return &Plugin{
+		FileName: fileName,
+		result: Result{
+			VersionList: make(map[string]lua_global.Item),
+		},
 	}
 }
 
-func (p *Plugins) LoadAll() {
-	if len(p.pls) > 0 {
+func (p *Plugin) getPluginFilePath() string {
+	pDir := cnf.GetPluginDir()
+	return filepath.Join(pDir, p.FileName)
+}
+
+func (p *Plugin) LuaDo() error {
+	if p.result.Lua == nil {
+		p.result.Lua = lua_global.NewLua()
+	}
+	if p.FileName != "" {
+		pluginPath := p.getPluginFilePath()
+		if ok, _ := gutils.PathIsExist(pluginPath); !ok {
+			return fmt.Errorf("plugin file not found: %s", pluginPath)
+		}
+	} else if p.FileContent != "" {
+		if err := p.result.Lua.L.DoString(p.FileContent); err != nil {
+			return fmt.Errorf("failed to load plugin: %s", err)
+		}
+	}
+	return nil
+}
+
+func (p *Plugin) Load() error {
+	if err := p.LuaDo(); err != nil {
+		return err
+	}
+
+	L := p.result.Lua.L
+
+	p.PluginName = GetLuaConfItemString(L, PluginName)
+	if p.PluginName == "" {
+		return fmt.Errorf("plugin name not defined")
+	}
+
+	p.PluginVersion = GetLuaConfItemString(L, PluginVersion)
+	p.SDKName = GetLuaConfItemString(L, SDKName)
+	if p.SDKName == "" {
+		return fmt.Errorf("SDK name not defined")
+	}
+	p.Prequisite = GetLuaConfItemString(L, Prequisite)
+	p.Homepage = GetLuaConfItemString(L, Homepage)
+	if p.Homepage == "" {
+		return fmt.Errorf("homepage not defined")
+	}
+
+	if !DoesLuaItemExist(L, InstallerConfig) {
+		return fmt.Errorf("installer config not found")
+	}
+
+	if !DoesLuaItemExist(L, Crawler) {
+		return fmt.Errorf("Crawler<function crawl> not found")
+	}
+	return nil
+}
+
+func (p *Plugin) cacheDir() string {
+	if p.PluginName == "" {
+		if err := p.Load(); err != nil {
+			return ""
+		}
+	}
+	return filepath.Join(cnf.GetCacheDir(), p.PluginName)
+}
+
+func (p *Plugin) cacheFilePathForVersionList() string {
+	versionListCacheDir := p.cacheDir()
+	if versionListCacheDir == "" {
+		return ""
+	}
+
+	if ok, _ := gutils.PathIsExist(versionListCacheDir); !ok {
+		os.MkdirAll(versionListCacheDir, os.ModePerm)
+	} else {
+		ss, err := os.Stat(versionListCacheDir)
+		if err == nil && !ss.IsDir() {
+			os.RemoveAll(versionListCacheDir)
+			os.MkdirAll(versionListCacheDir, os.ModePerm)
+		}
+	}
+	cacheFileName := fmt.Sprintf("%s.versions.json", p.PluginName)
+	return filepath.Join(versionListCacheDir, cacheFileName)
+}
+
+func (p *Plugin) loadVersionListFromCache() {
+	if cnf.GetCacheDisabled() {
+		// cache is disabled.
+		return
+	}
+	cachePath := p.cacheFilePathForVersionList()
+	if ok, _ := gutils.PathIsExist(cachePath); !ok {
+		return
+	}
+	lastModifiedTime := utils.GetFileLastModifiedTime(cachePath)
+	timeLag := time.Now().Unix() - lastModifiedTime
+	if timeLag > cnf.GetCacheRetentionTime() {
+		return
+	}
+	if content, err := os.ReadFile(cachePath); err == nil {
+		err = json.Unmarshal(content, &p.result.VersionList)
+		if err != nil {
+			p.result.VersionList = map[string]lua_global.Item{}
+		}
+	}
+}
+
+func (p *Plugin) saveVersionListToCache() {
+	if len(p.result.VersionList) == 0 {
+		return
+	}
+	cacheFilePath := p.cacheFilePathForVersionList()
+	if content, err := json.MarshalIndent(p.result.VersionList, "", "  "); err == nil {
+		if len(content) > 10 {
+			os.WriteFile(cacheFilePath, content, os.ModePerm)
+		}
+	}
+}
+
+func (p *Plugin) GetSDKVersions() (vl map[string]lua_global.Item, err error) {
+	if p.result.Lua == nil {
+		if err = p.Load(); err != nil {
+			return
+		}
+	}
+
+	p.loadVersionListFromCache()
+	vl = p.result.VersionList
+	if len(vl) > 0 {
 		return
 	}
 
-	pDir := cnf.GetPluginDir()
-	files, _ := os.ReadDir(pDir)
+	crawl := p.result.Lua.L.GetGlobal(string(Crawler))
+	if crawl == nil || crawl.Type() != lua.LTFunction {
+		err = fmt.Errorf("invalid plugin: missing crawl function: %s", p.PluginName)
+		return
+	}
 
-	for _, f := range files {
-		if f.IsDir() || !strings.HasSuffix(f.Name(), ".lua") {
-			continue
+	if err = p.result.Lua.L.CallByParam(lua.P{
+		Fn:      crawl,
+		NRet:    1,
+		Protect: true,
+	}); err != nil {
+		return
+	}
+
+	result := p.result.Lua.L.Get(-1)
+	userData, ok := result.(*lua.LUserData)
+	if !ok {
+		return nil, fmt.Errorf("invalid return value for function crawl in plugin: %s", p.PluginName)
+	}
+
+	if vl, ok := userData.Value.(lua_global.VersionList); ok {
+		for vName, vv := range vl {
+			for _, ver := range vv {
+				if ver.Os == runtime.GOOS && ver.Arch == runtime.GOARCH {
+					p.result.VersionList[vName] = ver
+				}
+			}
 		}
-		pl := Plugin{
-			FileName: f.Name(),
-		}
-		ll := lua_global.NewLua()
-		L := ll.L
-		if err := L.DoFile(filepath.Join(pDir, f.Name())); err != nil {
-			continue
-		}
-		pl.PluginName = GetConfItemFromLua(L, PluginName)
-		if pl.PluginName == "" {
-			continue
-		}
-		pl.PluginVersion = GetConfItemFromLua(L, PluginVersion)
-		pl.SDKName = GetConfItemFromLua(L, SDKName)
-		if pl.SDKName == "" {
-			continue
-		}
-		pl.Prequisite = GetConfItemFromLua(L, Prequisite)
-		pl.Homepage = GetConfItemFromLua(L, Homepage)
-		if pl.Homepage == "" {
-			continue
-		}
-		if !DoLuaItemExist(L, InstallerConfig) || !DoLuaItemExist(L, Crawler) {
-			continue
-		}
-		p.pls[pl.PluginName] = pl
-		ll.Close()
+		p.saveVersionListToCache()
+	}
+	return p.result.VersionList, nil
+}
+
+func (p *Plugin) Close() {
+	if p.result.Lua != nil {
+		p.result.Lua.L.Close()
 	}
 }
 
-func (p *Plugins) GetPlugin(pluginName string) Plugin {
-	p.LoadAll()
-	if pl, ok := p.pls[pluginName]; ok {
-		return pl
-	}
-	return Plugin{}
-}
-
-func (p *Plugins) GetPluginBySDKName(sdkName string) Plugin {
-	p.LoadAll()
-	for _, v := range p.pls {
-		if v.SDKName == sdkName {
-			return v
+func (p *Plugin) GetSortedVersions() (vt []table.Row) {
+	if len(p.result.VersionList) == 0 {
+		if _, err := p.GetSDKVersions(); err != nil {
+			return
 		}
 	}
-	return Plugin{}
-}
-
-func (p *Plugins) GetPluginList() (pl []Plugin) {
-	p.LoadAll()
-	for _, v := range p.pls {
-		pl = append(pl, v)
-	}
-	return
-}
-
-func (p *Plugins) GetPluginSortedRows() (rows []table.Row) {
-	p.LoadAll()
-	for _, v := range p.pls {
-		rows = append(rows, table.Row{
-			v.PluginName,
-			v.PluginVersion,
-			v.SDKName,
-			v.Homepage,
+	for vName := range p.result.VersionList {
+		vt = append(vt, table.Row{
+			vName,
 		})
 	}
-	utils.SortVersionAscend(rows)
+	utils.SortVersions(vt)
 	return
+}
+
+func (p *Plugin) GetVersion(versionName string) (r lua_global.Item) {
+	if len(p.result.VersionList) == 0 {
+		if _, err := p.GetSDKVersions(); err != nil {
+			return
+		}
+	}
+	return p.result.VersionList[versionName]
+}
+
+func (p *Plugin) GetLatestVersion() (versionName string, r lua_global.Item) {
+	vt := p.GetSortedVersions()
+	if len(vt) == 0 {
+		return
+	}
+	versionName = vt[0][0]
+	r = p.GetVersion(versionName)
+	return
+}
+
+func (p *Plugin) GetInstallerConfig() (ic *lua_global.InstallerConfig, err error) {
+	if p.result.Lua == nil {
+		if err = p.Load(); err != nil {
+			return
+		}
+	}
+
+	ic = lua_global.GetInstallerConfig(p.result.Lua.L)
+	return
+}
+
+func (p *Plugin) GetSDKName() (sdkName string, err error) {
+	if p.result.Lua == nil {
+		if err = p.Load(); err != nil {
+			return
+		}
+	}
+	sdkName = p.SDKName
+	return
+}
+
+type CustomedFuncFromLua func() error
+
+func (p *Plugin) getFuncFromLua(luaItem LuaConfItem, args ...string) CustomedFuncFromLua {
+	luaFunc := p.result.Lua.L.GetGlobal(string(luaItem))
+	if luaFunc == nil || luaFunc.Type() != lua.LTFunction {
+		return nil
+	}
+
+	f := func() error {
+		luaFuncArgs := make([]lua.LValue, len(args))
+		for i, arg := range args {
+			luaFuncArgs[i] = lua.LString(arg)
+		}
+
+		// if luaFuncArgs have more args than the lua function expects, the extra args will be ignored.
+		if err := p.result.Lua.L.CallByParam(lua.P{
+			Fn:      luaFunc,
+			NRet:    1,
+			Protect: true,
+		}, luaFuncArgs...); err != nil {
+			return err
+		}
+
+		result := p.result.Lua.L.Get(-1)
+		if result.String() != "true" {
+			return errors.New("post-install handler failed")
+		}
+		return nil
+	}
+	return f
+}
+
+// user can custom his/her own install method in lua plugins.
+func (p *Plugin) GetCustomedInstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(CustomedInstall, args...)
+}
+
+func (p *Plugin) GetPostInstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(PostInstall, args...)
 }

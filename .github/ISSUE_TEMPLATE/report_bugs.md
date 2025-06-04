@@ -2,10 +2,10 @@
 name: Report Bugs
 about: Template for Bug Report
 ---
-<!-- 
-Before you report an issue, Please make sure you have read the docs: https://vmrdocs.0002099.xyz/
+<!--
+Before you report an issue, Please make sure you have read the docs: https://vmrdocs.vmr.dpdns.org/
 
-在提issue之前，请确保您已经阅读了文档: https://vmrdocs.0002099.xyz/zh-cn/
+在提issue之前，请确保您已经阅读了文档: https://vmrdocs.vmr.dpdns.org/zh-cn/
 -->
 
 ## Platform Info
