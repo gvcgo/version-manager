@@ -115,6 +115,15 @@ func TrimSpace(L *lua.LState) int {
 }
 
 /*
+lua: s = vmrToLower(string)
+*/
+func ToLower(L *lua.LState) int {
+	str := L.ToString(1)
+	L.Push(lua.LString(strings.ToLower(str)))
+	return 1
+}
+
+/*
 lua: string = vmrSprintf(pattern, {s1, s2, s3, ...})
 */
 func Sprintf(L *lua.LState) int {
@@ -223,16 +232,52 @@ func ReadFile(L *lua.LState) int {
 }
 
 /*
-lua: bool = vmrWriteFile(filePath string)
+lua: bool = vmrWriteFile(filePath string, content string)
 */
 func WriteFile(L *lua.LState) int {
 	filePath := L.ToString(1)
 	content := L.ToString(2)
+	if len(content) == 0 {
+		ud := L.ToUserData(2)
+		if ud != nil {
+			content = ud.Value.(string)
+		}
+	}
 	if filePath == "" {
 		L.Push(lua.LFalse)
 		return 1
 	}
 	err := os.WriteFile(filePath, []byte(content), os.ModePerm)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}
+
+/*
+lua: bool = vmrCopyFile(src string, dst string)
+*/
+func CopyFile(L *lua.LState) int {
+	src := L.ToString(1)
+	dst := L.ToString(2)
+	_, err := utils.CopyFile(src, dst)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}
+
+/*
+lua: bool = vmrCopyDir(src string, dst string)
+*/
+func CopyDir(L *lua.LState) int {
+	src := L.ToString(1)
+	dst := L.ToString(2)
+	err := utils.CopyDirectory(src, dst)
 	if err != nil {
 		L.Push(lua.LFalse)
 	} else {

@@ -59,6 +59,7 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrTrimSuffix", TrimSuffix)
 	l.SetGlobal("vmrTrim", Trim)
 	l.SetGlobal("vmrTrimSpace", TrimSpace)
+	l.SetGlobal("vmrToLower", ToLower)
 	l.SetGlobal("vmrSprintf", Sprintf)
 	l.SetGlobal("vmrUrlJoin", UrlJoin)
 	l.SetGlobal("vmrLenString", LenString)
@@ -67,6 +68,8 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrExecSystemCmd", ExecSystemCmd)
 	l.SetGlobal("vmrReadFile", ReadFile)
 	l.SetGlobal("vmrWriteFile", WriteFile)
+	l.SetGlobal("vmrCopyFile", CopyFile)
+	l.SetGlobal("vmrCopyDir", CopyDir)
 	// version
 	l.SetGlobal("vmrNewVersionList", NewVersionList)
 	l.SetGlobal("vmrAddItem", AddItem)

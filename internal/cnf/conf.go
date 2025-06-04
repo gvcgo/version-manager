@@ -136,6 +136,7 @@ type VMRConf struct {
 	AllowNestedSessions bool   `json,toml:"allow_nested_sessions"`
 	GithubToken         string `json,toml:"github_token"`
 	CacheRetentionTime  int64  `json,toml:"cache_retention_time"` // in seconds.
+	DisableCache        bool   `json,toml:"disable_cache"`
 }
 
 func NewVMRConf() (v *VMRConf) {
@@ -245,5 +246,11 @@ func (v *VMRConf) SetCacheRetentionTime(t int64) {
 	if t > 0 {
 		v.CacheRetentionTime = t
 	}
+	v.Save()
+}
+
+func (v *VMRConf) ToggleCache() {
+	v.Load()
+	v.DisableCache = !v.DisableCache
 	v.Save()
 }

@@ -146,7 +146,7 @@ func EnableFlagDirExcepted(L *lua.LState) int {
 lua:
 ic = vmrNewInstallerConfig()
 os, arch = vmrGetOsArch()
-ic = vmrAddBinaryDirs(ic, os, {"usr", "bin", ...})
+ic = vmrAddBinaryDirs(ic, os, {"usr", "bin", ...}) -- multi binary dirs can be added.
 */
 func AddBinaryDirs(L *lua.LState) int {
 	ic := checkInstallerConfig(L, 1)

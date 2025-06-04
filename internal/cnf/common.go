@@ -156,3 +156,9 @@ func GetCacheRetentionTime() int64 {
 	}
 	return cnf.CacheRetentionTime
 }
+
+func GetCacheDisabled() bool {
+	cnf := NewVMRConf()
+	cnf.Load()
+	return cnf.DisableCache
+}
