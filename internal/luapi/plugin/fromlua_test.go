@@ -50,3 +50,35 @@ func TestGetLuaConfItem(t *testing.T) {
 		assert.Equal(t, noneShouldBe, s, fmt.Sprintf("none should be: %s", noneShouldBe))
 	}
 }
+
+var postInstallHandlerScript = `
+function postInstall(installed_path)
+    print("Post-install handler executed!")
+    print(installed_path)
+    -- print(additional)
+    return true
+end
+`
+
+func TestPostInstallHandler(t *testing.T) {
+	if l, err := ExecuteLuaScriptL(postInstallHandlerScript); err != nil {
+		t.Error(err)
+	} else {
+		postInstall := l.GetGlobal(string(PostInstall))
+		if postInstall == nil || postInstall.Type() != lua.LTFunction {
+			return
+		}
+
+		if err := l.CallByParam(lua.P{
+			Fn:      postInstall,
+			NRet:    1,
+			Protect: true,
+		}, lua.LString("/a/b/c/d/e"), lua.LString("xxx")); err != nil {
+			t.Error(err)
+			return
+		}
+
+		result := l.Get(-1)
+		assert.Equal(t, "true", result.String(), "should be 'true'")
+	}
+}

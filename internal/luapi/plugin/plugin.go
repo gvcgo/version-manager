@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -125,6 +126,10 @@ func (p *Plugin) cacheFilePathForVersionList() string {
 }
 
 func (p *Plugin) loadVersionListFromCache() {
+	if cnf.GetCacheDisabled() {
+		// cache is disabled.
+		return
+	}
 	cachePath := p.cacheFilePathForVersionList()
 	if ok, _ := gutils.PathIsExist(cachePath); !ok {
 		return
@@ -259,4 +264,45 @@ func (p *Plugin) GetSDKName() (sdkName string, err error) {
 	}
 	sdkName = p.SDKName
 	return
+}
+
+type CustomedFuncFromLua func() error
+
+func (p *Plugin) getFuncFromLua(luaItem LuaConfItem, args ...string) CustomedFuncFromLua {
+	luaFunc := p.result.Lua.L.GetGlobal(string(luaItem))
+	if luaFunc == nil || luaFunc.Type() != lua.LTFunction {
+		return nil
+	}
+
+	f := func() error {
+		luaFuncArgs := make([]lua.LValue, len(args))
+		for i, arg := range args {
+			luaFuncArgs[i] = lua.LString(arg)
+		}
+
+		// if luaFuncArgs have more args than the lua function expects, the extra args will be ignored.
+		if err := p.result.Lua.L.CallByParam(lua.P{
+			Fn:      luaFunc,
+			NRet:    1,
+			Protect: true,
+		}, luaFuncArgs...); err != nil {
+			return err
+		}
+
+		result := p.result.Lua.L.Get(-1)
+		if result.String() != "true" {
+			return errors.New("post-install handler failed")
+		}
+		return nil
+	}
+	return f
+}
+
+// user can custom his/her own install method in lua plugins.
+func (p *Plugin) GetCustomedInstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(CustomedInstall, args...)
+}
+
+func (p *Plugin) GetPostInstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(PostInstall, args...)
 }

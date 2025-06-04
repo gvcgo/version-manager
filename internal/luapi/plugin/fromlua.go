@@ -8,12 +8,14 @@ import (
 type LuaConfItem string
 
 const (
-	SDKName       LuaConfItem = "sdk_name"
-	PluginName    LuaConfItem = "plugin_name"
-	PluginVersion LuaConfItem = "plugin_version"
-	Prequisite    LuaConfItem = "prequisite"
-	Homepage      LuaConfItem = "homepage"
-	Crawler       LuaConfItem = "crawl"
+	SDKName         LuaConfItem = "sdk_name"
+	PluginName      LuaConfItem = "plugin_name"
+	PluginVersion   LuaConfItem = "plugin_version"
+	Prequisite      LuaConfItem = "prequisite"
+	Homepage        LuaConfItem = "homepage"
+	Crawler         LuaConfItem = "crawl"
+	PostInstall     LuaConfItem = "postInstall" // optional
+	CustomedInstall LuaConfItem = "install"     // optional
 )
 
 var InstallerConfig LuaConfItem = LuaConfItem(lua_global.InstallerConfigName)
