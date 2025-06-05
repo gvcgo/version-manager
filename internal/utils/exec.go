@@ -42,9 +42,9 @@ func (s *SysCommandRunner) Run() error {
 	}
 
 	s.cmd.Env = os.Environ()
-	var output bytes.Buffer
+	s.output = &bytes.Buffer{}
 	if s.collectOutput {
-		s.cmd.Stdout = &output
+		s.cmd.Stdout = s.output
 	} else {
 		s.cmd.Stdout = os.Stdout
 	}

@@ -34,7 +34,6 @@ func (l *Lua) SetGlobal(name string, fn lua.LGFunction) {
 
 func (l *Lua) init() {
 	l.SetGlobal("vmrGetResponse", GetResponse)
-	l.SetGlobal("vmrGetProxy", GetProxy)
 	// goquery
 	l.SetGlobal("vmrInitSelection", InitSelection)
 	l.SetGlobal("vmrFind", Find)
@@ -64,6 +63,7 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrSplit", Split)
 	l.SetGlobal("vmrSprintf", Sprintf)
 	l.SetGlobal("vmrUrlJoin", UrlJoin)
+	l.SetGlobal("vmrPathJoin", PathJoin)
 	l.SetGlobal("vmrLenString", LenString)
 	l.SetGlobal("vmrGetOsEnv", GetOsEnv)
 	l.SetGlobal("vmrSetOsEnv", SetOsEnv)
@@ -88,6 +88,10 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrAddAdditionalEnvs", AddAdditionalEnvs)
 	// conda
 	l.SetGlobal("vmrSearchByConda", SearchByConda)
+	// proxy
+	l.SetGlobal("vmrGetProxy", GetProxy)
+	// extractor
+	l.SetGlobal("vmrUnarchive", Unarchive)
 }
 
 func (l *Lua) GetLState() *lua.LState {
