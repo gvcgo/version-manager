@@ -307,3 +307,41 @@ func CopyDir(L *lua.LState) int {
 	}
 	return 1
 }
+
+/*
+lua: bool = vmrCreateDir(dirPath string)
+*/
+func CreateDir(L *lua.LState) int {
+	dirPath := L.ToString(1)
+	if dirPath == "" {
+		L.Push(lua.LFalse)
+		return 1
+	}
+
+	err := os.MkdirAll(dirPath, os.ModePerm)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}
+
+/*
+lua: bool = vmrRemoveAll(dirPath string)
+*/
+func RemoveAll(L *lua.LState) int {
+	dirPath := L.ToString(1)
+	if dirPath == "" {
+		L.Push(lua.LFalse)
+		return 1
+	}
+
+	err := os.RemoveAll(dirPath)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}

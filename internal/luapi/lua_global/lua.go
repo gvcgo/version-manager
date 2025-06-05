@@ -71,6 +71,8 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrWriteFile", WriteFile)
 	l.SetGlobal("vmrCopyFile", CopyFile)
 	l.SetGlobal("vmrCopyDir", CopyDir)
+	l.SetGlobal("vmrCreateDir", CreateDir)
+	l.SetGlobal("vmrRemoveAll", RemoveAll)
 	// version
 	l.SetGlobal("vmrNewVersionList", NewVersionList)
 	l.SetGlobal("vmrAddItem", AddItem)
