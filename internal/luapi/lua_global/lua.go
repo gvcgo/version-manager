@@ -34,6 +34,7 @@ func (l *Lua) SetGlobal(name string, fn lua.LGFunction) {
 
 func (l *Lua) init() {
 	l.SetGlobal("vmrGetResponse", GetResponse)
+	l.SetGlobal("vmrGetProxy", GetProxy)
 	// goquery
 	l.SetGlobal("vmrInitSelection", InitSelection)
 	l.SetGlobal("vmrFind", Find)
