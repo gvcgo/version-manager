@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -173,6 +174,21 @@ func UrlJoin(L *lua.LState) int {
 }
 
 /*
+lua: s = vmrPathJoin(base, path)
+*/
+func PathJoin(L *lua.LState) int {
+	base := L.ToString(1)
+	paths := L.ToString(2)
+	if base == "" || paths == "" {
+		L.Push(lua.LString(""))
+		return 1
+	}
+	result := filepath.Join(base, paths)
+	L.Push(lua.LString(result))
+	return 1
+}
+
+/*
 lua: int = vmrLenString(string)
 */
 func LenString(L *lua.LState) int {
@@ -300,6 +316,44 @@ func CopyDir(L *lua.LState) int {
 	src := L.ToString(1)
 	dst := L.ToString(2)
 	err := utils.CopyDirectory(src, dst)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}
+
+/*
+lua: bool = vmrCreateDir(dirPath string)
+*/
+func CreateDir(L *lua.LState) int {
+	dirPath := L.ToString(1)
+	if dirPath == "" {
+		L.Push(lua.LFalse)
+		return 1
+	}
+
+	err := os.MkdirAll(dirPath, os.ModePerm)
+	if err != nil {
+		L.Push(lua.LFalse)
+	} else {
+		L.Push(lua.LTrue)
+	}
+	return 1
+}
+
+/*
+lua: bool = vmrRemoveAll(dirPath string)
+*/
+func RemoveAll(L *lua.LState) int {
+	dirPath := L.ToString(1)
+	if dirPath == "" {
+		L.Push(lua.LFalse)
+		return 1
+	}
+
+	err := os.RemoveAll(dirPath)
 	if err != nil {
 		L.Push(lua.LFalse)
 	} else {

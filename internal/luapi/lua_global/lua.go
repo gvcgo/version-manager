@@ -63,6 +63,7 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrSplit", Split)
 	l.SetGlobal("vmrSprintf", Sprintf)
 	l.SetGlobal("vmrUrlJoin", UrlJoin)
+	l.SetGlobal("vmrPathJoin", PathJoin)
 	l.SetGlobal("vmrLenString", LenString)
 	l.SetGlobal("vmrGetOsEnv", GetOsEnv)
 	l.SetGlobal("vmrSetOsEnv", SetOsEnv)
@@ -71,6 +72,8 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrWriteFile", WriteFile)
 	l.SetGlobal("vmrCopyFile", CopyFile)
 	l.SetGlobal("vmrCopyDir", CopyDir)
+	l.SetGlobal("vmrCreateDir", CreateDir)
+	l.SetGlobal("vmrRemoveAll", RemoveAll)
 	// version
 	l.SetGlobal("vmrNewVersionList", NewVersionList)
 	l.SetGlobal("vmrAddItem", AddItem)
@@ -85,6 +88,10 @@ func (l *Lua) init() {
 	l.SetGlobal("vmrAddAdditionalEnvs", AddAdditionalEnvs)
 	// conda
 	l.SetGlobal("vmrSearchByConda", SearchByConda)
+	// proxy
+	l.SetGlobal("vmrGetProxy", GetProxy)
+	// extractor
+	l.SetGlobal("vmrUnarchive", Unarchive)
 }
 
 func (l *Lua) GetLState() *lua.LState {

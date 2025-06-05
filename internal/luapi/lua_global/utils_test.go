@@ -130,3 +130,23 @@ func TestLenString(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestExecSystemCmd(t *testing.T) {
+	script := `
+	result, ok = vmrExecSystemCmd(true, "/home", {"ls", "-ahl"})
+	print(result)
+	print(ok)
+	`
+	if err := ExecuteLuaScript(script); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPathJoin(t *testing.T) {
+	script := `s = vmrPathJoin("/home", "test")
+	print(s)
+	`
+	if err := ExecuteLuaScript(script); err != nil {
+		t.Error(err)
+	}
+}
