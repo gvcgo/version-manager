@@ -1,8 +1,10 @@
 package cui
 
 import (
+	"fmt"
 	"slices"
 
+	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -13,6 +15,7 @@ import (
 
 type (
 	updateListNormallyMsg struct{}
+	blinkMsg              struct{ msg any }
 	ColumnKeyMap          struct {
 		Quit         key.Binding
 		Enter        key.Binding
@@ -30,6 +33,9 @@ type (
 var (
 	updateListNormallyCmd = func() tea.Msg {
 		return updateListNormallyMsg{}
+	}
+	blinkCmd = func() tea.Msg {
+		return blinkMsg{msg: textinput.Blink()}
 	}
 )
 
@@ -94,18 +100,21 @@ type Column struct {
 	focused    bool
 	selected   string
 	originRows []table.Row
+	title      string
 }
 
-func NewColumn() *Column {
+func NewColumn(title string) *Column {
 	t := table.New()
 	t.SetStyles(getDefaultTableStyle())
 
 	i := textinput.New()
 	i.Cursor.Blink = true
+	i.Cursor.SetMode(cursor.CursorBlink)
 	return &Column{
 		input:  i,
 		list:   t,
 		keymap: GetColumnKeyMap(),
+		title:  title,
 	}
 }
 
@@ -139,7 +148,7 @@ func (c *Column) SetListOptions(options ...table.Option) {
 
 func (c *Column) Init() tea.Cmd {
 	cmd := c.input.Focus()
-	return tea.Batch(cmd, textinput.Blink)
+	return tea.Batch(cmd, blinkCmd)
 }
 
 func (c *Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -185,6 +194,10 @@ func (c *Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case updateListNormallyMsg:
 		c.UpdateViewport()
 		return c, nil
+	case blinkMsg:
+		var cmd tea.Cmd
+		c.input.Cursor, cmd = c.input.Cursor.Update(msg.msg)
+		return c, cmd
 	default:
 		return c, nil
 	}
@@ -212,12 +225,25 @@ func (c *Column) View() string {
 		inputView,
 		listView,
 	)
+	if c.title != "" {
+		title := fmt.Sprintf("%s %s", "●", c.title)
+		if c.Focused() {
+			title = focusedStyle.Render(title)
+		} else {
+			title = bluredStyle.Render(title)
+		}
+		s = lipgloss.JoinVertical(0, title, s)
+	}
 	return s
 }
 
 func (c *Column) Focus() tea.Cmd {
 	c.focused = true
 	return c.input.Focus()
+}
+
+func (c *Column) Focused() bool {
+	return c.input.Focused() || c.list.Focused()
 }
 
 func (c *Column) Blur() {

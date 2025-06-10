@@ -7,7 +7,7 @@ import (
 )
 
 func TestColumn(t *testing.T) {
-	column := NewColumn()
+	column := NewColumn("search for city:")
 
 	columns := []table.Column{
 		{Title: "City", Width: 10},
