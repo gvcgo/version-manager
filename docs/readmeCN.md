@@ -38,7 +38,7 @@ VMR是一款**简单**，**跨平台**，且经过**良好设计**的版本管�
 
 你可能已经听说过fnm，gvm，nvm，pyenv，phpenv等SDK版本管理工具。然而，它们很多都不能管理多种编程语言。像asdf-vm这样的管理器支持多种语言，但只适用于类unix系统，并且看起来非常复杂。因此，VMR的出现主要就是为了解决这些问题。
 
-[查看详细文档](https://vmrdocs.vmr.dpdns.org/zh-cn/)
+[查看详细文档](https://vdocs.vmr.dpdns.org/zh-cn/)
 
 ------
 
@@ -69,7 +69,13 @@ curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.dpdns.org | sh
 powershell -c "irm https://scripts.vmr.dpdns.org/windows | iex"
 ```
 
-**注意**：安装之后，请记得阅读[文档](https://vmrdocs.vmr.dpdns.org/zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。
+**注意**：安装之后，请记得阅读[文档](https://vdocs.vmr.dpdns.org//zh-cn/)，尤其是国内用户存在访问github受限的情况，你遇到的问题应该都在文档中了。
+
+如果你仍然无法安装vmr, 请转到[release](https://github.com/gvcgo/version-manager/releases)页面下载zip文件, 解压之后在终端运行如下命令即可安装:
+
+```bash
+./vmr install-self
+```
 
 ------
 

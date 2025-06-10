@@ -37,7 +37,7 @@
 
 Maybe you've already heard of fnm, gvm, nvm, pyenv, phpenv, etc. However, none of them can manage multiple programming languages. Managers like asdf-vm support multiple languages, but only works on unix-like systems, and annoyingly makes things look complicated. Therefore, **VMR** comes.
 
-[See docs for details](https://vmrdocs.vmr.dpdns.org/)
+[See docs for details](https://vdocs.vmr.dpdns.org/)
 
 ------
 
@@ -68,7 +68,13 @@ curl --proto '=https' --tlsv1.2 -sSf https://scripts.vmr.dpdns.org | sh
 powershell -c "irm https://scripts.vmr.dpdns.org/windows | iex"
 ```
 
-**Note**: Please remember to read the [docs](https://vmrdocs.vmr.dpdns.org/), as the problems you encounter may be caused by your improper usage.
+**Note**: Please remember to read the [docs](https://vdocs.vmr.dpdns.org/), as the problems you encounter may be caused by your improper usage.
+
+If you still encounter problems during installation, please download zip file from [release page](https://github.com/gvcgo/version-manager/releases), decompress it and run following command in terminal:
+
+```bash
+./vmr install-self
+```
 
 ------
 
