@@ -11,9 +11,7 @@ require (
 	github.com/creack/termios v0.0.0-20160714173321-88d0029e36a1
 	github.com/erikgeiser/promptkit v0.9.0
 	github.com/gogf/gf/v2 v2.6.1
-	github.com/gvcgo/gocui v0.1.0
 	github.com/gvcgo/goutils v1.0.8
-	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/mattn/go-runewidth v0.0.16
 	github.com/mholt/archives v0.1.1
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
@@ -43,9 +41,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/gdamore/encoding v1.0.1 // indirect
-	github.com/gdamore/tcell/v2 v2.8.0 // indirect
-	github.com/go-errors/errors v1.0.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
