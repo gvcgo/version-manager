@@ -1,7 +1,6 @@
 package extract
 
 import (
-	"fmt"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -20,6 +19,6 @@ func TestExtractor(t *testing.T) {
 	etr.SetCompressedSingleExe() // Decompress executeable files only
 	err := etr.Unarchive()
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 }

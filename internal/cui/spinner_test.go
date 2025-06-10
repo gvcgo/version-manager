@@ -12,7 +12,7 @@ func TestSpinner(t *testing.T) {
 	s := NewSpinner("test spinner")
 
 	go func() {
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Second)
 		fmt.Println("stop spinning")
 		s.Stop()
 	}()
