@@ -22,6 +22,8 @@ func TestSpinner(t *testing.T) {
 			t.Error(err)
 		}
 	}
+	// TODO: github test do not support tea program
+
 	// go func() {
 	// 	fmt.Println("stop spinning")
 	// 	s.Stop()
