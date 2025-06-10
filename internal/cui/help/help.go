@@ -1,4 +1,4 @@
-package cui
+package help
 
 /*
 Shows help info.

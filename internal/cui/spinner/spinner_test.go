@@ -1,4 +1,4 @@
-package cui
+package spinner
 
 import (
 	"fmt"
