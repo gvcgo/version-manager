@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	_ "github.com/charmbracelet/bubbletea"
+	"github.com/gvcgo/version-manager/internal/cui/types"
 )
 
 func TestSpinner(t *testing.T) {
 	s := NewSpinner("test spinner")
 
-	var h Hook = func() error {
+	var h types.Hook = func() error {
 		fmt.Println("in hook")
 		return nil
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/gvcgo/version-manager/internal/cui/types"
 )
 
 /*
@@ -21,7 +22,7 @@ type Spinner struct {
 	spinner  spinner.Model
 	title    string
 	quitting bool
-	cancel   Hook
+	cancel   types.Hook
 }
 
 func NewSpinner(title string) *Spinner {
@@ -36,7 +37,7 @@ func NewSpinner(title string) *Spinner {
 	}
 }
 
-func (s *Spinner) SetCancelHook(hook Hook) {
+func (s *Spinner) SetCancelHook(hook types.Hook) {
 	s.cancel = hook
 }
 

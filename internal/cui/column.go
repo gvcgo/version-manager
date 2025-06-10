@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/gvcgo/version-manager/internal/cui/types"
 	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
@@ -209,15 +210,15 @@ func (c *Column) View() string {
 		listView  = c.list.View()
 	)
 	if c.input.Focused() {
-		inputView = focusedStyle.Render(inputView)
+		inputView = types.FocusedStyle.Render(inputView)
 	} else {
-		inputView = bluredStyle.Render(inputView)
+		inputView = types.BluredStyle.Render(inputView)
 	}
 
 	if c.list.Focused() {
-		listView = focusedStyle.Render(listView)
+		listView = types.FocusedStyle.Render(listView)
 	} else {
-		listView = bluredStyle.Render(listView)
+		listView = types.BluredStyle.Render(listView)
 	}
 
 	s := lipgloss.JoinVertical(
@@ -228,9 +229,9 @@ func (c *Column) View() string {
 	if c.title != "" {
 		title := fmt.Sprintf("%s %s", "●", c.title)
 		if c.Focused() {
-			title = focusedStyle.Render(title)
+			title = types.FocusedStyle.Render(title)
 		} else {
-			title = bluredStyle.Render(title)
+			title = types.BluredStyle.Render(title)
 		}
 		s = lipgloss.JoinVertical(0, title, s)
 	}
