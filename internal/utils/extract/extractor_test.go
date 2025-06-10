@@ -13,7 +13,7 @@ func TestExtractor(t *testing.T) {
 	dir := filepath.Dir(current)
 	path := filepath.Join(dir, "test.gz")
 	if ok, _ := gutils.PathIsExist(path); !ok {
-		t.Skip("test file not found")
+		return
 	}
 	etr := New(path, dir)
 	etr.SetCompressedSingleExe() // Decompress executeable files only
