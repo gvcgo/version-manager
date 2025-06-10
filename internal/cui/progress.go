@@ -1,5 +1,0 @@
-package cui
-
-/*
-Progress bar
-*/
