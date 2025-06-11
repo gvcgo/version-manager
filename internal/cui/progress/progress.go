@@ -7,19 +7,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gvcgo/version-manager/internal/cui/types"
 )
-
-type tickMsg time.Time
-
-func tickCmd() tea.Cmd {
-	return tea.Tick(time.Second*1, func(t time.Time) tea.Msg {
-		return tickMsg(t)
-	})
-}
 
 const (
 	padding        = 2
@@ -28,34 +21,50 @@ const (
 	kbSize   int64 = 1024
 )
 
-type ProgressMsg float64
+type (
+	ProgressMsg    float64
+	ErrorMsg       struct{ err error }
+	ProgressKeyMap struct {
+		Quit key.Binding
+	}
+)
 
-type ErrorMsg struct{ err error }
-
-func finalPause() tea.Cmd {
+func finalPauseCmd() tea.Cmd {
 	return tea.Tick(time.Millisecond*750, func(_ time.Time) tea.Msg {
 		return nil
 	})
+}
+
+func GetProgressKeyMap() ProgressKeyMap {
+	return ProgressKeyMap{
+		Quit: key.NewBinding(
+			key.WithKeys("q", "esc", "ctrl+c"),
+			key.WithHelp("q/esc/ctrl+c", "quit"),
+		),
+	}
 }
 
 // Progress for downloadings.
 type Progress struct {
 	pm        progress.Model
 	title     string
+	keymap    ProgressKeyMap
 	total     int64
 	completed int64
 	lock      *sync.Mutex
 	cancel    types.Hook
 	err       error
+	program   *tea.Program
 }
 
 func NewProgress(title string) *Progress {
 	pm := progress.New()
 
 	p := &Progress{
-		pm:    pm,
-		title: title,
-		lock:  &sync.Mutex{},
+		pm:     pm,
+		title:  title,
+		keymap: GetProgressKeyMap(),
+		lock:   &sync.Mutex{},
 	}
 	return p
 }
@@ -64,26 +73,38 @@ func (p *Progress) SetCancelHook(cancel types.Hook) {
 	p.cancel = cancel
 }
 
+func (p *Progress) SetTotal(total int64) {
+	p.total = total
+}
+
 func (p *Progress) SetProgressOptions(options ...progress.Option) {
 	for _, opt := range options {
 		opt(&p.pm)
 	}
 }
 
+func (p *Progress) SetProgram(program *tea.Program) {
+	p.program = program
+}
+
 func (p *Progress) Init() tea.Cmd {
-	return tickCmd()
+	return nil
 }
 
 func (p *Progress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "q" {
+		switch {
+		case key.Matches(msg, p.keymap.Quit):
 			if p.cancel != nil {
-				p.cancel()
+				if err := p.cancel(); err != nil {
+					p.err = err
+				}
 			}
 			return p, tea.Quit
+		default:
+			return p, nil
 		}
-		return p, nil
 	case tea.WindowSizeMsg:
 		p.pm.Width = msg.Width - padding*2 - 4
 		p.pm.Width = min(p.pm.Width, maxWidth)
@@ -94,25 +115,14 @@ func (p *Progress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ProgressMsg:
 		var cmds []tea.Cmd
 		if msg >= 1.0 {
-			cmds = append(cmds, tea.Sequence(finalPause(), tea.Quit))
-		} else if p.err != nil {
-			if p.cancel != nil {
-				p.cancel()
-			}
-			cmds = append(cmds, tea.Quit)
+			cmds = append(cmds, tea.Sequence(finalPauseCmd(), tea.Quit))
 		}
 		cmds = append(cmds, p.pm.SetPercent(float64(msg)))
 		return p, tea.Batch(cmds...)
 	// FrameMsg is sent when the progress bar wants to animate itself
 	case progress.FrameMsg:
-		pm, cmd := p.pm.Update(msg)
-		p.pm, _ = pm.(progress.Model)
-		if p.err != nil {
-			if p.cancel != nil {
-				p.cancel()
-			}
-			cmd = tea.Batch(cmd, tea.Quit)
-		}
+		progressModel, cmd := p.pm.Update(msg)
+		p.pm = progressModel.(progress.Model)
 		return p, cmd
 	default:
 		return p, nil
@@ -137,7 +147,7 @@ func (p *Progress) getExtraInfo() string {
 		)
 	}
 
-	extra = lipgloss.JoinHorizontal(0.5, extra, " ", numbers)
+	extra = lipgloss.JoinHorizontal(0, extra, " ", numbers)
 	extra = types.FocusedStyle.Render(extra)
 	return extra
 }
@@ -147,7 +157,7 @@ func (p *Progress) View() string {
 		return "Error downloading: " + p.err.Error() + "\n"
 	}
 
-	s := lipgloss.JoinVertical(0.5, p.getExtraInfo(), p.pm.View())
+	s := lipgloss.JoinVertical(0, p.getExtraInfo(), p.pm.View())
 	return s
 }
 
@@ -157,9 +167,10 @@ func (p *Progress) UpdateProgress(toAdd int64) {
 	}
 	p.lock.Lock()
 	p.completed += toAdd
-	if p.total > 0 {
+	if p.program != nil {
 		ratio := float64(p.completed) / float64(p.total)
-		_ = p.pm.SetPercent(ratio)
+		ratio = min(ratio, 1.0)
+		p.program.Send(ProgressMsg(ratio))
 	}
 	p.lock.Unlock()
 }
@@ -171,6 +182,10 @@ func (p *Progress) Write(partial []byte) (int, error) {
 }
 
 func (p *Progress) Copy(bodyReader io.Reader, storageFile *os.File) (size int64) {
-	size, p.err = io.Copy(io.MultiWriter(p, storageFile), bodyReader)
+	var err error
+	size, err = io.Copy(io.MultiWriter(p, storageFile), bodyReader)
+	if err != nil && p.program != nil {
+		p.program.Send(ErrorMsg{err})
+	}
 	return size
 }

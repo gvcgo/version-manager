@@ -147,6 +147,10 @@ func (c *Column) SetListOptions(options ...table.Option) {
 	c.originRows = c.list.Rows()
 }
 
+func (c *Column) SetupTitle(title string) {
+	c.title = title
+}
+
 func (c *Column) Init() tea.Cmd {
 	cmd := c.input.Focus()
 	return tea.Batch(cmd, blinkCmd)
