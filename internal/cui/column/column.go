@@ -161,7 +161,7 @@ func (c *Column) SetListOptions(options ...table.Option) {
 	c.originRows = c.list.Rows()
 }
 
-func (c *Column) SetupTitle(title string) {
+func (c *Column) SetTitle(title string) {
 	c.title = title
 }
 
