@@ -22,11 +22,8 @@ const (
 )
 
 type (
-	ProgressMsg    float64
-	ErrorMsg       struct{ err error }
-	ProgressKeyMap struct {
-		Quit key.Binding
-	}
+	ProgressMsg float64
+	ErrorMsg    struct{ err error }
 )
 
 func finalPauseCmd() tea.Cmd {
@@ -35,20 +32,11 @@ func finalPauseCmd() tea.Cmd {
 	})
 }
 
-func GetProgressKeyMap() ProgressKeyMap {
-	return ProgressKeyMap{
-		Quit: key.NewBinding(
-			key.WithKeys("q", "esc", "ctrl+c"),
-			key.WithHelp("q/esc/ctrl+c", "quit"),
-		),
-	}
-}
-
 // Progress for downloadings.
 type Progress struct {
 	pm        progress.Model
 	title     string
-	keymap    ProgressKeyMap
+	keymap    types.IKeyMap
 	total     int64
 	completed int64
 	lock      *sync.Mutex
@@ -63,7 +51,7 @@ func NewProgress(title string) *Progress {
 	p := &Progress{
 		pm:     pm,
 		title:  title,
-		keymap: GetProgressKeyMap(),
+		keymap: types.GetCommonKeyMap(),
 		lock:   &sync.Mutex{},
 	}
 	return p
@@ -94,8 +82,9 @@ func (p *Progress) Init() tea.Cmd {
 func (p *Progress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		km := p.keymap.(types.CommonKeyMap)
 		switch {
-		case key.Matches(msg, p.keymap.Quit):
+		case key.Matches(msg, km.Quit):
 			if p.cancel != nil {
 				if err := p.cancel(); err != nil {
 					p.err = err
@@ -188,4 +177,11 @@ func (p *Progress) Copy(bodyReader io.Reader, storageFile *os.File) (size int64)
 		p.program.Send(ErrorMsg{err})
 	}
 	return size
+}
+
+func (p *Progress) Help() string {
+	if p.keymap != nil {
+		return p.keymap.GetHelpInfo()
+	}
+	return ""
 }

@@ -18,18 +18,32 @@ type (
 	updateListNormallyMsg struct{}
 	blinkMsg              struct{ msg any }
 	ColumnKeyMap          struct {
-		Quit         key.Binding
-		Enter        key.Binding
-		LineUp       key.Binding
-		LineDown     key.Binding
-		PageUp       key.Binding
-		PageDown     key.Binding
-		HalfPageUp   key.Binding
-		HalfPageDown key.Binding
-		GotoTop      key.Binding
-		GotoBottom   key.Binding
+		Quit       key.Binding
+		Enter      key.Binding
+		LineUp     key.Binding
+		LineDown   key.Binding
+		PageUp     key.Binding
+		PageDown   key.Binding
+		GotoTop    key.Binding
+		GotoBottom key.Binding
 	}
 )
+
+func (c ColumnKeyMap) GetHelpInfo() string {
+	s := lipgloss.JoinVertical(
+		0,
+		fmt.Sprintf(types.HelpInfoPattern, c.Quit.Help().Key, c.Quit.Help().Desc),
+		fmt.Sprintf(types.HelpInfoPattern, c.Enter.Help().Key, c.Enter.Help().Desc),
+		fmt.Sprintf(types.HelpInfoPattern, c.LineUp.Help().Key, c.LineUp.Help().Desc),
+		fmt.Sprintf(types.HelpInfoPattern, c.LineDown.Help().Key, c.LineDown.Help().Desc),
+		fmt.Sprintf(types.HelpInfoPattern, c.PageUp.Help().Key, c.PageUp.Help().Desc),
+		fmt.Sprintf(types.HelpInfoPattern, c.PageDown.Help().Key, c.PageDown.Help().Desc),
+		fmt.Sprintf(types.HelpInfoPattern, c.GotoTop.Help().Key, c.GotoTop.Help().Desc),
+		fmt.Sprintf(types.HelpInfoPattern, c.GotoBottom.Help().Key, c.GotoBottom.Help().Desc),
+	)
+	s = types.HelpStyle.Render(s)
+	return s
+}
 
 var (
 	updateListNormallyCmd = func() tea.Msg {
@@ -97,7 +111,7 @@ Column for main page.
 type Column struct {
 	input      textinput.Model
 	list       table.Model
-	keymap     ColumnKeyMap
+	keymap     types.IKeyMap
 	focused    bool
 	selected   string
 	originRows []table.Row
@@ -159,31 +173,32 @@ func (c *Column) Init() tea.Cmd {
 func (c *Column) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		km := c.keymap.(ColumnKeyMap)
 		switch {
-		case key.Matches(msg, c.keymap.Quit):
+		case key.Matches(msg, km.Quit):
 			return c, tea.Quit
-		case key.Matches(msg, c.keymap.Enter):
+		case key.Matches(msg, km.Enter):
 			currentRow := c.list.SelectedRow()
 			if len(currentRow) > 0 {
 				c.selected = currentRow[0]
 			}
 			return c, updateListNormallyCmd
-		case key.Matches(msg, c.keymap.PageUp):
+		case key.Matches(msg, km.PageUp):
 			c.list.MoveUp(c.list.Height())
 			return c, updateListNormallyCmd
-		case key.Matches(msg, c.keymap.PageDown):
+		case key.Matches(msg, km.PageDown):
 			c.list.MoveDown(c.list.Height())
 			return c, updateListNormallyCmd
-		case key.Matches(msg, c.keymap.LineUp):
+		case key.Matches(msg, km.LineUp):
 			c.list.MoveUp(1)
 			return c, updateListNormallyCmd
-		case key.Matches(msg, c.keymap.LineDown):
+		case key.Matches(msg, km.LineDown):
 			c.list.MoveDown(1)
 			return c, updateListNormallyCmd
-		case key.Matches(msg, c.keymap.GotoTop):
+		case key.Matches(msg, km.GotoTop):
 			c.list.GotoTop()
 			return c, updateListNormallyCmd
-		case key.Matches(msg, c.keymap.GotoBottom):
+		case key.Matches(msg, km.GotoBottom):
 			c.list.GotoBottom()
 			return c, updateListNormallyCmd
 		default:
@@ -255,6 +270,13 @@ func (c *Column) Blur() {
 	c.input.Blur()
 	c.list.Blur()
 	c.focused = false
+}
+
+func (c *Column) Help() string {
+	if c.keymap != nil {
+		return c.keymap.GetHelpInfo()
+	}
+	return ""
 }
 
 func (c *Column) UpdateViewport() {

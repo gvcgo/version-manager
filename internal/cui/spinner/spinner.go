@@ -3,6 +3,7 @@ package spinner
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -18,9 +19,13 @@ var (
 	helpStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).Render
 )
 
+type SpinnerKeyMap struct {
+}
+
 type Spinner struct {
 	spinner  spinner.Model
 	title    string
+	keymap   types.IKeyMap
 	quitting bool
 	cancel   types.Hook
 }
@@ -33,6 +38,7 @@ func NewSpinner(title string) *Spinner {
 	return &Spinner{
 		spinner:  s,
 		title:    title,
+		keymap:   types.GetCommonKeyMap(),
 		quitting: false,
 	}
 }
@@ -48,8 +54,9 @@ func (s *Spinner) Init() tea.Cmd {
 func (s *Spinner) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q", "esc":
+		km := s.keymap.(types.CommonKeyMap)
+		switch {
+		case key.Matches(msg, km.Quit):
 			return s.quit(nil)
 		default:
 			return s, nil
@@ -93,4 +100,11 @@ func (s *Spinner) View() (r string) {
 
 func (s *Spinner) Stop() {
 	s.quitting = true
+}
+
+func (s *Spinner) Help() string {
+	if s.keymap != nil {
+		return s.keymap.GetHelpInfo()
+	}
+	return ""
 }
