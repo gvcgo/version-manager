@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	HelpInfoPattern string = "<%s> %s"
+	HelpInfoPattern string = ">> %15s  %s"
 )
 
 var (
