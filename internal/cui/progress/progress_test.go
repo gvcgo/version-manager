@@ -9,7 +9,7 @@ func TestProgress(t *testing.T) {
 	title := "mocking-download.zip"
 	p := NewProgress(title)
 
-	p.SetProgressOptions(
+	p.AddOptions(
 		WithTotal(100000),
 		WithCancelHook(func() error {
 			fmt.Println("in hook")

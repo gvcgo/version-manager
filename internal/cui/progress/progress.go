@@ -76,7 +76,7 @@ func NewProgress(title string) *Progress {
 	return p
 }
 
-func (p *Progress) SetProgressOptions(opts ...any) {
+func (p *Progress) AddOptions(opts ...any) {
 	for _, opt := range opts {
 		if o, ok := opt.(progress.Option); ok {
 			o(&p.pm)
@@ -196,4 +196,8 @@ func (p *Progress) Help() string {
 		return p.keymap.GetHelpInfo()
 	}
 	return ""
+}
+
+func (p *Progress) GetProgram() *tea.Program {
+	return p.program
 }
