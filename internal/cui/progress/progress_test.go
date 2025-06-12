@@ -8,11 +8,14 @@ import (
 func TestProgress(t *testing.T) {
 	title := "mocking-download.zip"
 	p := NewProgress(title)
-	p.SetTotal(100000)
-	p.SetCancelHook(func() error {
-		fmt.Println("in hook")
-		return nil
-	})
+
+	p.SetProgressOptions(
+		WithTotal(100000),
+		WithCancelHook(func() error {
+			fmt.Println("in hook")
+			return nil
+		}),
+	)
 
 	if p.title != title {
 		t.Errorf("expected title to be %s, got %s", title, p.title)

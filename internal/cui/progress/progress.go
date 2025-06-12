@@ -24,12 +24,31 @@ const (
 type (
 	ProgressMsg float64
 	ErrorMsg    struct{ err error }
+	POpt        func(*Progress)
 )
 
 func finalPauseCmd() tea.Cmd {
 	return tea.Tick(time.Millisecond*750, func(_ time.Time) tea.Msg {
 		return nil
 	})
+}
+
+func WithCancelHook(cancel types.Hook) POpt {
+	return func(p *Progress) {
+		p.cancel = cancel
+	}
+}
+
+func WithTotal(total int64) POpt {
+	return func(p *Progress) {
+		p.total = total
+	}
+}
+
+func WithProgram(program *tea.Program) POpt {
+	return func(p *Progress) {
+		p.program = program
+	}
 }
 
 // Progress for downloadings.
@@ -57,22 +76,15 @@ func NewProgress(title string) *Progress {
 	return p
 }
 
-func (p *Progress) SetCancelHook(cancel types.Hook) {
-	p.cancel = cancel
-}
-
-func (p *Progress) SetTotal(total int64) {
-	p.total = total
-}
-
-func (p *Progress) SetProgressOptions(options ...progress.Option) {
-	for _, opt := range options {
-		opt(&p.pm)
+func (p *Progress) SetProgressOptions(opts ...any) {
+	for _, opt := range opts {
+		if o, ok := opt.(progress.Option); ok {
+			o(&p.pm)
+		}
+		if oo, ok := opt.(POpt); ok {
+			oo(p)
+		}
 	}
-}
-
-func (p *Progress) SetProgram(program *tea.Program) {
-	p.program = program
 }
 
 func (p *Progress) Init() tea.Cmd {
