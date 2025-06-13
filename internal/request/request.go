@@ -16,7 +16,8 @@ http request.
 */
 type ReqClient struct {
 	*req.Client
-	cfg *cnf.VMRConf
+	cfg          *cnf.VMRConf
+	proxyEnabled bool
 }
 
 func New() *ReqClient {
@@ -29,15 +30,21 @@ func New() *ReqClient {
 	return rc.UseDefaultProxy().UseDefaultAgent()
 }
 
+func (rc *ReqClient) SetCommonHeader(key, value string) *ReqClient {
+	rc.Client = rc.Client.SetCommonHeader(key, value)
+	return rc
+}
+
 func (rc *ReqClient) UseDefaultProxy() *ReqClient {
 	if rc.cfg.ProxyUri != "" {
+		rc.proxyEnabled = true
 		rc.Client = rc.Client.SetProxyURL(rc.cfg.ProxyUri)
 	}
 	return rc
 }
 
 func (rc *ReqClient) UseDefaultAgent() *ReqClient {
-	rc.Client = rc.Client.SetCommonHeader(
+	_ = rc.SetCommonHeader(
 		"User-Agent",
 		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
 	)
@@ -56,7 +63,8 @@ func (rc *ReqClient) UseDefaultRetry() *ReqClient {
 }
 
 func (rc *ReqClient) tryToUseReverseProxy(rawUrl string) string {
-	if rc.cfg.ReverseProxy == "" {
+	// user-customized proxy prior to reverse proxy.
+	if rc.cfg.ReverseProxy == "" || rc.proxyEnabled {
 		return rawUrl
 	}
 	return strings.TrimSuffix(rc.cfg.ReverseProxy, "/") + "/" + rawUrl
