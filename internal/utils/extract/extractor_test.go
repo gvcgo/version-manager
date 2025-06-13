@@ -14,11 +14,12 @@ func TestExtractor(t *testing.T) {
 	path := filepath.Join(dir, "test.gz")
 	if ok, _ := gutils.PathIsExist(path); !ok {
 		t.Skip("test file not found")
+		return
 	}
 	etr := New(path, dir)
 	etr.SetCompressedSingleExe() // Decompress executeable files only
 	err := etr.Unarchive()
 	if err != nil {
-		t.Errorf("Error extracting archive: %v", err)
+		t.Error(err)
 	}
 }
