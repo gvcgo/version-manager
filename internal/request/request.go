@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ type ReqClient struct {
 	*req.Client
 	cfg          *cnf.VMRConf
 	proxyEnabled bool
+	ctx          context.Context
 }
 
 func New() *ReqClient {
@@ -28,6 +30,11 @@ func New() *ReqClient {
 		cfg:    cfg,
 	}
 	return rc.UseDefaultProxy().UseDefaultAgent()
+}
+
+func (rc *ReqClient) SetContext(ctx context.Context) *ReqClient {
+	rc.ctx = ctx
+	return rc
 }
 
 func (rc *ReqClient) SetCommonHeader(key, value string) *ReqClient {
@@ -70,11 +77,18 @@ func (rc *ReqClient) tryToUseReverseProxy(rawUrl string) string {
 	return strings.TrimSuffix(rc.cfg.ReverseProxy, "/") + "/" + rawUrl
 }
 
+func (rc *ReqClient) getContext() context.Context {
+	if rc.ctx != nil {
+		return rc.ctx
+	}
+	return context.TODO()
+}
+
 func (rc *ReqClient) DoHead(url ...string) (*req.Response, error) {
 	var resp *req.Response
 	if len(url) > 0 {
 		rawURL := rc.tryToUseReverseProxy(url[0])
-		resp = rc.Client.Head(rawURL).Do(context.TODO())
+		resp = rc.Client.Head(rawURL).Do(rc.getContext())
 	} else {
 		resp = rc.Client.Head().Do(context.TODO())
 	}
@@ -86,5 +100,9 @@ func (rc *ReqClient) DoHead(url ...string) (*req.Response, error) {
 
 func (rc *ReqClient) DoDownloadToWriter(w io.Writer, url string) (*req.Response, error) {
 	rawURL := rc.tryToUseReverseProxy(url)
-	return rc.Client.R().SetOutput(w).Get(rawURL)
+	r := rc.Client.R().SetOutput(w)
+	r.Method = http.MethodGet
+	r.RawURL = rawURL
+	resp := r.Do(rc.getContext())
+	return resp, resp.Err
 }

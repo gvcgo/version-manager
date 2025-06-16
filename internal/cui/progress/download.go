@@ -1,10 +1,12 @@
 package progress
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/version-manager/internal/request"
@@ -27,6 +29,10 @@ type Downloader struct {
 	client     *request.ReqClient
 	bar        *Progress
 	outputFile string
+	nthreads   int64
+	wg         *sync.WaitGroup
+	context    context.Context
+	cancel     context.CancelFunc
 }
 
 func NewDownloader(uRL string) *Downloader {
@@ -40,10 +46,16 @@ func NewDownloader(uRL string) *Downloader {
 	}
 	title := fmt.Sprintf("Downloading %s", uRL[idx+1:])
 
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
 	return &Downloader{
-		url:    uRL,
-		client: request.New(),
-		bar:    NewProgress(title),
+		url:      uRL,
+		client:   request.New(),
+		bar:      NewProgress(title),
+		nthreads: 1,
+		wg:       &sync.WaitGroup{},
+		context:  ctx,
+		cancel:   cancel,
 	}
 }
 
@@ -72,7 +84,7 @@ func (d *Downloader) Init() tea.Cmd {
 func (d *Downloader) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case StartDownloadMsg:
-		go d.Start()
+		go d.StartSingle()
 		return d, nil
 	default:
 		return d.bar.Update(msg)
@@ -91,7 +103,7 @@ func (d *Downloader) Write(partial []byte) (int, error) {
 	return d.bar.Write(partial)
 }
 
-func (d *Downloader) Start() {
+func (d *Downloader) StartSingle() {
 	if utils.PathIsExist(d.outputFile) {
 		err := os.RemoveAll(d.outputFile)
 		if err != nil {

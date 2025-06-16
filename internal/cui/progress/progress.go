@@ -201,3 +201,7 @@ func (p *Progress) Help() string {
 func (p *Progress) GetProgram() *tea.Program {
 	return p.program
 }
+
+func (p *Progress) GetTotal() int64 {
+	return p.total
+}
