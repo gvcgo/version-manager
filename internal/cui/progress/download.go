@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/version-manager/internal/request"
@@ -33,6 +34,7 @@ type Downloader struct {
 	wg         *sync.WaitGroup
 	context    context.Context
 	cancel     context.CancelFunc
+	tasks      []*PartialTask
 }
 
 func NewDownloader(uRL string) *Downloader {
@@ -48,15 +50,30 @@ func NewDownloader(uRL string) *Downloader {
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
-	return &Downloader{
+
+	r := request.New()
+	r.SetContext(ctx)
+
+	d := &Downloader{
 		url:      uRL,
-		client:   request.New(),
+		client:   r,
 		bar:      NewProgress(title),
 		nthreads: 1,
 		wg:       &sync.WaitGroup{},
 		context:  ctx,
 		cancel:   cancel,
 	}
+
+	d.AddOptions(WithCompleteHook(d.merge))
+	d.AddOptions(WithCancelHook(func() error {
+		d.cancel()
+		time.Sleep(time.Millisecond * 500)
+		if d.nthreads < 2 {
+			return nil
+		}
+		return os.RemoveAll(d.getTempDir())
+	}))
+	return d
 }
 
 func (d *Downloader) SetOutputFilePath(fPath string) {
@@ -84,7 +101,11 @@ func (d *Downloader) Init() tea.Cmd {
 func (d *Downloader) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case StartDownloadMsg:
-		go d.StartSingle()
+		if d.nthreads < 2 {
+			go d.StartSingle()
+		} else {
+			go d.StartMulti()
+		}
 		return d, nil
 	default:
 		return d.bar.Update(msg)

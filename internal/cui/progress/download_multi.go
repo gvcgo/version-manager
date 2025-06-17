@@ -38,6 +38,7 @@ func (d *Downloader) StartMulti() {
 	if total <= 0 {
 		return
 	}
+	os.RemoveAll(d.getTempDir()) // try to remove old temp files
 
 	interval := total / d.nthreads
 	if interval == 0 {
@@ -45,13 +46,15 @@ func (d *Downloader) StartMulti() {
 	}
 
 	var start int64 = 0
-	num := 1
-	var tasks []*PartialTask
-	for start < total {
+	if d.tasks == nil {
+		d.tasks = []*PartialTask{}
+	}
+
+	for i := range d.nthreads {
+		// concurrency request, i for thread id
 		end := start + interval
-		end = min(end, total)
 		fileName := filepath.Base(d.outputFile)
-		fPath := filepath.Join(d.getTempDir(), fileName) + fmt.Sprintf(".part%d", num)
+		fPath := filepath.Join(d.getTempDir(), fileName) + fmt.Sprintf(".part%d", i+1)
 		pt := &PartialTask{
 			url:             d.url,
 			partialFilePath: fPath,
@@ -63,20 +66,38 @@ func (d *Downloader) StartMulti() {
 			cancel:          d.cancel,
 		}
 		pt.SetContext(d.context)
-		tasks = append(tasks, pt)
-		num++
-		start += interval
+		d.tasks = append(d.tasks, pt)
+
+		start += interval + 1
 	}
 
-	for _, task := range tasks {
+	for _, task := range d.tasks {
 		go task.Do()
 	}
 	d.wg.Wait()
-	d.merge(tasks)
 }
 
-func (d *Downloader) merge(tasks []*PartialTask) {
-	// TODO: merge
+func (d *Downloader) merge() error {
+	if d.nthreads < 2 {
+		return nil
+	}
+	dest_file, err := os.OpenFile(d.outputFile, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer utils.Closeq(dest_file)
+
+	for _, t := range d.tasks {
+		part_file, err := os.Open(t.GetPartialFilePath())
+		if err != nil {
+			return err
+		}
+		io.Copy(dest_file, part_file)
+		utils.Closeq(part_file)
+	}
+
+	os.RemoveAll(d.getTempDir())
+	return nil
 }
 
 type PartialTask struct {
@@ -118,9 +139,14 @@ func (p *PartialTask) Do() {
 	}
 	defer file.Close()
 	w := io.MultiWriter(file, p.bar)
+	p.client.SetCommonHeader("Range", fmt.Sprintf("bytes=%d-%d", p.byteFrom, p.byteTo))
 	_, err = p.client.DoDownloadToWriter(w, p.url)
 	p.bar.err = err
 	if err != nil && p.cancel != nil {
 		p.cancel()
 	}
+}
+
+func (p *PartialTask) GetPartialFilePath() string {
+	return p.partialFilePath
 }

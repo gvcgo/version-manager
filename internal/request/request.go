@@ -29,7 +29,7 @@ func New() *ReqClient {
 		Client: req.C(),
 		cfg:    cfg,
 	}
-	return rc.UseDefaultProxy().UseDefaultAgent()
+	return rc.UseDefaultProxy().UseDefaultAgent().UseDefaultTimeout()
 }
 
 func (rc *ReqClient) SetContext(ctx context.Context) *ReqClient {
@@ -90,7 +90,7 @@ func (rc *ReqClient) DoHead(url ...string) (*req.Response, error) {
 		rawURL := rc.tryToUseReverseProxy(url[0])
 		resp = rc.Client.Head(rawURL).Do(rc.getContext())
 	} else {
-		resp = rc.Client.Head().Do(context.TODO())
+		resp = rc.Client.Head().Do(rc.getContext())
 	}
 	if resp == nil {
 		return nil, errors.New("nil response")

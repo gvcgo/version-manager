@@ -1,6 +1,9 @@
 package utils
 
-import "os"
+import (
+	"io"
+	"os"
+)
 
 func PathIsExist(path string) bool {
 	_, _err := os.Stat(path)
@@ -9,3 +12,11 @@ func PathIsExist(path string) bool {
 	}
 	return false
 }
+
+func Closeq(v any) {
+	if c, ok := v.(io.Closer); ok {
+		silently(c.Close())
+	}
+}
+
+func silently(_ ...any) {}

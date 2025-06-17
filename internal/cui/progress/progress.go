@@ -39,6 +39,12 @@ func WithCancelHook(cancel types.Hook) POpt {
 	}
 }
 
+func WithCompleteHook(onComplete types.Hook) POpt {
+	return func(p *Progress) {
+		p.onComplete = onComplete
+	}
+}
+
 func WithTotal(total int64) POpt {
 	return func(p *Progress) {
 		p.total = total
@@ -53,15 +59,16 @@ func WithProgram(program *tea.Program) POpt {
 
 // Progress for downloadings.
 type Progress struct {
-	pm        progress.Model
-	title     string
-	keymap    types.IKeyMap
-	total     int64
-	completed int64
-	lock      *sync.Mutex
-	cancel    types.Hook
-	err       error
-	program   *tea.Program
+	pm         progress.Model
+	title      string
+	keymap     types.IKeyMap
+	total      int64
+	completed  int64
+	lock       *sync.Mutex
+	cancel     types.Hook
+	onComplete types.Hook
+	err        error
+	program    *tea.Program
 }
 
 func NewProgress(title string) *Progress {
@@ -116,6 +123,11 @@ func (p *Progress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ProgressMsg:
 		var cmds []tea.Cmd
 		if msg >= 1.0 {
+			if p.onComplete != nil {
+				if err := p.onComplete(); err != nil {
+					p.err = err
+				}
+			}
 			cmds = append(cmds, tea.Sequence(finalPauseCmd(), tea.Quit))
 		}
 		cmds = append(cmds, p.pm.SetPercent(float64(msg)))
