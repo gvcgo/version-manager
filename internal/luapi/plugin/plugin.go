@@ -32,9 +32,14 @@ type Plugin struct {
 	result        Result
 }
 
-func NewPlugin(fileName string) (*Plugin, error) {
+func NewPlugin(fileName string, fileContent ...string) (*Plugin, error) {
+	var content string
+	if len(fileContent) > 0 {
+		content = fileContent[0]
+	}
 	p := &Plugin{
-		FileName: fileName,
+		FileName:    fileName,
+		FileContent: content,
 		result: Result{
 			VersionList: make(map[string]lua_global.Item),
 		},
