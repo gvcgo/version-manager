@@ -146,7 +146,11 @@ function crawl()
 end`
 
 func TestPlugin(t *testing.T) {
-	p := NewPlugin("")
+	p, err := NewPlugin("")
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	p.FileContent = pluginForGo
 	defer p.Close()
 	if err := p.Load(); err != nil {
@@ -238,7 +242,11 @@ func TestPluginLua(t *testing.T) {
 		t.Skip("conda is not installed")
 	}
 
-	p := NewPlugin("")
+	p, err := NewPlugin("")
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	p.FileContent = pluginForLua
 	defer p.Close()
 	if err := p.Load(); err != nil {
@@ -367,7 +375,11 @@ function crawl()
 end`
 
 func TestPluginCoursier(t *testing.T) {
-	p := NewPlugin("")
+	p, err := NewPlugin("")
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	p.FileContent = pluginForCoursier
 	defer p.Close()
 	if err := p.Load(); err != nil {
@@ -499,7 +511,11 @@ end
 `
 
 func TestPluginFlutter(t *testing.T) {
-	p := NewPlugin("")
+	p, err := NewPlugin("")
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	p.FileContent = pluginForFlutter
 	defer p.Close()
 	if err := p.Load(); err != nil {
@@ -677,7 +693,11 @@ end`
 
 func TestPluginMiniconda(t *testing.T) {
 	// return
-	p := NewPlugin("")
+	p, err := NewPlugin("")
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	p.FileContent = pluginForMiniconda
 	defer p.Close()
 	if err := p.Load(); err != nil {
@@ -808,7 +828,11 @@ end`
 
 func TestPluginRustup(t *testing.T) {
 	// return
-	p := NewPlugin("")
+	p, err := NewPlugin("")
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	p.FileContent = pluginForRustup
 	defer p.Close()
 	if err := p.Load(); err != nil {

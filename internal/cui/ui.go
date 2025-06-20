@@ -3,6 +3,7 @@ package cui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gvcgo/version-manager/internal/cui/column"
+	"github.com/gvcgo/version-manager/internal/luapi/plugin"
 )
 
 type CurrentView int
@@ -19,4 +20,5 @@ type UI struct {
 	right    *column.Column
 	previous CurrentView
 	current  CurrentView
+	plugins  *plugin.Plugins
 }

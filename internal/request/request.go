@@ -98,6 +98,20 @@ func (rc *ReqClient) DoHead(url ...string) (*req.Response, error) {
 	return resp, resp.Err
 }
 
+func (rc *ReqClient) DoGet(url ...string) (*req.Response, error) {
+	var resp *req.Response
+	if len(url) > 0 {
+		rawURL := rc.tryToUseReverseProxy(url[0])
+		resp = rc.Client.Get(rawURL).Do(rc.getContext())
+	} else {
+		resp = rc.Client.Get().Do(rc.getContext())
+	}
+	if resp == nil {
+		return nil, errors.New("nil response")
+	}
+	return resp, resp.Err
+}
+
 func (rc *ReqClient) DoDownloadToWriter(w io.Writer, url string) (*req.Response, error) {
 	rawURL := rc.tryToUseReverseProxy(url)
 	r := rc.Client.R().SetOutput(w)

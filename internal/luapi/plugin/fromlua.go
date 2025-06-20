@@ -14,6 +14,7 @@ const (
 	Prequisite      LuaConfItem = "prequisite"
 	Homepage        LuaConfItem = "homepage"
 	Crawler         LuaConfItem = "crawl"
+	PreInstall      LuaConfItem = "preInstall"
 	PostInstall     LuaConfItem = "postInstall" // optional
 	CustomedInstall LuaConfItem = "install"     // optional
 )

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -19,7 +18,7 @@ import (
 
 type Result struct {
 	Lua         *lua_global.Lua
-	VersionList map[string]lua_global.Item
+	VersionList lua_global.VersionList
 }
 
 type Plugin struct {
@@ -33,13 +32,17 @@ type Plugin struct {
 	result        Result
 }
 
-func NewPlugin(fileName string) *Plugin {
-	return &Plugin{
+func NewPlugin(fileName string) (*Plugin, error) {
+	p := &Plugin{
 		FileName: fileName,
 		result: Result{
 			VersionList: make(map[string]lua_global.Item),
 		},
 	}
+	if err := p.Load(); err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 func (p *Plugin) getPluginFilePath() string {
@@ -55,6 +58,10 @@ func (p *Plugin) LuaDo() error {
 		pluginPath := p.getPluginFilePath()
 		if ok, _ := gutils.PathIsExist(pluginPath); !ok {
 			return fmt.Errorf("plugin file not found: %s", pluginPath)
+		}
+
+		if err := p.result.Lua.L.DoFile(pluginPath); err != nil {
+			return fmt.Errorf("failed to load plugin: %s", err)
 		}
 	} else if p.FileContent != "" {
 		if err := p.result.Lua.L.DoString(p.FileContent); err != nil {
@@ -103,7 +110,10 @@ func (p *Plugin) cacheDir() string {
 			return ""
 		}
 	}
-	return filepath.Join(cnf.GetCacheDir(), p.PluginName)
+	if p.PluginName != "" {
+		return filepath.Join(cnf.GetCacheDir(), p.PluginName)
+	}
+	return ""
 }
 
 func (p *Plugin) cacheFilePathForVersionList() string {
@@ -159,7 +169,7 @@ func (p *Plugin) saveVersionListToCache() {
 	}
 }
 
-func (p *Plugin) GetSDKVersions() (vl map[string]lua_global.Item, err error) {
+func (p *Plugin) GetSDKVersions() (vl lua_global.VersionList, err error) {
 	if p.result.Lua == nil {
 		if err = p.Load(); err != nil {
 			return
@@ -193,13 +203,7 @@ func (p *Plugin) GetSDKVersions() (vl map[string]lua_global.Item, err error) {
 	}
 
 	if vl, ok := userData.Value.(lua_global.VersionList); ok {
-		for vName, vv := range vl {
-			for _, ver := range vv {
-				if ver.Os == runtime.GOOS && ver.Arch == runtime.GOARCH {
-					p.result.VersionList[vName] = ver
-				}
-			}
-		}
+		p.result.VersionList = vl
 		p.saveVersionListToCache()
 	}
 	return p.result.VersionList, nil
@@ -301,6 +305,10 @@ func (p *Plugin) getFuncFromLua(luaItem LuaConfItem, args ...string) CustomedFun
 // user can custom his/her own install method in lua plugins.
 func (p *Plugin) GetCustomedInstallHandler(args ...string) CustomedFuncFromLua {
 	return p.getFuncFromLua(CustomedInstall, args...)
+}
+
+func (p *Plugin) GetPreInstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(PreInstall, args...)
 }
 
 func (p *Plugin) GetPostInstallHandler(args ...string) CustomedFuncFromLua {
