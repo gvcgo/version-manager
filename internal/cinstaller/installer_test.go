@@ -2,6 +2,7 @@ package cinstaller
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/gvcgo/version-manager/internal/cnf"
@@ -10,8 +11,8 @@ import (
 )
 
 func TestInstallerVersionList(t *testing.T) {
-	pluginsDir := cnf.GetPluginDir()
-	if !utils.PathIsExist(pluginsDir) {
+	pluginPath := filepath.Join(cnf.GetPluginDir(), "go.lua")
+	if !utils.PathIsExist(pluginPath) {
 		return
 	}
 	plugins := plugin.NewPlugins()
