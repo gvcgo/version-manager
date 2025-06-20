@@ -43,8 +43,10 @@ func (p *Plugins) LoadAll() {
 		if f.IsDir() || !strings.HasSuffix(f.Name(), ".lua") {
 			continue
 		}
-		pl := NewPlugin(f.Name())
-		p.pls[pl.PluginName] = pl
+		pl, _ := NewPlugin(f.Name())
+		if pl != nil {
+			p.pls[pl.PluginName] = pl
+		}
 	}
 }
 
