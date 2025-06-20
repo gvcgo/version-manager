@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/gvcgo/version-manager/internal/cnf"
@@ -8,8 +9,8 @@ import (
 )
 
 func TestPlugins(t *testing.T) {
-	pluginsDir := cnf.GetPluginDir()
-	if !utils.PathIsExist(pluginsDir) {
+	pluginsPath := filepath.Join(cnf.GetPluginDir(), "go.lua")
+	if !utils.PathIsExist(pluginsPath) {
 		return
 	}
 	ps := NewPlugins()
