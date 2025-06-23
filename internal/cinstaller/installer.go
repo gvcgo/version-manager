@@ -25,8 +25,12 @@ func (i *Installer) GetVersionList() (lua_global.VersionList, error) {
 func (i *Installer) installPrequisites() error {
 	if i.plugin != nil && i.plugin.Prequisite != "" {
 		plugins := plugin.NewPlugins()
-		_ = plugins.GetPlugin(i.plugin.Prequisite)
-		// TODO: install prequisite
+		p := plugins.GetPlugin(i.plugin.Prequisite)
+		// install prequisite
+		i := New(&p)
+		if err := i.Install(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
