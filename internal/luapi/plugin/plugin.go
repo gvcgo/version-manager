@@ -319,3 +319,7 @@ func (p *Plugin) GetPreInstallHandler(args ...string) CustomedFuncFromLua {
 func (p *Plugin) GetPostInstallHandler(args ...string) CustomedFuncFromLua {
 	return p.getFuncFromLua(PostInstall, args...)
 }
+
+func (p *Plugin) GetCustomedUninstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(CustomedUninstall, args...)
+}
