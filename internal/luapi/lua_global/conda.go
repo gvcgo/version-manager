@@ -165,7 +165,7 @@ func GetVersionListByConda(sdkName string, vl VersionList) VersionList {
 			item := Item{
 				Os:        pList[0],
 				Arch:      pList[1],
-				Installer: "conda",
+				Installer: InstallerConda,
 			}
 			vl[vv] = item
 		}

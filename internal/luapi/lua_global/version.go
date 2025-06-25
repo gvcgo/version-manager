@@ -140,13 +140,14 @@ func (v *Version) IsGreaterThan(other *Version) bool {
 Downloaded version item.
 */
 const (
-	Conda      string = "conda"
-	CondaForge string = "conda-forge"
-	Coursier   string = "coursier"
-	Unarchiver string = "unarchiver"
-	Executable string = "executable"
-	Dpkg       string = "dpkg"
-	Rpm        string = "rpm"
+	InstallerConda      string = "conda"
+	InstallerCondaForge string = "conda-forge"
+	InstallerCoursier   string = "coursier"
+	InstallerRustup     string = "rustup"
+	InstallerUnarchiver string = "unarchiver"
+	InstallerExecutable string = "executable"
+	InstallerDpkg       string = "dpkg"
+	InstallerRpm        string = "rpm"
 )
 
 type Item struct {

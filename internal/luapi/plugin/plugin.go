@@ -2,7 +2,6 @@ package plugin
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,7 +26,6 @@ type Plugin struct {
 	PluginName    string `json:"plugin_name"`
 	PluginVersion string `json:"plugin_version"`
 	SDKName       string `json:"sdk_name"`
-	Prequisite    string `json:"prequisite"`
 	Homepage      string `json:"homepage"`
 	result        Result
 }
@@ -93,7 +91,7 @@ func (p *Plugin) Load() error {
 	if p.SDKName == "" {
 		return fmt.Errorf("SDK name not defined")
 	}
-	p.Prequisite = GetLuaConfItemString(L, Prequisite)
+
 	p.Homepage = GetLuaConfItemString(L, Homepage)
 	if p.Homepage == "" {
 		return fmt.Errorf("homepage not defined")
@@ -275,15 +273,13 @@ func (p *Plugin) GetSDKName() (sdkName string, err error) {
 	return
 }
 
-type CustomedFuncFromLua func() error
-
 func (p *Plugin) getFuncFromLua(luaItem LuaConfItem, args ...string) CustomedFuncFromLua {
 	luaFunc := p.result.Lua.L.GetGlobal(string(luaItem))
 	if luaFunc == nil || luaFunc.Type() != lua.LTFunction {
 		return nil
 	}
 
-	f := func() error {
+	f := func() (string, error) {
 		luaFuncArgs := make([]lua.LValue, len(args))
 		for i, arg := range args {
 			luaFuncArgs[i] = lua.LString(arg)
@@ -295,14 +291,14 @@ func (p *Plugin) getFuncFromLua(luaItem LuaConfItem, args ...string) CustomedFun
 			NRet:    1,
 			Protect: true,
 		}, luaFuncArgs...); err != nil {
-			return err
+			return "", err
 		}
 
 		result := p.result.Lua.L.Get(-1)
-		if result.String() != "true" {
-			return errors.New("post-install handler failed")
+		if !CheckStatusOfCustomedFuncFromLua(result.String()) {
+			return "", fmt.Errorf("execute customed function<%s> from lua failed", string(luaItem))
 		}
-		return nil
+		return result.String(), nil
 	}
 	return f
 }
@@ -322,4 +318,8 @@ func (p *Plugin) GetPostInstallHandler(args ...string) CustomedFuncFromLua {
 
 func (p *Plugin) GetCustomedUninstallHandler(args ...string) CustomedFuncFromLua {
 	return p.getFuncFromLua(CustomedUninstall, args...)
+}
+
+func (p *Plugin) GetCustomedFileNameHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(CustomedFileName, args...)
 }

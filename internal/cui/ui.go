@@ -14,11 +14,19 @@ const (
 	Prompt
 )
 
+type PromptView struct {
+	pre     *PromptView
+	model   tea.Model
+	handler func(string) error
+	next    *PromptView
+}
+
 type UI struct {
-	prompt   tea.Model
-	left     *column.Column
-	right    *column.Column
-	previous CurrentView
-	current  CurrentView
-	plugins  *plugin.Plugins
+	prompt      tea.Model
+	left        *column.Column
+	right       *column.Column
+	promptStack *PromptView
+	previous    CurrentView
+	current     CurrentView
+	plugins     *plugin.Plugins
 }
