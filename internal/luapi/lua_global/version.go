@@ -1,6 +1,7 @@
 package lua_global
 
 import (
+	"maps"
 	"math"
 	"regexp"
 	"runtime"
@@ -99,7 +100,6 @@ func (v *Version) Parse() {
 		v.RC = 1
 	}
 	v.ok = true
-	return
 }
 
 func (v *Version) IsGreaterThan(other *Version) bool {
@@ -227,7 +227,6 @@ item = { ["url"] = "xxx", ["arch"] = "xxx", ["os"] = "xxx" }
 vmrAddItem(vl, versionName, item)
 */
 func AddItem(L *lua.LState) int {
-
 	ud := L.ToUserData(1)
 	if ud == nil {
 		result := L.NewUserData()
@@ -326,16 +325,7 @@ func MergeVersionList(L *lua.LState) int {
 		return 1
 	}
 
-	for k, v := range vl2 {
-		// sdkVersion, ok := vl[k]
-		// if !ok {
-		// 	vl[k] = v
-		// } else {
-		// 	vl[k] = append(sdkVersion, v...)
-		// }
-		vl[k] = v
-	}
-
+	maps.Copy(vl, vl2)
 	result := L.NewUserData()
 	result.Value = vl
 	L.Push(result)

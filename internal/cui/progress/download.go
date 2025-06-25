@@ -142,5 +142,4 @@ func (d *Downloader) StartSingle() {
 	w := io.MultiWriter(file, d)
 	_, err = d.client.DoDownloadToWriter(w, d.url)
 	d.bar.err = err
-	return
 }
