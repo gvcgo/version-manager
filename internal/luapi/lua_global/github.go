@@ -1,6 +1,7 @@
 package lua_global
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/gogf/gf/v2/util/gconv"
@@ -102,17 +103,16 @@ func GetGithubRelease(L *lua.LState) int {
 			item := Item{}
 			item.Arch = githubStringFuncCall(L, archParser, a.Name)
 			item.Os = githubStringFuncCall(L, osParser, a.Name)
-			if item.Arch == "" || item.Os == "" {
+			if item.Arch != runtime.GOARCH || item.Os != runtime.GOOS {
 				continue INNER
 			}
+
 			item.Installer = githubStringFuncCall(L, installerGetter, a.Name)
 			item.Url = a.Url
 			item.Size = a.Size
+			item.CreatedAt = a.CreatedAt.Unix()
 
-			if _, ok := result[vStr]; !ok {
-				result[vStr] = SDKVersion{}
-			}
-			result[vStr] = append(result[vStr], item)
+			result[vStr] = item
 		}
 	}
 
