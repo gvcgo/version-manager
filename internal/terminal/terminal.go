@@ -23,8 +23,24 @@ Prepares envs for pty/conpty.
 func addToPath(value string) {
 	pathStr := os.Getenv("PATH")
 	if runtime.GOOS == gutils.Windows {
-		pathStr = fmt.Sprintf("%s;%s", value, pathStr)
+		// Windows: Insert new path as second position (after first semicolon)
+		paths := strings.Split(pathStr, ";")
+		if len(paths) == 0 || pathStr == "" {
+			// If PATH is empty, just set the new value
+			pathStr = value
+		} else if len(paths) == 1 {
+			// If only one path exists, add new value as second
+			pathStr = fmt.Sprintf("%s;%s", paths[0], value)
+		} else {
+			// Insert new value after the first path (second position)
+			newPaths := make([]string, 0, len(paths)+1)
+			newPaths = append(newPaths, paths[0])     // First path
+			newPaths = append(newPaths, value)        // New path as second
+			newPaths = append(newPaths, paths[1:]...) // Rest of paths
+			pathStr = strings.Join(newPaths, ";")
+		}
 	} else {
+		// Unix/Linux: Simple prepend (original behavior)
 		pathStr = fmt.Sprintf("%s:%s", value, pathStr)
 	}
 	os.Setenv("PATH", pathStr)
