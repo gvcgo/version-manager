@@ -8,14 +8,16 @@ import (
 type LuaConfItem string
 
 const (
-	SDKName         LuaConfItem = "sdk_name"
-	PluginName      LuaConfItem = "plugin_name"
-	PluginVersion   LuaConfItem = "plugin_version"
-	Prequisite      LuaConfItem = "prequisite"
-	Homepage        LuaConfItem = "homepage"
-	Crawler         LuaConfItem = "crawl"
-	PostInstall     LuaConfItem = "postInstall" // optional
-	CustomedInstall LuaConfItem = "install"     // optional
+	SDKName           LuaConfItem = "sdk_name"
+	PluginName        LuaConfItem = "plugin_name"
+	PluginVersion     LuaConfItem = "plugin_version"
+	Homepage          LuaConfItem = "homepage"
+	Crawler           LuaConfItem = "crawl"
+	PreInstall        LuaConfItem = "preInstall"
+	PostInstall       LuaConfItem = "postInstall"     // optional
+	CustomedInstall   LuaConfItem = "install"         // optional
+	CustomedUninstall LuaConfItem = "uninstall"       // optional
+	CustomedFileName  LuaConfItem = "custom_filename" // optional
 )
 
 var InstallerConfig LuaConfItem = LuaConfItem(lua_global.InstallerConfigName)
@@ -44,4 +46,10 @@ func GetLuaConfItemString(L *lua.LState, item LuaConfItem) (result string) {
 func DoesLuaItemExist(L *lua.LState, item LuaConfItem) bool {
 	v := L.GetGlobal(string(item))
 	return v.String() != "nil"
+}
+
+type CustomedFuncFromLua func() (result string, err error)
+
+func CheckStatusOfCustomedFuncFromLua(result string) bool {
+	return result != "false"
 }

@@ -211,11 +211,7 @@ func (v *VMRConf) SetVersionHostUrl(hUrl string) {
 
 func (v *VMRConf) SetDownloadThreadNum(num int) {
 	v.Load()
-	if num < 1 {
-		v.ThreadNum = 1
-	} else {
-		v.ThreadNum = num
-	}
+	v.ThreadNum = max(1, num)
 	v.Save()
 }
 

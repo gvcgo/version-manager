@@ -150,3 +150,12 @@ func TestPathJoin(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestGetInstallationDir(t *testing.T) {
+	script := `s = vmrGetInstallationDir("go", "go-cn", "1.24")
+	print(s)`
+
+	if err := ExecuteLuaScript(script); err != nil {
+		t.Error(err)
+	}
+}

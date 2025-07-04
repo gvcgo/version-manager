@@ -61,11 +61,11 @@ func NewInstaller(sdkName, pluginName, versionName string, version lua_global.It
 		NoEnvs:      false,
 	}
 	switch version.Installer {
-	case lua_global.Conda, lua_global.CondaForge:
+	case lua_global.InstallerConda, lua_global.InstallerCondaForge:
 		i.sdkInstaller = install.NewCondaInstaller()
-	case lua_global.Coursier:
+	case lua_global.InstallerCoursier:
 		i.sdkInstaller = install.NewCoursierInstaller()
-	case lua_global.Executable, lua_global.Dpkg, lua_global.Rpm:
+	case lua_global.InstallerExecutable, lua_global.InstallerDpkg, lua_global.InstallerRpm:
 		i.sdkInstaller = install.NewExeInstaller()
 	default:
 		i.sdkInstaller = install.NewArchiverInstaller()
@@ -209,9 +209,9 @@ func (i *Installer) IsInstalled() bool {
 func (i *Installer) Install() {
 	// check prequisite.
 	switch i.Version.Installer {
-	case lua_global.Conda, lua_global.CondaForge:
+	case lua_global.InstallerConda, lua_global.InstallerCondaForge:
 		CheckAndInstallMiniconda()
-	case lua_global.Coursier:
+	case lua_global.InstallerCoursier:
 		CheckAndInstallCoursier()
 	default:
 	}

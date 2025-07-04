@@ -3,12 +3,11 @@ package gh
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/crypt"
-	"github.com/gvcgo/goutils/pkgs/request"
+	"github.com/gvcgo/version-manager/internal/request"
 )
 
 func GetDefaultReadOnly() string {
@@ -19,9 +18,10 @@ func GetDefaultReadOnly() string {
 
 // ReleaseItem
 type Asset struct {
-	Name string `json:"name"`
-	Url  string `json:"browser_download_url"`
-	Size int64  `json:"size"`
+	Name      string    `json:"name"`
+	Url       string    `json:"browser_download_url"`
+	Size      int64     `json:"size"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type ReleaseItem struct {
@@ -48,7 +48,7 @@ type Gh struct {
 	Token        string
 	Proxy        string
 	ReverseProxy string
-	fetcher      *request.Fetcher
+	client       *request.ReqClient
 }
 
 func NewGh(repo, token, proxy, reverseProxy string) (g *Gh) {
@@ -62,32 +62,22 @@ func NewGh(repo, token, proxy, reverseProxy string) (g *Gh) {
 }
 
 func (g *Gh) getRelease(page int) (r []byte) {
-	if g.fetcher == nil {
-		g.fetcher = request.NewFetcher()
-		g.fetcher.Headers = map[string]string{
-			"Accept":        AcceptHeader,
-			"Authorization": fmt.Sprintf(AuthorizationHeader, g.Token),
-		}
+	if g.client == nil {
+		g.client = request.New()
+		g.client.SetCommonHeader("Accept", AcceptHeader)
+		g.client.SetCommonHeader("Authorization", fmt.Sprintf(AuthorizationHeader, g.Token))
 	}
 
 	// https://api.github.com/repos/{owner}/{repo}/releases?per_page=100&page=1
 	dUrl := fmt.Sprintf(GithubReleaseAPI, GithubAPI, g.RepoName, page)
 
-	if g.Proxy != "" {
-		g.fetcher.Proxy = g.Proxy
-	} else if g.ReverseProxy != "" {
-		dUrl = strings.TrimSuffix(g.ReverseProxy, "/") + "/" + dUrl
+	resp, err := g.client.DoGet(dUrl)
+	if err != nil {
+		//TODO: handle error
+		return
 	}
 
-	// fmt.Println(dUrl)
-
-	g.fetcher.SetUrl(dUrl)
-	g.fetcher.Timeout = 180 * time.Second
-	if resp := g.fetcher.Get(); resp != nil {
-		defer resp.RawResponse.Body.Close()
-		r, _ = io.ReadAll(resp.RawResponse.Body)
-	}
-	return
+	return resp.Bytes()
 }
 
 func (g *Gh) GetReleases() (rl ReleaseList) {
@@ -113,30 +103,20 @@ type RepoFile struct {
 }
 
 func (g *Gh) getFileList() (r []byte) {
-	if g.fetcher == nil {
-		g.fetcher = request.NewFetcher()
-		g.fetcher.Headers = map[string]string{
-			"Accept":        AcceptHeader,
-			"Authorization": fmt.Sprintf(AuthorizationHeader, g.Token),
-		}
+	if g.client == nil {
+		g.client = request.New()
+		g.client.SetCommonHeader("Accept", AcceptHeader)
+		g.client.SetCommonHeader("Authorization", fmt.Sprintf(AuthorizationHeader, g.Token))
 	}
-
 	//   https://api.github.com/repos/{gvcgo/vmr_plugins}/contents/
 	dUrl := fmt.Sprintf("https://api.github.com/repos/%s/contents/", strings.Trim(g.RepoName, "/"))
 
-	if g.Proxy != "" {
-		g.fetcher.Proxy = g.Proxy
-	} else if g.ReverseProxy != "" {
-		dUrl = strings.TrimSuffix(g.ReverseProxy, "/") + "/" + dUrl
+	resp, err := g.client.DoGet(dUrl)
+	if err != nil {
+		//TODO: handle error
+		return
 	}
-
-	g.fetcher.SetUrl(dUrl)
-	g.fetcher.Timeout = 180 * time.Second
-	if resp := g.fetcher.Get(); resp != nil {
-		defer resp.RawResponse.Body.Close()
-		r, _ = io.ReadAll(resp.RawResponse.Body)
-	}
-	return
+	return resp.Bytes()
 }
 
 /*

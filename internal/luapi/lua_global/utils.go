@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/gvcgo/version-manager/internal/cnf"
 	"github.com/gvcgo/version-manager/internal/utils"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -359,5 +360,30 @@ func RemoveAll(L *lua.LState) int {
 	} else {
 		L.Push(lua.LTrue)
 	}
+	return 1
+}
+
+const (
+	VerisonDirPattern        string = "%s%s"
+	VersionDirSuffix         string = "_versions"
+	VersionInstallDirPattern string = "%s-%s"
+)
+
+func GetInstallDir(sdkName, pluginName, version string) string {
+	versionDir := cnf.GetVersionsDir()
+	d := filepath.Join(versionDir, fmt.Sprintf(VerisonDirPattern, sdkName, VersionDirSuffix))
+	os.MkdirAll(d, os.ModePerm)
+	return filepath.Join(d, fmt.Sprintf(VersionInstallDirPattern, pluginName, version))
+}
+
+/*
+lua: installationDir = vmrGetInstallationDir(sdkName string, pluginName string, version string)
+*/
+func GetInstallationDir(L *lua.LState) int {
+	sdkName := L.ToString(1)
+	pluginName := L.ToString(2)
+	version := L.ToString(3)
+	installDir := GetInstallDir(sdkName, pluginName, version)
+	L.Push(lua.LString(installDir))
 	return 1
 }

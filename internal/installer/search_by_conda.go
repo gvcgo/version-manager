@@ -144,7 +144,7 @@ func (c *CondaSearcher) GetVersions() map[string]lua_global.Item {
 			c.VersionList[verName] = lua_global.Item{
 				Arch:      runtime.GOARCH,
 				Os:        runtime.GOOS,
-				Installer: lua_global.Conda,
+				Installer: lua_global.InstallerConda,
 			}
 		}
 	}

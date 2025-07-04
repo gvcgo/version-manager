@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
@@ -159,14 +158,14 @@ func (v *Versions) GetSdkVersions() (vs map[string]lua_global.Item) {
 		return
 	}
 
-	if vl, ok := userData.Value.(lua_global.VersionList); ok {
-		for vName, vv := range vl {
-			for _, ver := range vv {
-				if ver.Os == runtime.GOOS && ver.Arch == runtime.GOARCH {
-					v.versionList[vName] = ver
-				}
-			}
-		}
+	if _, ok := userData.Value.(lua_global.VersionList); ok {
+		// for vName, vv := range vl {
+		// 	for _, ver := range vv {
+		// 		if ver.Os == runtime.GOOS && ver.Arch == runtime.GOARCH {
+		// 			v.versionList[vName] = ver
+		// 		}
+		// 	}
+		// }
 		v.saveToCache(pluginName)
 	}
 	return
