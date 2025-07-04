@@ -36,5 +36,8 @@ func (b *Bash) PackPath(pathS string) string {
 }
 
 func (b *Bash) PackEnv(key, value string) string {
+	if value == "" {
+		return fmt.Sprintf("export %s=", key)
+	}
 	return fmt.Sprintf("export %s=%s", key, value)
 }
