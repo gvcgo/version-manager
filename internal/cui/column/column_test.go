@@ -41,6 +41,11 @@ func TestColumn(t *testing.T) {
 		t.Error("expected non-empty list")
 	}
 
+	helpInfo := column.Help()
+	if helpInfo == "" {
+		t.Error("expected non-empty help info")
+	}
+
 	// if _, err := tea.NewProgram(column).Run(); err != nil {
 	// 	t.Error(err)
 	// }
