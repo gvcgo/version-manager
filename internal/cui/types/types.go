@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -40,4 +41,10 @@ func (c CommonKeyMap) GetHelpInfo() string {
 	s := fmt.Sprintf(HelpInfoPattern, c.Quit.Help().Key, c.Quit.Help().Desc)
 	s = HelpStyle.Render(s)
 	return s
+}
+
+type QuitP struct{}
+
+func QuitPrompt() tea.Msg {
+	return QuitP{}
 }

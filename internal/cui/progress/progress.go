@@ -109,7 +109,7 @@ func (p *Progress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					p.err = err
 				}
 			}
-			return p, tea.Quit
+			return p, types.QuitPrompt
 		default:
 			return p, nil
 		}
@@ -119,7 +119,7 @@ func (p *Progress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return p, nil
 	case ErrorMsg:
 		p.err = msg.err
-		return p, tea.Quit
+		return p, types.QuitPrompt
 	case ProgressMsg:
 		var cmds []tea.Cmd
 		if msg >= 1.0 {
@@ -128,7 +128,7 @@ func (p *Progress) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					p.err = err
 				}
 			}
-			cmds = append(cmds, tea.Sequence(finalPauseCmd(), tea.Quit))
+			cmds = append(cmds, tea.Sequence(finalPauseCmd(), types.QuitPrompt))
 		}
 		cmds = append(cmds, p.pm.SetPercent(float64(msg)))
 		return p, tea.Batch(cmds...)

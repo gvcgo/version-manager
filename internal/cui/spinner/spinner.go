@@ -82,9 +82,9 @@ func (s *Spinner) quit(tc tea.Cmd) (tea.Model, tea.Cmd) {
 	}
 
 	if tc == nil {
-		return s, tea.Quit
+		return s, types.QuitPrompt
 	} else {
-		return s, tea.Batch(tc, tea.Quit)
+		return s, tea.Batch(tc, types.QuitPrompt)
 	}
 }
 
