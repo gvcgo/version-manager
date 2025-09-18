@@ -74,7 +74,7 @@ var useCmd = &cobra.Command{
 			vItem = lua_global.Item{
 				Arch:      runtime.GOARCH,
 				Os:        runtime.GOOS,
-				Installer: lua_global.Conda,
+				Installer: lua_global.InstallerConda,
 			}
 		}
 

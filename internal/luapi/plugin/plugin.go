@@ -2,11 +2,9 @@ package plugin
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/gvcgo/goutils/pkgs/gutils"
@@ -19,7 +17,7 @@ import (
 
 type Result struct {
 	Lua         *lua_global.Lua
-	VersionList map[string]lua_global.Item
+	VersionList lua_global.VersionList
 }
 
 type Plugin struct {
@@ -28,18 +26,26 @@ type Plugin struct {
 	PluginName    string `json:"plugin_name"`
 	PluginVersion string `json:"plugin_version"`
 	SDKName       string `json:"sdk_name"`
-	Prequisite    string `json:"prequisite"`
 	Homepage      string `json:"homepage"`
 	result        Result
 }
 
-func NewPlugin(fileName string) *Plugin {
-	return &Plugin{
-		FileName: fileName,
+func NewPlugin(fileName string, fileContent ...string) (*Plugin, error) {
+	var content string
+	if len(fileContent) > 0 {
+		content = fileContent[0]
+	}
+	p := &Plugin{
+		FileName:    fileName,
+		FileContent: content,
 		result: Result{
 			VersionList: make(map[string]lua_global.Item),
 		},
 	}
+	if err := p.Load(); err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 func (p *Plugin) getPluginFilePath() string {
@@ -55,6 +61,10 @@ func (p *Plugin) LuaDo() error {
 		pluginPath := p.getPluginFilePath()
 		if ok, _ := gutils.PathIsExist(pluginPath); !ok {
 			return fmt.Errorf("plugin file not found: %s", pluginPath)
+		}
+
+		if err := p.result.Lua.L.DoFile(pluginPath); err != nil {
+			return fmt.Errorf("failed to load plugin: %s", err)
 		}
 	} else if p.FileContent != "" {
 		if err := p.result.Lua.L.DoString(p.FileContent); err != nil {
@@ -81,7 +91,7 @@ func (p *Plugin) Load() error {
 	if p.SDKName == "" {
 		return fmt.Errorf("SDK name not defined")
 	}
-	p.Prequisite = GetLuaConfItemString(L, Prequisite)
+
 	p.Homepage = GetLuaConfItemString(L, Homepage)
 	if p.Homepage == "" {
 		return fmt.Errorf("homepage not defined")
@@ -103,7 +113,10 @@ func (p *Plugin) cacheDir() string {
 			return ""
 		}
 	}
-	return filepath.Join(cnf.GetCacheDir(), p.PluginName)
+	if p.PluginName != "" {
+		return filepath.Join(cnf.GetCacheDir(), p.PluginName)
+	}
+	return ""
 }
 
 func (p *Plugin) cacheFilePathForVersionList() string {
@@ -159,7 +172,7 @@ func (p *Plugin) saveVersionListToCache() {
 	}
 }
 
-func (p *Plugin) GetSDKVersions() (vl map[string]lua_global.Item, err error) {
+func (p *Plugin) GetSDKVersions() (vl lua_global.VersionList, err error) {
 	if p.result.Lua == nil {
 		if err = p.Load(); err != nil {
 			return
@@ -193,13 +206,7 @@ func (p *Plugin) GetSDKVersions() (vl map[string]lua_global.Item, err error) {
 	}
 
 	if vl, ok := userData.Value.(lua_global.VersionList); ok {
-		for vName, vv := range vl {
-			for _, ver := range vv {
-				if ver.Os == runtime.GOOS && ver.Arch == runtime.GOARCH {
-					p.result.VersionList[vName] = ver
-				}
-			}
-		}
+		p.result.VersionList = vl
 		p.saveVersionListToCache()
 	}
 	return p.result.VersionList, nil
@@ -266,15 +273,13 @@ func (p *Plugin) GetSDKName() (sdkName string, err error) {
 	return
 }
 
-type CustomedFuncFromLua func() error
-
 func (p *Plugin) getFuncFromLua(luaItem LuaConfItem, args ...string) CustomedFuncFromLua {
 	luaFunc := p.result.Lua.L.GetGlobal(string(luaItem))
 	if luaFunc == nil || luaFunc.Type() != lua.LTFunction {
 		return nil
 	}
 
-	f := func() error {
+	f := func() (string, error) {
 		luaFuncArgs := make([]lua.LValue, len(args))
 		for i, arg := range args {
 			luaFuncArgs[i] = lua.LString(arg)
@@ -286,14 +291,14 @@ func (p *Plugin) getFuncFromLua(luaItem LuaConfItem, args ...string) CustomedFun
 			NRet:    1,
 			Protect: true,
 		}, luaFuncArgs...); err != nil {
-			return err
+			return "", err
 		}
 
 		result := p.result.Lua.L.Get(-1)
-		if result.String() != "true" {
-			return errors.New("post-install handler failed")
+		if !CheckStatusOfCustomedFuncFromLua(result.String()) {
+			return "", fmt.Errorf("execute customed function<%s> from lua failed", string(luaItem))
 		}
-		return nil
+		return result.String(), nil
 	}
 	return f
 }
@@ -303,6 +308,18 @@ func (p *Plugin) GetCustomedInstallHandler(args ...string) CustomedFuncFromLua {
 	return p.getFuncFromLua(CustomedInstall, args...)
 }
 
+func (p *Plugin) GetPreInstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(PreInstall, args...)
+}
+
 func (p *Plugin) GetPostInstallHandler(args ...string) CustomedFuncFromLua {
 	return p.getFuncFromLua(PostInstall, args...)
+}
+
+func (p *Plugin) GetCustomedUninstallHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(CustomedUninstall, args...)
+}
+
+func (p *Plugin) GetCustomedFileNameHandler(args ...string) CustomedFuncFromLua {
+	return p.getFuncFromLua(CustomedFileName, args...)
 }
