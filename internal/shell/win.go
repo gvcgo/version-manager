@@ -211,6 +211,12 @@ func (s *Shell) SetPath(path string) {
 	}
 	path = TidyWindowsPathEnv(path)
 
+    s := NewShell()
+	if s.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
+
 	oldPathValue, _, err := s.Key.GetStringValue(PathEnvName)
 	if err != nil {
 		gprint.PrintError("Get env $path failed: %+v", err)
@@ -234,6 +240,12 @@ func (s *Shell) UnsetPath(path string) {
 		return
 	}
 	path = TidyWindowsPathEnv(path)
+
+    s := NewShell()
+	if s.KeyInfo == nil {
+		gprint.PrintError("Windows registry key is closed.")
+		return
+	}
 
 	oldPathValue, _, err := s.Key.GetStringValue(PathEnvName)
 	if err != nil {
