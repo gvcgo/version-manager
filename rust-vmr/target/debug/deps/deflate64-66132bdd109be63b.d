@@ -1,0 +1,11 @@
+/home/moqsien/my_projects/go/src/version-manager/rust-vmr/target/debug/deps/deflate64-66132bdd109be63b.d: /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/lib.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/buffer.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/huffman_tree.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/inflater_managed.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/input_buffer.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/output_window.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/stream.rs
+
+/home/moqsien/my_projects/go/src/version-manager/rust-vmr/target/debug/deps/libdeflate64-66132bdd109be63b.rmeta: /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/lib.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/buffer.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/huffman_tree.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/inflater_managed.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/input_buffer.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/output_window.rs /home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/stream.rs
+
+/home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/lib.rs:
+/home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/buffer.rs:
+/home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/huffman_tree.rs:
+/home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/inflater_managed.rs:
+/home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/input_buffer.rs:
+/home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/output_window.rs:
+/home/moqsien/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/deflate64-0.1.12/src/stream.rs:

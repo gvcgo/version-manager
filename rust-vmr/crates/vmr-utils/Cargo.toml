@@ -1,0 +1,11 @@
+[package]
+name = "vmr-utils"
+version = "0.1.0"
+edition = "2021"
+description = "VMR shared utilities — file ops, archive extraction, version sorting, shell helpers"
+
+[dependencies]
+regex = "1"
+flate2 = "1"
+tar = "0.4"
+zip = "2"

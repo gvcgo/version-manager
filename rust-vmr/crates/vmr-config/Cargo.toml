@@ -1,0 +1,10 @@
+[package]
+name = "vmr-config"
+version = "0.1.0"
+edition = "2021"
+description = "VMR configuration management — TOML config, work dirs, env vars"
+
+[dependencies]
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+dirs = "6"
