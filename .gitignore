@@ -36,3 +36,4 @@ test.sh
 *.fish
 *.cast
 *.gif
+rust-vmr/target
