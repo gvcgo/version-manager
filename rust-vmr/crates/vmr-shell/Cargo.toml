@@ -5,3 +5,4 @@ edition = "2021"
 description = "VMR shell integration — bash/zsh/fish env file management"
 
 [dependencies]
+dirs = "6"

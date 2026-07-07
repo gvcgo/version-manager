@@ -1,0 +1,10 @@
+[package]
+name = "vmr-self"
+version = "0.1.0"
+edition = "2021"
+description = "VMR self install/update/uninstall management"
+
+[dependencies]
+vmr-config = { path = "../vmr-config" }
+vmr-utils = { path = "../vmr-utils" }
+vmr-shell = { path = "../vmr-shell" }

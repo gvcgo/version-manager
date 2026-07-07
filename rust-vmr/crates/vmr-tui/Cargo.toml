@@ -1,0 +1,15 @@
+[package]
+name = "vmr-tui"
+version = "0.1.0"
+edition = "2021"
+description = "VMR terminal UI — ratatui-based interactive interface"
+
+[[bin]]
+name = "vmr-tui"
+path = "src/main.rs"
+
+[dependencies]
+vmr-config = { path = "../vmr-config" }
+vmr-install = { path = "../vmr-install" }
+ratatui = "0.29"
+crossterm = "0.28"

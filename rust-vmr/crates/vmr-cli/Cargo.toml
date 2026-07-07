@@ -1,0 +1,14 @@
+[package]
+name = "vmr-cli"
+version = "0.1.0"
+edition = "2021"
+description = "VMR CLI entry point — clap-based command-line interface"
+
+[dependencies]
+vmr-config = { path = "../vmr-config" }
+vmr-utils = { path = "../vmr-utils" }
+vmr-shell = { path = "../vmr-shell" }
+vmr-download = { path = "../vmr-download" }
+vmr-install = { path = "../vmr-install" }
+vmr-self = { path = "../vmr-self" }
+clap = { version = "4", features = ["derive"] }

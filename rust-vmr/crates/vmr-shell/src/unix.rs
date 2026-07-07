@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::path::PathBuf;
 
 use crate::common::{self, BashShell, FishShell, Sheller, ZshShell};
 
@@ -82,5 +83,20 @@ impl Shell {
         lines.retain(|line| !line.starts_with(&prefix));
         let new_data = lines.join("\n").replace("\n\n", "\n").trim().to_string();
         let _ = fs::write(&conf, new_data);
+    }
+
+    /// Delegate: write the VM env source line into the shell config file.
+    pub fn write_vm_env_to_shell(&self) {
+        self.inner.write_vm_env_to_shell();
+    }
+
+    /// Delegate: return the shell config file path (e.g. ~/.bashrc).
+    pub fn conf_path(&self) -> PathBuf {
+        self.inner.conf_path()
+    }
+
+    /// Delegate: return the VM env file path (e.g. ~/.vmr/vmr).
+    pub fn vm_env_conf_path(&self) -> PathBuf {
+        self.inner.vm_env_conf_path()
     }
 }

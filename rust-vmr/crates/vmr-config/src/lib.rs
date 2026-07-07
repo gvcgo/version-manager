@@ -1,1 +1,2 @@
-// VMR Config crate - TBD
+pub mod conf;
+pub mod paths;
