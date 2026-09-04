@@ -1,0 +1,9 @@
+[package]
+name = "vmr-completions"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "shell completion script installation (plan §3.10)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }

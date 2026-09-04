@@ -1,0 +1,16 @@
+[package]
+name = "vmr-conda"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "conda repodata client + package extraction into vmr prefix (plan §3.5)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
+vmr-net = { path = "../vmr-net" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bzip2 = "0.5"
+tar = "0.4"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+zstd = "0.13"

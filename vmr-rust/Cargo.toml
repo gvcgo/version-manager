@@ -1,0 +1,14 @@
+[workspace]
+resolver = "3"
+members = ["crates/vmr-core", "crates/vmr-utils", "crates/vmr-net", "crates/vmr-conda", "crates/vmr-lua", "crates/vmr-shell", "crates/vmr-env", "crates/vmr-installer", "crates/vmr-pty", "crates/vmr-self", "crates/vmr-completions", "crates/vmr-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+dirs = "6"
+regex = "1"

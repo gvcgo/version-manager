@@ -1,0 +1,11 @@
+[package]
+name = "vmr-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "vmr path conventions, config and network policy (leaf crate)"
+
+[dependencies]
+serde.workspace = true
+toml.workspace = true
+dirs.workspace = true

@@ -1,0 +1,16 @@
+[package]
+name = "vmr-installer"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "sdk installers, dir conventions, version discovery and locking (plan §3.6)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
+vmr-utils = { path = "../vmr-utils" }
+vmr-net = { path = "../vmr-net" }
+vmr-lua = { path = "../vmr-lua" }
+vmr-conda = { path = "../vmr-conda" }
+vmr-env = { path = "../vmr-env" }
+vmr-shell = { path = "../vmr-shell" }
+serde_json = "1"

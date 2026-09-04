@@ -1,0 +1,27 @@
+[package]
+name = "vmr-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "vmr command line entry (plan §3.11)"
+
+[[bin]]
+name = "vmr"
+path = "src/main.rs"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
+vmr-utils = { path = "../vmr-utils" }
+vmr-net = { path = "../vmr-net" }
+vmr-lua = { path = "../vmr-lua" }
+vmr-conda = { path = "../vmr-conda" }
+vmr-env = { path = "../vmr-env" }
+vmr-shell = { path = "../vmr-shell" }
+vmr-pty = { path = "../vmr-pty" }
+vmr-self = { path = "../vmr-self" }
+vmr-completions = { path = "../vmr-completions" }
+vmr-installer = { path = "../vmr-installer" }
+clap = { version = "4", features = ["derive"] }
+clap_complete = "4"
+
+[build-dependencies]

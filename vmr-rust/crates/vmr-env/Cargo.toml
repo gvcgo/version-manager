@@ -1,0 +1,11 @@
+[package]
+name = "vmr-env"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "environment collection & global/temporary injection (plan §3.7)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
+vmr-shell = { path = "../vmr-shell" }
+vmr-lua = { path = "../vmr-lua" }

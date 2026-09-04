@@ -1,0 +1,9 @@
+[package]
+name = "vmr-shell"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "shell hooks: bash/zsh/fish/powershell env injection and cd hook (plan §3.8)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
