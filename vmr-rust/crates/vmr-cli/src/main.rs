@@ -26,7 +26,6 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
-    /// 版本信息。
     #[command(alias = "v")]
     Version,
     /// 设置本地代理。
