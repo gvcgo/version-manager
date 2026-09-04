@@ -1,9 +1,9 @@
-//! gjson 绑定（vmrInitGJson/GetString/GetInt/GetByKey/MapEach/GetByIndex/SliceEach）。
+//! gjson bindings (vmrInitGJson/GetString/GetInt/GetByKey/MapEach/GetByIndex/SliceEach).
 //!
-//! Go 用 gjson 的 `Json.Get(path)`；Rust 侧自实现**点路径子集**：
-//! 段为对象键或数组下标（数字段），支持 `a.b.0.c`（对齐 gjson 的 `.` 数组下标）。
-//! userdata 内为 serde_json::Value；MapEach/SliceEach 回调值同为 JsonUD（Value），
-//! 供继续按路径取。
+//! Go uses gjson's `Json.Get(path)`; on the Rust side we implement a **dot-path subset** ourselves:
+//! segments are object keys or array subscripts (numeric segments), supporting `a.b.0.c` (matching gjson's `.` array subscript).
+//! The userdata holds a serde_json::Value; the callback values of MapEach/SliceEach are also JsonUD (Value),
+//! so paths can keep being resolved on them.
 
 use mlua::{Function, Lua, UserData, Value};
 
@@ -33,7 +33,7 @@ fn get_json(ud: &Value) -> Option<serde_json::Value> {
     }
 }
 
-/// 点路径解析：对象键 / 数组下标数字段。
+/// Dot-path resolution: object keys / numeric array-subscript segments.
 pub fn get_path<'a>(root: &'a serde_json::Value, path: &str) -> Option<&'a serde_json::Value> {
     if path.is_empty() {
         return Some(root);
@@ -54,7 +54,7 @@ pub fn get_path<'a>(root: &'a serde_json::Value, path: &str) -> Option<&'a serde
     Some(cur)
 }
 
-/// 值字符串化（对齐 gconv.String 的常用情形）。
+/// Stringifies a value (matching the common gconv.String cases).
 pub fn json_to_str(v: &serde_json::Value) -> String {
     match v {
         serde_json::Value::Null => String::new(),
@@ -66,7 +66,7 @@ pub fn json_to_str(v: &serde_json::Value) -> String {
             } else if let Some(u) = n.as_u64() {
                 u.to_string()
             } else if let Some(f) = n.as_f64() {
-                // Go fmt %v 打印浮点：整值不带小数点。
+                // Go fmt %v prints floats: integer values carry no decimal point.
                 if f == f.trunc() && f.is_finite() && f.abs() < 1e15 {
                     (f as i64).to_string()
                 } else {

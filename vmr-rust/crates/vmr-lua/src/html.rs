@@ -1,19 +1,20 @@
-//! HTML 选择器绑定（vmrInitSelection/Find/Eq/Attr/Text/Each）。
+//! HTML selector bindings (vmrInitSelection/Find/Eq/Attr/Text/Each).
 //!
-//! Go 侧 goquery 的 Selection 是文档内节点集合。Rust 侧以**节点 HTML 片段**
-//! 表达 selection（每次操作按片段子树重建并 select），行为对齐：
-//! - `Find(sel)`：每个片段内再选后代（文档序展平）；
-//! - `Eq(i)`：取第 i 个（0 基）；
-//! - `AttrOr(name, "")`：取**首个**节点（片段顶层元素）属性；
-//! - `Text`：全部片段文本拼合（含后代文本，对齐 goquery）；
-//! - `Each(cb)`：按 i 从 0 回调，参数 (i, 单节点 selection)。
+//! Go's goquery Selection is a set of nodes within a document. On the Rust side the selection is
+//! expressed as **node HTML fragments** (each operation rebuilds and re-selects from the fragment subtree),
+//! matching the behavior:
+//! - `Find(sel)`: re-select descendants within each fragment (flattened in document order);
+//! - `Eq(i)`: take the i-th one (0-based);
+//! - `AttrOr(name, "")`: read the attribute of the **first** node (fragment's top-level element);
+//! - `Text`: concatenate text of all fragments (including descendant text, mirroring goquery);
+//! - `Each(cb)`: invoke cb with i from 0, arguments (i, single-node selection).
 
 use mlua::{Function, Lua, UserData, Value};
 
 use crate::bindings::register_fn;
 use crate::req::StringUD;
 
-/// HTML selection（节点 HTML 片段列表）。
+/// HTML selection (a list of node HTML fragments).
 #[derive(Clone, Default)]
 pub struct SelectionUD {
     pub frags: Vec<String>,
@@ -24,7 +25,7 @@ fn selector_ok(sel: &str) -> bool {
     !sel.is_empty() && scraper::Selector::parse(sel).is_ok()
 }
 
-/// 在 html 中选 selector 的匹配元素（返回外层 HTML 片段，文档序）。
+/// Select elements matching selector in html (returns outer HTML fragments, in document order).
 fn select_frags(html: &str, selector: &str) -> Vec<String> {
     let Ok(sel) = scraper::Selector::parse(selector) else {
         return Vec::new();
@@ -41,7 +42,7 @@ fn find_in_frags(frags: &[String], selector: &str) -> Vec<String> {
     out
 }
 
-/// 片段文本（顶层包装内全部文本，对齐 goquery 节点后代文本）。
+/// Fragment text (all text within the top-level wrapper, mirroring goquery's descendant text of nodes).
 fn text_of_frags(frags: &[String]) -> String {
     let mut out = String::new();
     for f in frags {
@@ -51,7 +52,7 @@ fn text_of_frags(frags: &[String]) -> String {
     out
 }
 
-/// 首个顶层元素的属性值。
+/// Attribute value of the first top-level element.
 fn attr_of_first(frags: &[String], name: &str) -> String {
     for f in frags {
         let doc = scraper::Html::parse_fragment(f);

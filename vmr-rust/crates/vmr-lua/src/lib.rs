@@ -1,12 +1,12 @@
-//! vmr-lua：插件系统（plan.md §3.4，要求 1/3/4 核心）。
+//! vmr-lua: the plugin system (plan.md §3.4, requirements 1/3/4 core).
 //!
-//! - `bindings`：mlua(lua54) 运行时初始化与全部 `vmr*` 注册 + installer 常量
-//!   （修复 Go 侧 vmrInstaller* 常量未注册的缺口）。
-//! - `req/html/json/utils_bind/version/github_bind/installer_conf/conda_bridge`：
-//!   50 个 vmr* 全局函数绑定（同名同语义）。
-//! - `plugin`：插件生命周期——加载/crawl/平台过滤/版本缓存/ic/自定义安装回调。
-//! - `plugins_update`：插件目录缺失自动更新（gvcgo/vmr_plugins）。
-//! - `types`：Item/VersionList/InstallerConfig 磁盘契约。
+//! - `bindings`: mlua(lua54) runtime initialization and registration of every `vmr*` function plus installer constants
+//!   (fixes the gap where the vmrInstaller* constants were not registered on the Go side).
+//! - `req/html/json/utils_bind/version/github_bind/installer_conf/conda_bridge`:
+//!   50 vmr* global function bindings (same name, same semantics).
+//! - `plugin`: plugin lifecycle — load/crawl/platform filtering/version cache/ic/custom install callbacks.
+//! - `plugins_update`: auto-update when the plugin directory is missing (gvcgo/vmr_plugins).
+//! - `types`: the Item/VersionList/InstallerConfig disk contracts.
 
 pub mod bindings;
 pub mod conda_bridge;

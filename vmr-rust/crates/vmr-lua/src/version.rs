@@ -1,6 +1,6 @@
-//! 版本列表绑定（vmrNewVersionList/AddItem/MergeVersionList），对齐 Go
-//! `lua_global/version.go`：crawl 内以 userdata 持有 VersionList，
-//! AddItem 返回同一列表（Lua 链式赋值），merge 原地并入后者。
+//! Version-list bindings (vmrNewVersionList/AddItem/MergeVersionList), mirroring Go
+//! `lua_global/version.go`: inside crawl a userdata holds the VersionList,
+//! AddItem returns the same list (Lua chained assignment), and merge folds the latter in place.
 
 use mlua::{Lua, Table, UserData, Value};
 
@@ -78,12 +78,12 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
         },
     )?;
 
-    // 兼容别名：从 Value 形式收尾（确保 Lua nil 参数不 panic —— Go 会返回 nil ud）。
+    // Compatibility alias: wrap up from the Value form (ensures a Lua nil arg does not panic — Go returns a nil ud).
     register_fn(lua, "_vmrAddItemSafe", |_, ()| Ok(()))?;
     Ok(())
 }
 
-/// 供 plugin 读取 crawl 返回值（userdata → VersionList）。
+/// For plugin to read the crawl return value (userdata → VersionList).
 pub fn vl_from_value(v: &Value) -> Option<VersionList> {
     match v {
         Value::UserData(u) => u.borrow::<VersionListUD>().ok().map(|g| g.0.clone()),
@@ -97,7 +97,7 @@ pub fn vl_to_value(lua: &Lua, vl: VersionList) -> mlua::Result<Value> {
 
 type AnyUserData = mlua::AnyUserData;
 
-/// 过滤出当前平台条目 → map[版本]最后匹配 Item（对齐 Go GetSDKVersions）。
+/// Filters to current-platform entries → map[version]last matching Item (mirrors Go GetSDKVersions).
 pub fn filter_current_platform(
     vl: &VersionList,
     os: &str,
@@ -114,11 +114,11 @@ pub fn filter_current_platform(
     out
 }
 
-// 供测试与提示使用（避免未使用告警）。
+// For testing and tooling (avoids the unused warning).
 #[allow(dead_code)]
 fn _unused(_: &str) {}
 
-/// 辅助：把 Lua 值里的字符串转成 Item 列表外的散件时用到（见 plugin）。
+/// Helper: used when converting strings inside a Lua value into the loose parts outside an Item list (see plugin).
 #[allow(dead_code)]
 pub fn str_of_val(v: &Value) -> String {
     str_of(v)

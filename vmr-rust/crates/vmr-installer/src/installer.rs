@@ -1,8 +1,10 @@
-//! 安装器主调度（对齐 Go `installer.go` + `install/{unarchiver,executable,conda,coursier}.go`）。
+//! Installer main dispatch (mirrors Go `installer.go` +
+//! `install/{unarchiver,executable,conda,coursier}.go`).
 //!
-//! 磁盘契约：`<versions>/<sdk>_versions/<plugin>-<version>` + `<sdk>` 符号链接。
-//! 模式：Globally（符号链接 + 全局 env）/ Sessionly / ToLock（写 .vmr.lock），
-//! 后两者返回 `Action::RunSession` 由调用方起子 shell（PTY 属 vmr-pty）。
+//! Disk contract: `<versions>/<sdk>_versions/<plugin>-<version>` + `<sdk>` symlink.
+//! Modes: Globally (symlink + global env) / Sessionly / ToLock (writes .vmr.lock);
+//! the latter two return `Action::RunSession`, letting the caller spawn a child shell
+//! (PTY belongs to vmr-pty).
 
 use std::path::{Path, PathBuf};
 
@@ -27,16 +29,16 @@ pub enum InvokeMode {
     ToLock,
 }
 
-/// 安装动作结果。
+/// Result of an install action.
 #[derive(Debug)]
 pub enum Action {
-    /// 完成（全局模式）。
+    /// Done (global mode).
     Done,
-    /// 需要进入会话子 shell（会话/锁模式；lock 已按需写入）。
+    /// Requires a session child shell (session/lock modes; lock written as needed).
     RunSession,
 }
 
-/// 一次安装请求。
+/// A single install request.
 pub struct InstallRequest {
     pub sdk_name: String,
     pub plugin_name: String,
@@ -62,7 +64,7 @@ impl InstallRequest {
             .unwrap_or(false)
     }
 
-    /// 未安装则执行安装；返回是否新装。
+    /// Installs when not yet installed; returns whether it was newly installed.
     fn ensure_installed(&self) -> Result<bool, String> {
         if self.is_installed() {
             return Ok(false);
@@ -87,7 +89,7 @@ impl InstallRequest {
         let cached = download_to_cache(&self.plugin_name, &self.version_name, &self.version)
             .ok_or("download failed")?;
         let temp = paths::temp_dir();
-        // 清理上次残留（只清 vmr-rust 专属子目录）。
+        // Clean up leftovers from the last run (only vmr-rust-owned subdirectories).
         let work = temp.join(format!("extract-{}", self.plugin_name.replace('.', "_")));
         let _ = std::fs::remove_dir_all(&work);
         std::fs::create_dir_all(&work).map_err(|e| e.to_string())?;
@@ -118,7 +120,7 @@ impl InstallRequest {
         if !cfg!(windows) {
             chmod_x(&dest);
         }
-        // BinaryRename（可执行文件名改名）。
+        // BinaryRename: rename the executable file.
         if let Some(br) = &self.ic.binary_rename {
             if !br.name_flag.is_empty() {
                 if let Ok(entries) = std::fs::read_dir(&dir) {
@@ -159,13 +161,14 @@ impl InstallRequest {
     }
 
     fn install_via_conda(&self) -> Result<(), String> {
-        // 要求 2/4：不依赖本机 conda，直接按 vmr-conda 从源安装到版本目录。
+        // Requirement 2/4: does not depend on a local conda; install straight from the
+        // source into the version directory via vmr-conda.
         let pkg = vmr_conda::select_package(&self.plugin_name, &self.version_name)?
             .ok_or("package not found in conda source")?;
         vmr_conda::install_package(&pkg, &self.install_dir())
     }
 
-    /// 当前平台 os 名。
+    /// OS name of the current platform.
     fn collect_bundle(&self, base: &Path) -> vmr_env::EnvBundle {
         if self.no_envs {
             return vmr_env::EnvBundle::default();
@@ -201,7 +204,8 @@ impl InstallRequest {
     }
 }
 
-/// 会话/锁模式的进程 PATH 摘除与临时 env 准备（对齐 Go Install() 非全局分支）。
+/// Session/lock modes: remove the SDK symlink prefix from the process PATH and prepare
+/// temporary env (mirrors the non-global branch of Go `Install()`).
 fn prepare_session_envs(req: &InstallRequest, to_lock: bool) {
     if to_lock {
         let mut locker = VersionLocker::default();
@@ -212,7 +216,8 @@ fn prepare_session_envs(req: &InstallRequest, to_lock: bool) {
     req.add_envs_temporarily();
 }
 
-/// 从进程 PATH 摘除 SDK 符号链接路径前缀（对齐 Go RemoveGlobalSDKPathTemporarily）。
+/// Removes the SDK symlink path prefix from the process PATH
+/// (mirrors Go `RemoveGlobalSDKPathTemporarily`).
 pub fn remove_sdk_path_from_process(sdk_name: &str) {
     let sep = if cfg!(windows) { ';' } else { ':' };
     let symbolic = sdk_version_dir(sdk_name).join(sdk_name);
@@ -222,10 +227,10 @@ pub fn remove_sdk_path_from_process(sdk_name: &str) {
     unsafe { std::env::set_var("PATH", parts.join(&sep.to_string())) };
 }
 
-/// 主入口：安装 + 模式处理。
+/// Main entry: install + mode handling.
 pub fn install(req: &InstallRequest) -> Result<Action, String> {
     if req.version.installer == installer_kind::COURSIER {
-        // 前置：coursier 二进制必须存在（计划保留 Go 行为）。
+        // Prerequisite: the coursier binary must exist (Go behavior intentionally kept).
         ensure_command("cs").map_err(|_| "coursier is not installed".to_string())?;
     }
     let newly = req.ensure_installed()?;
@@ -237,7 +242,7 @@ pub fn install(req: &InstallRequest) -> Result<Action, String> {
                     req.plugin_name, req.version_name
                 );
             }
-            // 重建符号链接 + 全局 env。
+            // Rebuild the symlink + global env.
             let sym = req.symbol_path();
             if sym.exists() {
                 let _ = std::fs::remove_dir_all(&sym);
@@ -261,7 +266,8 @@ pub fn install(req: &InstallRequest) -> Result<Action, String> {
     }
 }
 
-/// 卸载：删版本目录；当前版本还删符号链接 + 全局 env。
+/// Uninstall: removes the version directory; for the current version also
+/// removes the symlink + global env.
 pub fn uninstall(req: &InstallRequest) -> Result<(), String> {
     let dir = req.install_dir();
     let _ = std::fs::remove_dir_all(&dir);
@@ -275,7 +281,7 @@ pub fn uninstall(req: &InstallRequest) -> Result<(), String> {
     Ok(())
 }
 
-/// `vmr use -E`：按锁注入 env 并返回 RunSession（对齐 Go HookForCdCommand）。
+/// `vmr use -E`: injects env per the lock and returns RunSession (mirrors Go HookForCdCommand).
 pub fn hook_for_cd_command() -> Result<Action, String> {
     let locker = VersionLocker::load_from(None);
     if locker.versions.is_empty() {
@@ -284,7 +290,7 @@ pub fn hook_for_cd_command() -> Result<Action, String> {
     unsafe { std::env::set_var(ADD_TO_PATH_TEMPORARILY_ENV, "1") };
     for (sdk, version) in &locker.versions {
         remove_sdk_path_from_process(sdk);
-        // 复用 plugin 数据加载 ic（SDKName == plugin_name 常见）。
+        // Reuse plugin data to load ic (SDKName == plugin_name is common).
         let mut plugins = vmr_lua::Plugins::new();
         let plugin = plugins
             .get_by_sdk_name(sdk)
@@ -311,7 +317,7 @@ pub fn hook_for_cd_command() -> Result<Action, String> {
     Ok(Action::RunSession)
 }
 
-// ---- 内部工具 ----
+// ---- Internal utilities ----
 
 fn current_os() -> String {
     if cfg!(windows) {

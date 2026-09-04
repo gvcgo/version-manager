@@ -1,8 +1,8 @@
-//! vmr* 全局注册中枢（对齐 Go `lua_global/lua.go` 的 init + 常量注入）。
+//! Central hub for registering the vmr* globals (mirrors Go `lua_global/lua.go` init plus constant injection).
 
 use mlua::{FromLuaMulti, IntoLuaMulti, Lua};
 
-/// 便捷注册：`globals().set(name, lua.create_function(f)?)`。
+/// Convenience registration: `globals().set(name, lua.create_function(f)?)`.
 pub(crate) fn register_fn<A, R, F>(lua: &Lua, name: &str, f: F) -> mlua::Result<()>
 where
     A: FromLuaMulti + 'static,
@@ -12,7 +12,7 @@ where
     lua.globals().set(name, lua.create_function(f)?)
 }
 
-/// 注册 Go 侧缺失、插件引用到的 installer 常量（plan.md §1）。
+/// Registers the installer constants missing on the Go side that plugins reference (plan.md §1).
 fn register_installer_consts(lua: &Lua) -> mlua::Result<()> {
     use crate::types::installer_kind::*;
     for (name, val) in [
@@ -29,10 +29,10 @@ fn register_installer_consts(lua: &Lua) -> mlua::Result<()> {
     Ok(())
 }
 
-/// 建运行时并注册全部 vmr* 函数与常量（对齐 Go `Lua.NewLua().init()`）。
+/// Builds a runtime and registers every vmr* function and constant (mirrors Go `Lua.NewLua().init()`).
 pub fn new_runtime() -> mlua::Result<Lua> {
     let lua = Lua::new();
-    // 防御：脚本错误暴露为 Error（不 panic 进程）。
+    // Guard: script errors surface as Error (do not panic the process).
     let _ = lua.set_memory_limit(512 * 1024 * 1024);
     crate::req::register(&lua)?;
     crate::html::register(&lua)?;
@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn runtime_boot_and_simple_script() {
         let lua = new_runtime().unwrap();
-        // 注册后 50+ 全局应存在关键几个。
+        // After registration, 50+ globals exist; a few key ones must be present.
         for name in [
             "vmrGetOsArch",
             "vmrGetResponse",
@@ -63,10 +63,10 @@ mod tests {
             let v: mlua::Value = lua.globals().get(name).unwrap();
             assert!(!matches!(v, mlua::Value::Nil), "{name} missing");
         }
-        // 常量值正确。
+        // Constant value is correct.
         let c: String = lua.globals().get("vmrInstallerUnarchiver").unwrap();
         assert_eq!(c, "unarchiver");
-        // 简单脚本调用版本函数链。
+        // A simple script calling the version function chain.
         lua.load(
             r#"
             vl = vmrNewVersionList()

@@ -1,8 +1,8 @@
-//! 绑定：`vmrGetResponse` / `vmrGetProxy`（对齐 Go `lua_global/req.go`、`proxy.go`）。
+//! Bindings: `vmrGetResponse` / `vmrGetProxy` (mirroring Go `lua_global/req.go`, `proxy.go`).
 //!
-//! 关键语义（Go quirk）：`vmrGetResponse` **返回 userdata 包字符串**，
-//! 供 `vmrInitSelection` / `vmrInitGJson` 解包；失败返回空串 userdata。
-//! 代理仅读 `VCOLLECTOR_PROXY` env（truthy 布尔解析），不经镜像/反代链。
+//! Key semantics (Go quirk): `vmrGetResponse` **returns a userdata-wrapped string**
+//! for `vmrInitSelection` / `vmrInitGJson` to unwrap; on failure it returns an empty-string userdata.
+//! The proxy only reads the `VCOLLECTOR_PROXY` env (truthy boolean parsing); it does not go through the mirror/reverse-proxy chain.
 
 use std::time::Duration;
 
@@ -13,7 +13,7 @@ use crate::bindings::register_fn;
 pub const PROXY_ENV_NAME: &str = "VCOLLECTOR_PROXY";
 const DEFAULT_TIMEOUT: u64 = 180;
 
-/// vmrGetResponse 的返回包装（Go userdata 内为 string）。
+/// Return wrapper of vmrGetResponse (the Go userdata holds a string).
 #[derive(Clone)]
 pub struct StringUD(pub String);
 impl UserData for StringUD {}
@@ -32,7 +32,7 @@ fn proxy_from_env() -> Option<String> {
     }
 }
 
-/// GET 请求文本；失败 → Err（调用侧按空串处理，对齐 Go 返回 resp=="" 分支）。
+/// GET request body; on failure → Err (the caller treats it as an empty string, matching the Go resp=="" branch).
 fn http_get(url: &str, timeout_secs: u64, headers: &[(String, String)]) -> Result<String, String> {
     let mut builder = reqwest::blocking::Client::builder().user_agent("");
     if let Some(p) = proxy_from_env() {
@@ -58,7 +58,7 @@ fn http_get(url: &str, timeout_secs: u64, headers: &[(String, String)]) -> Resul
     Ok(body)
 }
 
-/// 解析 proxy URI → (scheme, host, port)；空/非法返回 Go 语义的 ("","","0")。
+/// Parses a proxy URI → (scheme, host, port); empty/invalid returns Go semantics ("","","0").
 fn split_proxy_uri(s: &str) -> (String, String, String) {
     let Some((scheme, rest)) = s.split_once("://") else {
         return (String::new(), String::new(), "0".to_string());
@@ -105,7 +105,7 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
     Ok(())
 }
 
-/// Lua 值 → 字符串（对齐 gopher-lua `LValue.String()`）。
+/// Lua value → string (matching gopher-lua `LValue.String()`).
 pub fn lua_string_to_owned(s: &mlua::String) -> String {
     s.to_string_lossy()
 }
@@ -124,7 +124,7 @@ pub fn str_of(v: &Value) -> String {
     }
 }
 
-/// 表字段取值（missing → ""，对齐 Go GetStringFromLTable）。
+/// Reads a table field (missing → "", mirroring Go GetStringFromLTable).
 pub fn table_str(t: &Table, key: &str) -> mlua::Result<String> {
     let v: Value = t.get(key)?;
     Ok(str_of(&v))

@@ -1,7 +1,7 @@
-//! repodata 拉取/解析/缓存 + 包查询与安装。
+//! repodata fetch/parse/cache + package query and install.
 //!
-//! repodata 记录：`packages`（.tar.bz2）与 `packages.conda`（.conda）两张表，
-//! 键为包文件名，值为元数据。
+//! repodata records: two tables, `packages` (.tar.bz2) and `packages.conda` (.conda),
+//! keyed by package filename with the metadata as the value.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -16,13 +16,13 @@ use vmr_net::fetcher::Fetcher;
 
 use crate::platform::current_subdir;
 
-/// 默认 channel（conda-forge）。
+/// default channel (conda-forge).
 pub const DEFAULT_CHANNEL: &str = "https://conda.anaconda.org/conda-forge";
 
-/// channel 覆盖 env（自定义源；空则默认）。
+/// channel override env (custom source; default when empty).
 const CHANNEL_ENV: &str = "VMR_CONDA_CHANNEL";
 
-/// 单条 repodata 包元数据。
+/// metadata for a single repodata package.
 #[derive(Debug, Clone, Deserialize)]
 pub struct RecordMeta {
     pub name: String,
@@ -36,12 +36,12 @@ pub struct RecordMeta {
     pub size: i64,
 }
 
-/// 查询结果：一个具体包文件记录（可下载安装）。
+/// query result: one concrete package-file record (downloadable for install).
 #[derive(Debug, Clone)]
 pub struct RepoPackage {
     pub file: String,
     pub meta: RecordMeta,
-    /// 完整下载 URL（channel/subdir/file）。
+    /// full download URL (channel/subdir/file).
     pub url: String,
 }
 
@@ -68,13 +68,13 @@ struct Repodata {
     packages_conda: BTreeMap<String, RecordMeta>,
 }
 
-/// 拉取（或命中新鲜缓存）当前 platform 的 repodata。
+/// fetch the current platform's repodata (or hit a fresh cache).
 fn fetch_repodata() -> Result<Repodata, String> {
     let subdir = current_subdir().ok_or("unsupported platform for conda")?;
     let path = cache_file(subdir);
     if let Ok(content) = fs::read_to_string(&path) {
         if let Ok(data) = serde_json::from_str::<Repodata>(&content) {
-            // mtime + 保留时间判鲜。
+            // mtime + retention time freshness check.
             let fresh = fs::metadata(&path)
                 .and_then(|m| m.modified())
                 .ok()
@@ -96,7 +96,7 @@ fn fetch_repodata() -> Result<Repodata, String> {
 
 fn download_repodata_raw(subdir: &str) -> Result<Vec<u8>, String> {
     let base = channel();
-    // 依次尝试普通 json 与 .zst 压缩版。
+    // try the plain json first, then the .zst compressed variant.
     let mut last_err = None;
     for u in [
         format!("{base}/{subdir}/repodata.json"),
@@ -119,7 +119,7 @@ fn raw_get_bytes(url: &str) -> Result<Vec<u8>, String> {
     f.get_bytes(url).map_err(|e| e.to_string())
 }
 
-/// 包全部版本（去重、字符串升序，展示用）。
+/// all package versions (deduplicated, ascending string order, for display).
 pub fn query_versions(sdk_name: &str) -> Result<Vec<String>, String> {
     let data = fetch_repodata()?;
     let mut set = std::collections::BTreeSet::new();
@@ -131,7 +131,7 @@ pub fn query_versions(sdk_name: &str) -> Result<Vec<String>, String> {
     Ok(set.into_iter().collect())
 }
 
-/// 全部记录（含文件名与 URL），供安装选择。
+/// all records (with filename and URL), for install selection.
 pub fn query_packages(sdk_name: &str) -> Result<Vec<RepoPackage>, String> {
     let data = fetch_repodata()?;
     let subdir = current_subdir().ok_or("unsupported platform")?;
@@ -150,8 +150,8 @@ pub fn query_packages(sdk_name: &str) -> Result<Vec<RepoPackage>, String> {
     Ok(out)
 }
 
-/// 安装选择：精确 name+version；`.conda` 容器优先（conda 生态共识），
-/// 同容器类型取最高 build_number。
+/// install selection: exact name+version; `.conda` container preferred (conda
+/// ecosystem consensus), and within the same container type take the highest build_number.
 pub fn select_package(name: &str, version: &str) -> Result<Option<RepoPackage>, String> {
     let all = query_packages(name)?;
     let mut matched: Vec<RepoPackage> = all
@@ -161,7 +161,7 @@ pub fn select_package(name: &str, version: &str) -> Result<Option<RepoPackage>, 
     matched.sort_by(|a, b| {
         let a_conda = a.file.ends_with(".conda");
         let b_conda = b.file.ends_with(".conda");
-        // .conda 优先，再按 build_number 降序。
+        // .conda first, then by build_number descending.
         b_conda
             .cmp(&a_conda)
             .then(b.meta.build_number.cmp(&a.meta.build_number))
@@ -181,7 +181,7 @@ fn temp_file() -> PathBuf {
     ))
 }
 
-/// 安装单包到 prefix（plan D4 阶段一：不递归依赖）。
+/// install a single package into prefix (plan D4 stage one: no recursive dependencies).
 pub fn install_package(pkg: &RepoPackage, prefix: &Path) -> Result<(), String> {
     fs::create_dir_all(prefix).map_err(|e| e.to_string())?;
     let tmp = temp_file();
@@ -212,7 +212,7 @@ pub fn install_package(pkg: &RepoPackage, prefix: &Path) -> Result<(), String> {
 
 fn extract_to_prefix(pkg_path: &Path, prefix: &Path) -> Result<(), String> {
     if pkg_path.to_string_lossy().ends_with(".conda") {
-        // zip 容器：info-*.tar.zst 元数据 + pkg-*.tar.zst 文件。
+        // zip container: info-*.tar.zst metadata + pkg-*.tar.zst files.
         let file = fs::File::open(pkg_path).map_err(|e| e.to_string())?;
         let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
         for i in 0..zip.len() {
@@ -237,7 +237,8 @@ fn extract_to_prefix(pkg_path: &Path, prefix: &Path) -> Result<(), String> {
     }
 }
 
-/// 解 tar 流到 prefix（文件项；目录由父级 MkdirAll 隐式创建，对齐 vmr-utils extract）。
+/// unpack a tar stream into prefix (file entries; directories created implicitly by
+/// parent MkdirAll, mirroring vmr-utils extract).
 fn unpack_tar_stream<R: Read>(reader: R, prefix: &Path) -> Result<(), String> {
     let mut ar = tar::Archive::new(reader);
     let entries = ar.entries().map_err(|e| e.to_string())?;
@@ -252,7 +253,7 @@ fn unpack_tar_stream<R: Read>(reader: R, prefix: &Path) -> Result<(), String> {
             .map_err(|e| e.to_string())?
             .to_string_lossy()
             .into_owned();
-        // 安全：拒绝绝对/`..` 逃逸。
+        // safety: reject absolute / `..` escapes.
         let p = std::path::Path::new(&name);
         if p.is_absolute() || name.split('/').any(|c| c == "..") {
             return Err(format!("unsafe path in package: {name}"));

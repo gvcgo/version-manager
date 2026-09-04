@@ -1,11 +1,13 @@
-//! GitHub REST API 客户端（plan.md §3.3 要求 3；对齐 Go `luapi/gh/gh.go`）。
+//! GitHub REST API client (plan.md §3.3 requirement 3; mirrors Go `luapi/gh/gh.go`).
 //!
-//! - `releases(repo)`：分页拉 `/repos/{repo}/releases?per_page=100&page=N`，
-//!   直到空页或不足一页。
-//! - `file_list(repo, path)`：contents API 列目录文件。
-//! - token：配置 `GithubToken` 优先；未配置则不带头（Go 内置只读 token 属
-//!   私有凭据，不随源码分发；匿名访问限流更低但可工作）。
-//! - API 域 `https://api.github.com` 直连，不经镜像/反代。
+//! - `releases(repo)`: paginates `/repos/{repo}/releases?per_page=100&page=N` until an
+//!   empty page or a page with fewer than `per_page` entries.
+//! - `file_list(repo, path)`: lists the directory files via the contents API.
+//! - token: a configured `GithubToken` wins; otherwise no header is sent (Go's built-in
+//!   read-only token is a private credential not shipped with the source; anonymous
+//!   access gets a lower rate limit but still works).
+//! - The API domain `https://api.github.com` is contacted directly, not via the mirror /
+//!   reverse proxy.
 
 use reqwest::blocking::Client;
 use reqwest::header::{ACCEPT, AUTHORIZATION};
@@ -17,7 +19,7 @@ use vmr_core::conf::get_github_token;
 const API_BASE: &str = "https://api.github.com";
 const PER_PAGE: usize = 100;
 
-/// GitHub release 资产。
+/// A GitHub release asset.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Asset {
     pub name: String,
@@ -26,7 +28,7 @@ pub struct Asset {
     pub size: Option<i64>,
 }
 
-/// 单个 release。
+/// A single release.
 #[derive(Debug, Clone, Deserialize)]
 pub struct ReleaseItem {
     #[serde(rename = "tag_name")]
@@ -34,7 +36,7 @@ pub struct ReleaseItem {
     pub assets: Vec<Asset>,
 }
 
-/// contents API 条目（文件/目录）。
+/// A contents API entry (file or directory).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RepoFile {
     pub name: String,
@@ -46,13 +48,14 @@ pub struct RepoFile {
     pub download_url: Option<String>,
 }
 
-/// GitHub API 客户端。
+/// GitHub API client.
 pub struct Gh {
     client: Client,
 }
 
 impl Gh {
-    /// 构造直连客户端（无自定义超时/重试；UA 固定为稳定标识，GitHub 强制要求）。
+    /// Builds a direct-connection client (no custom timeout/retry; the UA is fixed to a
+    /// stable identifier, which GitHub mandates).
     pub fn new() -> Result<Self, String> {
         let client = reqwest::blocking::Client::builder()
             .user_agent("vmr-rust")
@@ -61,7 +64,7 @@ impl Gh {
         Ok(Gh { client })
     }
 
-    /// 分页拉取 repo 全部 releases（对齐 Go `Gh.GetReleases`）。
+    /// Paginated fetch of all releases of a repo (mirrors Go `Gh.GetReleases`).
     pub fn releases(&self, repo: &str) -> Result<Vec<ReleaseItem>, String> {
         let mut page = 1usize;
         let mut all = Vec::new();
@@ -78,7 +81,7 @@ impl Gh {
         Ok(all)
     }
 
-    /// contents API 列出目录条目（对齐 Go `Gh.GetFileList`）。
+    /// Lists the directory entries via the contents API (mirrors Go `Gh.GetFileList`).
     pub fn file_list(&self, repo: &str, path: &str) -> Result<Vec<RepoFile>, String> {
         let path = path.trim_matches('/');
         let url = format!("{API_BASE}/repos/{repo}/contents/{path}");

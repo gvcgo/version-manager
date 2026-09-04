@@ -1,4 +1,4 @@
-//! utils 绑定（24 个 vmr* 通用函数，对齐 Go `lua_global/utils.go`）。
+//! utils bindings (24 vmr* general-purpose functions, mirroring Go `lua_global/utils.go`).
 
 use std::path::Path;
 
@@ -6,7 +6,7 @@ use mlua::{Lua, Table, Value};
 
 use crate::bindings::register_fn;
 
-/// 进程 os/arch（Go 命名：darwin/windows/linux + amd64/arm64/386）。
+/// Process os/arch (Go naming: darwin/windows/linux + amd64/arm64/386).
 pub fn os_arch() -> (String, String) {
     let os = match std::env::consts::OS {
         "macos" => "darwin",
@@ -116,7 +116,7 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
         Ok(v)
     })?;
     register_fn(lua, "vmrSetOsEnv", |_, (key, value): (String, String)| {
-        // 对齐 Go：Setenv 出错返回 false（Rust env 不可变场景极罕见）。
+        // Mirror Go: Setenv returns false on error (the Rust env-immutable case is extremely rare).
         let ok = std::panic::catch_unwind(|| {
             unsafe { std::env::set_var(&key, &value) };
         })
@@ -130,12 +130,12 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
         |_, (collect, workdir, args): (bool, String, Option<Table>)| {
             let args = argv(args);
             let out = vmr_utils::exec::exec(collect, &workdir, &args).unwrap_or_default();
-            // Go 语义：(stdout, ok)。非 collect 时 stdout 为空串。
+            // Go semantics: (stdout, ok). stdout is an empty string when not collecting.
             Ok((out, true))
         },
     )?;
-    // 上面的 ok 恒 true 与 Go 不一致 → 换用带错误传播的版本（见下）。
-    // vmrExecSystemCmd 需要错误位，此处覆盖为真正实现：
+    // The above ok-always-true diverges from Go → switch to the error-propagating version below.
+    // vmrExecSystemCmd needs the error bit, so this overrides it with the real implementation:
     lua.globals().set(
         "vmrExecSystemCmd",
         lua.create_function(
@@ -183,7 +183,7 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
         Ok(std::fs::remove_dir_all(&dir).is_ok() || !std::path::Path::new(&dir).exists())
     })?;
 
-    // extractor：vmrUnarchive（对应 vmr_utils extract::unarchive）。
+    // extractor: vmrUnarchive (corresponds to vmr_utils extract::unarchive).
     register_fn(
         lua,
         "vmrUnarchive",
@@ -205,7 +205,7 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
     Ok(())
 }
 
-/// %s 顺序替换（对齐插件惯用的 fmt.Sprintf("%s") 场景）。
+/// Sequential %s substitution (the common fmt.Sprintf("%s") pattern plugins use).
 fn sprintf_s(pattern: &str, args: &[String]) -> String {
     if args.is_empty() {
         return pattern.to_string();
@@ -234,7 +234,7 @@ fn sprintf_s(pattern: &str, args: &[String]) -> String {
     out
 }
 
-/// URL 拼接（对齐 Go url.JoinPath 的常见形态）。
+/// URL concatenation (the common shape of Go url.JoinPath).
 fn url_join(base: &str, path: &str) -> String {
     if base.is_empty() {
         return String::new();

@@ -1,6 +1,7 @@
-//! 目录契约（plan.md §4.1）：`~/.vmr` 及其子目录。
+//! Directory contract (plan.md §4.1): `~/.vmr` and its subdirectories.
 //!
-//! `VMR_SDK_INSTALLATION_DIR` 覆盖 versions/cache；temp 恒在 `~/.vmr/temp`（对齐 Go）。
+//! `VMR_SDK_INSTALLATION_DIR` overrides versions/cache; temp always lives under
+//! `~/.vmr/temp` (mirrors Go).
 
 use std::env;
 use std::fs;
@@ -18,7 +19,7 @@ fn ensure_dir(p: &PathBuf) -> PathBuf {
     p.clone()
 }
 
-/// `~/.vmr`，vmr 安装目录。
+/// `~/.vmr`, the vmr installation directory.
 pub fn work_dir() -> PathBuf {
     ensure_dir(&home_dir().join(VMR_WORK_DIR_NAME))
 }
@@ -28,8 +29,8 @@ pub fn conf_file_path() -> PathBuf {
     work_dir().join("conf.toml")
 }
 
-/// 版本安装目录：`VMR_SDK_INSTALLATION_DIR` 覆盖时为其下 `versions`，
-/// 否则 `~/.vmr/versions`。
+/// Version installation directory: with `VMR_SDK_INSTALLATION_DIR` set, `versions` under it;
+/// otherwise `~/.vmr/versions`.
 pub fn versions_dir() -> PathBuf {
     let base = match env::var(envs::SDK_INSTALLATION_DIR) {
         Ok(d) if !d.is_empty() => PathBuf::from(d),
@@ -38,7 +39,7 @@ pub fn versions_dir() -> PathBuf {
     ensure_dir(&base.join("versions"))
 }
 
-/// 缓存目录：versions 的父目录下 `cache`（跟随 override）。
+/// Cache directory: `cache` under versions' parent directory (follows the override).
 pub fn cache_dir() -> PathBuf {
     let base = versions_dir()
         .parent()
@@ -47,22 +48,23 @@ pub fn cache_dir() -> PathBuf {
     ensure_dir(&base.join("cache"))
 }
 
-/// 临时解压目录：恒在 `~/.vmr/temp`。
+/// Temporary extraction directory: always `~/.vmr/temp`.
 pub fn temp_dir() -> PathBuf {
     ensure_dir(&work_dir().join("temp"))
 }
 
-/// Lua 插件目录：`~/.vmr/plugins`。
+/// Lua plugin directory: `~/.vmr/plugins`.
 pub fn plugin_dir() -> PathBuf {
     ensure_dir(&work_dir().join("plugins"))
 }
 
-/// 镜像表文件路径：`~/.vmr/customed_mirrors.toml`。
+/// Mirror table file path: `~/.vmr/customed_mirrors.toml`.
 pub fn customed_mirrors_file_path() -> PathBuf {
     work_dir().join("customed_mirrors.toml")
 }
 
-/// 镜像表缺失时的拉取地址（下载由 vmr-net 负责，vmr-core 保持无网络叶子）。
+/// Fetch URL used when the mirror table is missing (downloads are handled by vmr-net;
+/// vmr-core stays a network-free leaf).
 pub fn customed_mirrors_url() -> String {
     format!(
         "{}{}/mirrors/customed_mirrors.toml",

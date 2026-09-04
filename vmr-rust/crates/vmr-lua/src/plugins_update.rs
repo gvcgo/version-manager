@@ -1,8 +1,8 @@
-//! 插件目录更新（对齐 Go `internal/luapi/plugin/download.go`，要求 1）。
+//! Plugin-directory update (mirrors Go `internal/luapi/plugin/download.go`, requirement 1).
 //!
-//! `gvcgo/vmr_plugins` main.zip 下载 → 解压到 temp → 以
-//! flag(go.lua, LICENSE)+except_dir 找仓库目录 → 复制 `*.lua` 到插件目录 →
-//! 用 GitHub contents API 列文件写 `plugins.json` → 清理 temp。
+//! Download `gvcgo/vmr_plugins` main.zip → extract into temp → locate the repo directory
+//! via flag(go.lua, LICENSE)+except_dir → copy `*.lua` into the plugin directory →
+//! list files with the GitHub contents API and write `plugins.json` → clean up temp.
 
 use std::fs;
 use std::path::Path;
@@ -58,7 +58,7 @@ fn update_info() {
     }
 }
 
-/// 更新插件（幂等；失败返回错误串）。
+/// Updates the plugins (idempotent; returns an error string on failure).
 pub fn update_plugins() -> Result<(), String> {
     let temp = paths::temp_dir();
     fs::create_dir_all(&temp).map_err(|e| e.to_string())?;

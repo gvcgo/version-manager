@@ -1,4 +1,4 @@
-//! `VMRConf`：conf.toml 读写 + 回写环境变量（env 为运行时权威）。
+//! `VMRConf`: conf.toml read/write plus env-var write-back (env is the runtime authority).
 
 use std::fs;
 
@@ -7,11 +7,12 @@ use serde::{Deserialize, Serialize};
 use crate::envs;
 use crate::paths;
 
-/// conf.toml 结构。
+/// conf.toml structure.
 ///
-/// 键名必须为 PascalCase：Go 侧 struct tag 是损坏的 `json,toml:"..."`，
-/// toml 库回退用字段名序列化；`SDKIntallationDir` 拼写 quirk 一并保留。
-/// 未知键忽略、缺省键取默认值，对齐 Go `toml.Unmarshal` 行为。
+/// Keys must be PascalCase: Go's struct tags are broken `json,toml:"..."` tags, so the toml
+/// library falls back to serializing with field names; the `SDKIntallationDir` spelling quirk
+/// is preserved too. Unknown keys are ignored and missing keys take defaults, mirroring Go
+/// `toml.Unmarshal` behavior.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct VMRConf {
@@ -30,7 +31,8 @@ pub struct VMRConf {
 }
 
 impl VMRConf {
-    /// 对齐 Go `NewVMRConf`：读文件后把非空字段回写到环境变量。
+    /// Mirrors Go `NewVMRConf`: after reading the file, non-empty fields are written back to
+    /// environment variables.
     pub fn new() -> Self {
         let mut v = Self::default();
         v.reload();
@@ -60,7 +62,8 @@ impl VMRConf {
         v
     }
 
-    /// 从磁盘重载；文件缺失或解析失败保持当前值（对齐 Go 忽略错误）。
+    /// Reloads from disk; a missing file or a parse failure keeps the current values
+    /// (mirrors Go ignoring the error).
     pub fn reload(&mut self) {
         if let Ok(content) = fs::read_to_string(paths::conf_file_path()) {
             if let Ok(v) = toml::from_str::<VMRConf>(&content) {
@@ -69,14 +72,15 @@ impl VMRConf {
         }
     }
 
-    /// 写回 conf.toml。
+    /// Writes conf.toml back to disk.
     pub fn save(&self) -> std::io::Result<()> {
         let content = toml::to_string(self)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
         fs::write(paths::conf_file_path(), content)
     }
 
-    // 以下 setter 对齐 Go 语义：先重载文件，再修改并保存（env 只在 `new()` 时回写）。
+    // The setters below mirror Go semantics: reload the file first, then modify and save
+    // (env write-back happens only in `new()`).
 
     pub fn set_proxy_uri(&mut self, uri: &str) {
         if uri.is_empty() {
@@ -117,7 +121,7 @@ impl VMRConf {
         let _ = self.save();
     }
 
-    /// 返回切换后的值。
+    /// Returns the value after toggling.
     pub fn toggle_allow_nested_sessions(&mut self) -> bool {
         self.reload();
         self.allow_nested_sessions = !self.allow_nested_sessions;
@@ -149,18 +153,18 @@ impl VMRConf {
     }
 }
 
-/// 读 GitHub token（Go `GetGithubToken`）。
+/// Reads the GitHub token (Go `GetGithubToken`).
 pub fn get_github_token() -> String {
     VMRConf::new().github_token
 }
 
-/// 缓存保留时间秒数，未配置时为 86400（Go `GetCacheRetentionTime`）。
+/// Cache retention time in seconds, 86400 when unset (Go `GetCacheRetentionTime`).
 pub fn get_cache_retention_time() -> i64 {
     let t = VMRConf::new().cache_retention_time;
     if t == 0 { 86400 } else { t }
 }
 
-/// 缓存是否被禁用（Go `GetCacheDisabled`）。
+/// Whether the cache is disabled (Go `GetCacheDisabled`).
 pub fn get_cache_disabled() -> bool {
     VMRConf::new().disable_cache
 }

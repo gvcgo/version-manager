@@ -1,6 +1,6 @@
-//! 文本表格输出（无 TUI，plan 要求 9）。
+//! Plain-text table output (no TUI; per plan requirement 9).
 
-/// 按列对齐打印。
+/// Print rows with columns aligned.
 pub fn print_table(headers: &[&str], rows: &[Vec<String>]) {
     let mut widths: Vec<usize> = headers.iter().map(|h| h.len()).collect();
     for row in rows {

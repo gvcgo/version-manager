@@ -1,9 +1,9 @@
-//! 文件/目录复制（对齐 Go `vmr-go/internal/utils/copy.go`）。
+//! File/directory copying (mirrors Go `vmr-go/internal/utils/copy.go`).
 //!
-//! - 顺序复制、无并发无进度回调。
-//! - 符号链接按链接重建（不复制目标内容）。
-//! - 递归复制跳过 `.Trashes` 与 `.DS_Store`（macOS 噪音）。
-//! - 目录模式按源目录；文件保留源模式。
+//! - Sequential copying; no concurrency, no progress callbacks.
+//! - Symlinks are recreated as links (target contents are not copied).
+//! - Recursive copying skips `.Trashes` and `.DS_Store` (macOS noise).
+//! - Directory modes follow the source directory; files keep their source mode.
 
 use std::fs;
 use std::io;
@@ -13,13 +13,13 @@ fn is_trash_or_ds_store(name: &str) -> bool {
     name == ".Trashes" || name == ".DS_Store"
 }
 
-/// 打开并整体复制单个文件内容（对齐 Go `CopyFile`；目标以 0o777 创建）。
+/// Open and copy a single file wholesale (mirrors Go `CopyFile`; created with 0o777).
 pub fn copy_file(src: &Path, dst: &Path) -> io::Result<u64> {
     fs::copy(src, dst)
 }
 
-/// 复制单个文件/符号链接（对齐 Go `CopyAFile`）：
-/// 普通文件 → 复制内容 + 保留模式；符号链接 → 重建链接；其它类型报错。
+/// Copy a single file or symlink (mirrors Go `CopyAFile`):
+/// regular file → copy contents + preserve the mode; symlink → recreate the link; other kinds error.
 pub fn copy_a_file(source: &Path, destination: &Path) -> io::Result<()> {
     let meta = fs::symlink_metadata(source)?;
     if meta.file_type().is_symlink() {
@@ -44,12 +44,12 @@ fn symlink_rebuild(target: &Path, destination: &Path) -> io::Result<()> {
 
 #[cfg(windows)]
 fn symlink_rebuild(target: &Path, destination: &Path) -> io::Result<()> {
-    // 复刻 Go：Windows 下重建符号链接（需权限）；失败透传。
+    // Mirrors Go: rebuilding symlinks on Windows requires privileges; failures pass through.
     std::os::windows::fs::symlink_dir(target, destination)
         .or_else(|_| std::os::windows::fs::symlink_file(target, destination))
 }
 
-/// 递归复制目录（对齐 Go `CopyDirectory`）。
+/// Recursively copy a directory (mirrors Go `CopyDirectory`).
 pub fn copy_directory(source: &Path, destination: &Path) -> io::Result<()> {
     if source.as_os_str().is_empty() || destination.as_os_str().is_empty() {
         return Err(io::Error::new(
@@ -64,12 +64,13 @@ pub fn copy_directory(source: &Path, destination: &Path) -> io::Result<()> {
     let mut entries: Vec<_> = fs::read_dir(source)?
         .filter_map(|e| e.ok())
         .map(|e| {
-            // Go `DirEntry.IsDir`：不跟随符号链接（链接目录按文件处理 → 走链接重建）。
+            // Go `DirEntry.IsDir`: symlinks are not followed, so a linked directory is treated as a
+            // file and goes through link rebuilding.
             let is_dir = e.file_type().map(|t| t.is_dir()).unwrap_or(false);
             (e.file_name(), is_dir)
         })
         .collect();
-    // Go os.File.Readdir 不保证排序；这里排序保证确定性。
+    // Go os.File.Readdir does not guarantee ordering; sorting here guarantees determinism.
     entries.sort_by(|a, b| a.0.cmp(&b.0));
 
     for (name, is_dir) in entries {
@@ -129,7 +130,7 @@ mod tests {
             use std::os::unix::fs::PermissionsExt;
             fs::set_permissions(src.join("run.sh"), fs::Permissions::from_mode(0o755)).unwrap();
         }
-        // 噪音文件必须被跳过。
+        // Noise files must be skipped.
         touch(&src.join(".DS_Store"), "junk");
         touch(&src.join(".Trashes/x"), "junk");
         touch(&src.join("a/.DS_Store"), "junk");
@@ -164,7 +165,7 @@ mod tests {
         let dst = t.path().join("dst");
         copy_directory(&src, &dst).unwrap();
 
-        // 链接存在且指向同名目标（relink 语义），不是复制的内容。
+        // The link exists and points to a same-named target (relink semantics), not copied content.
         let target = fs::read_link(dst.join("ln")).unwrap();
         assert_eq!(target, PathBuf::from("target"));
         assert!(dst.join("target/file.txt").is_file());

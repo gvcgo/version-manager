@@ -1,19 +1,23 @@
-//! vmr-pty：会话模式交互子 shell（plan.md §3.9）。
+//! vmr-pty: interactive sub-shell in session mode (plan.md §3.9).
 //!
-//! 对齐 Go `internal/terminal`：进入交互 shell 前设 `VM_DISABLE=111`
-//! （阻止 shell hook 重复注入 SDK 环境），子进程继承当前进程环境
-//! （调用方已注入临时 PATH/env 或摘除全局 SDK 路径）。
-//! 会话退出后返回子进程退出码。
+//! Mirrors Go `internal/terminal`: sets `VM_DISABLE=111` before entering the
+//! interactive shell (preventing the shell hook from re-injecting the SDK
+//! environment), while the child process inherits the current process
+//! environment (the caller has already injected the temporary PATH/env or
+//! removed the global SDK paths).
+//! Returns the child process's exit code after the session exits.
 //!
-//! 说明：Rust 侧以直接子进程（继承 stdio）实现交互，未引入 portable-pty
-//! 主从终端层；对 CLI 会话（前台交互）行为等价——子 shell 直接占用终端。
-//! Windows 默认 shell 走 `cmd`。
+//! Note: the Rust side implements interaction with a direct child process
+//! (inheriting stdio) rather than introducing portable-pty's
+//! master/slave terminal layer; the behavior is equivalent for CLI sessions
+//! (foreground interaction) — the sub-shell occupies the terminal directly.
+//! The Windows default shell goes through `cmd`.
 
 use std::process::Command;
 
 pub const VM_DISABLE_ENV: &str = "VM_DISABLE";
 
-/// 进入交互子 shell；返回子进程退出码（找不到 shell 时 1）。
+/// Enters an interactive sub-shell; returns the child process's exit code (1 when the shell cannot be found).
 pub fn run_terminal() -> i32 {
     let shell = detect_shell();
     let mut cmd = Command::new(&shell.0);
@@ -31,7 +35,7 @@ pub fn run_terminal() -> i32 {
     }
 }
 
-/// 探测登录 shell（SHELL env 或平台默认）。
+/// Detects the login shell (the SHELL env or the platform default).
 fn detect_shell() -> (String, Vec<String>) {
     if let Ok(sh) = std::env::var("SHELL") {
         if !sh.is_empty() {

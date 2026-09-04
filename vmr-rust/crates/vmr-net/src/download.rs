@@ -1,9 +1,13 @@
-//! 多线程分片下载 + 校验和/大小校验（plan.md §3.3 要求 8，仿 goutils GetMultiPartFile）。
+//! Multithreaded chunked download + checksum/size verification (plan.md §3.3
+//! requirement 8, modeled on goutils GetMultiPartFile).
 //!
-//! - HEAD 拿 `Content-Length` → 按线程数切 `Range` → 并行拉 `.part{i}` 临时文件
-//!   （`temp_part_xxx` 目录）→ 顺序合并 → 删除分片目录。
-//! - 线程数 ≤1 或服务器不返回长度时退化为单连接流式下载。
-//! - 可选校验：下载完成后校验大小与 sha1/sha256/sha512/md5。
+//! - HEAD fetches `Content-Length` → split into `Range`s by thread count → fetch the
+//!   `.part{i}` temp files in parallel (in a `temp_part_xxx` directory) → merge them in
+//!   order → remove the parts directory.
+//! - Falls back to single-connection streaming download when the thread count is ≤1 or
+//!   the server returns no length.
+//! - Optional verification: after the download completes, verify the size and the
+//!   sha1/sha256/sha512/md5 checksum.
 
 use std::fs;
 use std::io::{self, Read, Write};
@@ -13,7 +17,7 @@ use std::time::Duration;
 use reqwest::blocking::Client;
 use sha2::Digest;
 
-/// 校验和类型（对齐 Item.SumType 取值）。
+/// Checksum type (mirrors the values of `Item.SumType`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SumType {
     Sha1,
@@ -22,14 +26,14 @@ pub enum SumType {
     Md5,
 }
 
-/// 期望校验信息。
+/// Expected checksum information.
 #[derive(Debug, Clone)]
 pub struct Checksum {
     pub sum_type: SumType,
     pub value: String,
 }
 
-/// 计算文件校验和（hex 小写）。
+/// Computes the file checksum (lowercase hex).
 pub fn checksum_of_file(path: &Path, sum_type: SumType) -> io::Result<String> {
     let mut f = fs::File::open(path)?;
     match sum_type {
@@ -53,7 +57,8 @@ fn digest_impl<D: Digest>(reader: &mut dyn Read, mut d: D) -> io::Result<String>
     Ok(out.iter().map(|b| format!("{b:02x}")).collect())
 }
 
-/// 非 json/toml 大文件（>1 MiB）才值得分片；Go 按扩展名 + 线程数判断。
+/// Only non-json/toml large files (>1 MiB) are worth chunking; Go decides by file
+/// extension + thread count.
 const MIN_MULTIPART_SIZE: u64 = 1024 * 1024;
 
 struct PartResult {
@@ -61,9 +66,11 @@ struct PartResult {
     err: Option<String>,
 }
 
-/// 下载 URL 到 `dest`（幂等：文件已存在且校验通过则跳过）。
+/// Downloads `url` to `dest` (idempotent: skipped when the file already exists and
+/// passes verification).
 ///
-/// `threads`：分片线程数；`expected_size`/`checksum` 可选；`timeout` 每片超时。
+/// `threads`: chunk thread count; `expected_size`/`checksum` are optional; `timeout`:
+/// per-chunk timeout.
 pub fn download_file(
     client: &Client,
     url: &str,
@@ -75,15 +82,15 @@ pub fn download_file(
 ) -> io::Result<()> {
     if dest.exists() {
         if verify(dest, expected_size, checksum.as_ref()) {
-            return Ok(()); // 幂等缓存命中
+            return Ok(()); // idempotent cache hit
         }
-        let _ = fs::remove_file(dest); // 校验失败 → 重下
+        let _ = fs::remove_file(dest); // verification failed → re-download
     }
     if let Some(parent) = dest.parent() {
         fs::create_dir_all(parent)?;
     }
 
-    // HEAD 获取长度（失败按不可分片处理）。
+    // HEAD fetches the length (on failure, treat as not chunkable).
     let length = head_length(client, url, timeout);
 
     let use_multipart = threads > 1 && length.map(|l| l >= MIN_MULTIPART_SIZE).unwrap_or(false);
@@ -292,7 +299,7 @@ fn do_multipart(
             return Err(io::Error::other(format!("part {} failed: {e}", r.index)));
         }
     }
-    // 顺序合并。
+    // Merge the parts in order.
     let mut out = fs::File::create(dest)?;
     for r in &results {
         let part_path = part_dir.join(format!("{name}.part{}", r.index));

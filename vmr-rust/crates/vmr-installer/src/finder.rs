@@ -1,4 +1,4 @@
-//! 已装版本发现 / 缓存清理（对齐 Go `installed.go`、`cached.go`）。
+//! Installed-version discovery / cache cleanup (mirrors Go `installed.go`, `cached.go`).
 
 use std::fs;
 use std::path::PathBuf;
@@ -7,7 +7,7 @@ use vmr_core::paths;
 
 use crate::common::{install_dir, sdk_version_dir, symbol_link_path};
 
-/// 已装版本与当前版本。
+/// Installed versions and the current version.
 pub struct InstalledInfo {
     pub installed: Vec<String>,
     pub current: Option<String>,
@@ -20,7 +20,7 @@ fn find_current(plugin: &str, sym_path: &PathBuf) -> Option<String> {
     name.strip_prefix(&prefix).map(|s| s.to_string())
 }
 
-/// 发现某 SDK（按 sdk_name 版本根）已装版本与当前版本。
+/// Finds an SDK's installed versions and current version (under the sdk_name version root).
 pub fn find_all(sdk_name: &str, plugin_name: &str) -> InstalledInfo {
     let sym = symbol_link_path(sdk_name);
     let version_root = sdk_version_dir(sdk_name);
@@ -40,7 +40,7 @@ pub fn find_all(sdk_name: &str, plugin_name: &str) -> InstalledInfo {
     InstalledInfo { installed, current }
 }
 
-/// 卸载单个版本目录；若是当前版本则同时删符号链接。
+/// Uninstalls a single version directory; if it is the current version, also removes the symlink.
 pub fn uninstall_version(sdk_name: &str, plugin_name: &str, version: &str) {
     let dir = install_dir(sdk_name, plugin_name, version);
     let _ = fs::remove_dir_all(&dir);
@@ -50,12 +50,13 @@ pub fn uninstall_version(sdk_name: &str, plugin_name: &str, version: &str) {
     }
 }
 
-/// 卸载全部版本（删版本根 + 符号链接）。
+/// Uninstalls all versions (removes the version root + symlink).
 pub fn uninstall_all(sdk_name: &str) {
     let _ = fs::remove_dir_all(sdk_version_dir(sdk_name));
 }
 
-/// 删除缓存：version 为空时清整个 `<cache>/<plugin>/` 下版本目录（对齐 cached.go）。
+/// Deletes cached files: when version is empty, clears every version directory under
+/// `<cache>/<plugin>/` (mirrors cached.go).
 pub fn delete_cached_files(plugin_name: &str, version: Option<&str>) {
     match version {
         Some(v) => {

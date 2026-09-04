@@ -1,7 +1,9 @@
-//! 网络策略：反代判定、镜像替换、下载线程数。
+//! Network policy: reverse-proxy decision, mirror substitution, and download thread count.
 //!
-//! 优先级链（plan.md §3.3）：镜像替换先于反代；仅镜像未改 URL 才叠加反代；
-//! gitee 不反代也不用本地代理。vmr-core 只提供策略判定，实际请求在 vmr-net。
+//! Priority chain (plan.md §3.3): mirror substitution runs before the reverse proxy; the
+//! reverse proxy is applied only when the mirror left the URL unchanged; gitee gets neither a
+//! reverse proxy nor a local proxy. vmr-core only makes the policy decision; the actual
+//! requests happen in vmr-net.
 
 use std::collections::HashMap;
 
@@ -12,9 +14,10 @@ use crate::default_reverse_proxy;
 use crate::envs;
 use crate::paths;
 
-/// 反代判定（对齐 Go `GetReverseProxyUri`）：
-/// 本地代理非空或 URL 含 `gitee.com` → 不反代；env 未设反代且 URL 含 `github`
-/// 子串 → 默认反代；结果统一补尾部 `/`。
+/// Reverse-proxy decision (mirrors Go `GetReverseProxyUri`):
+/// a non-empty local proxy or a URL containing `gitee.com` → no reverse proxy; no reverse
+/// proxy set in env and the URL contains the `github` substring → default reverse proxy;
+/// a trailing `/` is always appended to the result.
 pub fn get_reverse_proxy_uri(d_url: &str, local_proxy: &str) -> String {
     if !local_proxy.is_empty() {
         return String::new();
@@ -32,7 +35,8 @@ pub fn get_reverse_proxy_uri(d_url: &str, local_proxy: &str) -> String {
     rp
 }
 
-/// 下载线程数（对齐 Go `GetDownloadThreadNum`）：env 解析失败或 <1 时取 1。
+/// Download thread count (mirrors Go `GetDownloadThreadNum`): 1 when env parsing fails or
+/// the value is <1.
 pub fn get_download_thread_num() -> i32 {
     let num = env::var(envs::DOWNLOAD_THREADS)
         .ok()
@@ -41,7 +45,8 @@ pub fn get_download_thread_num() -> i32 {
     if num < 1 { 1 } else { num }
 }
 
-/// 读取镜像表；文件缺失或解析失败 → 空表（下载补全由 vmr-net 负责）。
+/// Reads the mirror table; a missing file or a parse failure → an empty table (fetching the
+/// table is handled by vmr-net).
 pub fn load_customed_mirror() -> HashMap<String, String> {
     match fs::read_to_string(paths::customed_mirrors_file_path()) {
         Ok(content) => toml::from_str(&content).unwrap_or_default(),
@@ -49,12 +54,14 @@ pub fn load_customed_mirror() -> HashMap<String, String> {
     }
 }
 
-/// 镜像替换核心（纯函数）。键按长度降序匹配，保证具体域名先于通用域名；
-/// Go 侧 map 迭代序随机，这里做确定性化。gradle 分支对齐 Go：
-/// URL 以 `https://gradle.org/releases` 开头且镜像值含 `%s` 时，
-/// 用 query 参数 `version` 填充；缺失则原样返回。
+/// Mirror-substitution core (pure function). Keys are matched in descending length order so
+/// specific domains win over generic ones; Go's map iteration order is random, so matching is
+/// made deterministic here. The gradle branch mirrors Go: when the URL starts with
+/// `https://gradle.org/releases` and the mirror value contains `%s`, the `version` query
+/// parameter is substituted in; when absent, the URL is returned unchanged.
 pub fn apply_customed_mirror(d_url: &str, mirrors: &HashMap<String, String>) -> String {
-    // 键按长度降序匹配（同长再按键序，确定性）；迭代键值对而非索引。
+    // Keys are matched in descending length order (ties broken by key order, deterministic);
+    // iterate key/value pairs rather than indices.
     let mut entries: Vec<(&String, &String)> = mirrors.iter().collect();
     entries.sort_by(|a, b| b.0.len().cmp(&a.0.len()).then_with(|| a.0.cmp(b.0)));
     let mut result = d_url.to_string();
@@ -73,7 +80,8 @@ pub fn apply_customed_mirror(d_url: &str, mirrors: &HashMap<String, String>) -> 
     result
 }
 
-/// 提取 gradle releases URL 的 query 参数 `version`（不做百分号解码，版本号不含特殊字符）。
+/// Extracts the `version` query parameter from a gradle releases URL (no percent-decoding;
+/// version numbers contain no special characters).
 fn gradle_version(url: &str) -> Option<String> {
     let query = url.split_once('?')?.1;
     let query = query.split('#').next().unwrap_or(query);
@@ -83,7 +91,8 @@ fn gradle_version(url: &str) -> Option<String> {
     })
 }
 
-/// 镜像替换入口（对齐 Go `UseCustomedMirrorUrl`）：env 开关未开则原样返回。
+/// Mirror-substitution entry point (mirrors Go `UseCustomedMirrorUrl`): the URL is returned
+/// unchanged when the env switch is off.
 pub fn use_customed_mirror_url(d_url: &str) -> String {
     if !env_bool(envs::USE_CUSTOMED_MIRRORS) {
         return d_url.to_string();
@@ -92,7 +101,7 @@ pub fn use_customed_mirror_url(d_url: &str) -> String {
     apply_customed_mirror(d_url, &mirrors)
 }
 
-/// 宽松布尔 env 解析（对齐 Go gconv.Bool 的常见取值）。
+/// Lenient boolean env parsing (mirrors the accepted values of Go's gconv.Bool).
 fn env_bool(key: &str) -> bool {
     match env::var(key) {
         Ok(v) => matches!(v.to_lowercase().as_str(), "true" | "1" | "t" | "yes" | "on"),

@@ -1,14 +1,14 @@
-//! 插件生命周期（对齐 Go `internal/luapi/plugin/{plugin.go,plugins.go,fromlua.go}`）。
+//! Plugin lifecycle (mirrors Go `internal/luapi/plugin/{plugin.go,plugins.go,fromlua.go}`).
 //!
-//! 语义要点：
-//! - 元数据（sdk_name/plugin_name/plugin_version/homepage/prequisite）读取：
-//!   全局字符串；若为函数则调用取返回值（Go `GetLuaConfItemString`）。
-//! - Load 校验：plugin_name/sdk_name/homepage/ic/crawl 必须存在。
-//! - 版本获取：缓存优先（`<cache>/<plugin>/<plugin>.versions.json`，retention
-//!   内新鲜且 cache 未禁用），否则实时执行 `crawl()` 并按当前 os/arch 过滤
-//!   （保留**最后一个**匹配 Item，对齐 Go），写缓存。
-//! - 安装回调：`install`/`postInstall` 全局函数存在时以参数调用，返回串须为
-//!   "true" 才算成功（Go `getFuncFromLua` 语义）。
+//! Semantic highlights:
+//! - Metadata (sdk_name/plugin_name/plugin_version/homepage/prequisite) is read from
+//!   global strings; if the value is a function it is called for its return value (Go `GetLuaConfItemString`).
+//! - Load validation: plugin_name/sdk_name/homepage/ic/crawl must all be present.
+//! - Version retrieval: cache first (`<cache>/<plugin>/<plugin>.versions.json`, fresh within the retention
+//!   period and cache not disabled); otherwise run `crawl()` live and filter by the current os/arch
+//!   (keeping the **last** matching Item, mirroring Go), then write the cache.
+//! - Install callbacks: when the `install`/`postInstall` global functions exist they are called with arguments, and
+//!   their returned string must be "true" to count as success (Go `getFuncFromLua` semantics).
 
 use std::collections::HashMap;
 use std::fs;
@@ -31,7 +31,7 @@ pub const CRAWL: &str = "crawl";
 pub const POST_INSTALL: &str = "postInstall";
 pub const CUSTOM_INSTALL: &str = "install";
 
-/// 单个插件。
+/// A single plugin.
 pub struct Plugin {
     file_name: Option<String>,
     file_content: Option<String>,
@@ -41,7 +41,7 @@ pub struct Plugin {
     pub plugin_version: String,
     pub prequisite: String,
     pub homepage: String,
-    /// 当前平台版本表：版本 → Item。
+    /// Version table for the current platform: version → Item.
     versions: HashMap<String, Item>,
     loaded: bool,
 }
@@ -112,7 +112,7 @@ impl Plugin {
         }
     }
 
-    /// 加载脚本并解析元数据（对齐 Go `Load`）。
+    /// Loads the script and parses the metadata (mirrors Go `Load`).
     pub fn load(&mut self) -> Result<(), String> {
         if self.loaded {
             return Ok(());
@@ -202,7 +202,7 @@ impl Plugin {
         }
     }
 
-    /// 当前平台版本表（缓存优先；否则实时 crawl + 过滤 + 缓存）。
+    /// Version table for the current platform (cache first; otherwise live crawl + filter + cache).
     pub fn get_sdk_versions(&mut self) -> Result<HashMap<String, Item>, String> {
         if self.lua.is_none() {
             self.loaded = false;
@@ -232,7 +232,7 @@ impl Plugin {
         Ok(self.versions.clone())
     }
 
-    /// 版本名降序（vmr 语义）。
+    /// Version names in descending order (vmr semantics).
     pub fn sorted_versions(&mut self) -> Vec<String> {
         if self.versions.is_empty() {
             let _ = self.get_sdk_versions();
@@ -249,7 +249,7 @@ impl Plugin {
         self.versions.get(name).cloned()
     }
 
-    /// 最新版本（Go `GetLatestVersion`：排序后首项）。
+    /// Latest version (Go `GetLatestVersion`: the first item after sorting).
     pub fn get_latest_version(&mut self) -> Option<(String, Item)> {
         let sorted = self.sorted_versions();
         let first = sorted.into_iter().next()?;
@@ -266,7 +266,7 @@ impl Plugin {
         ic_from_global(lua).ok_or_else(|| "installer config not found".to_string())
     }
 
-    /// 调可选自定义处理函数（install/postInstall）。
+    /// Invokes the optional custom handler function (install/postInstall).
     pub fn call_handler(&self, name: &str, args: &[&str]) -> Result<(), String> {
         let lua = self.lua.as_ref().ok_or("plugin not loaded")?;
         let v: mlua::Value = lua
@@ -292,7 +292,7 @@ impl Plugin {
     }
 }
 
-/// 扫描插件目录并懒加载元数据（对齐 Go `Plugins`）。
+/// Scans the plugin directory and lazily loads metadata (mirrors Go `Plugins`).
 pub struct Plugins {
     dir: PathBuf,
 }
@@ -304,7 +304,7 @@ impl Default for Plugins {
 }
 
 impl Plugins {
-    /// 目录不存在时先自动更新（对齐 Go NewPlugins）。
+    /// Auto-updates first when the directory does not exist (mirrors Go NewPlugins).
     pub fn new() -> Self {
         let dir = vmr_core::paths::plugin_dir();
         if !dir.exists() {
@@ -329,7 +329,7 @@ impl Plugins {
         out
     }
 
-    /// 全部插件（已 load 元数据）。
+    /// All plugins (metadata already loaded).
     pub fn load_all(&mut self) -> Vec<Plugin> {
         let mut out = Vec::new();
         for name in self.lua_files() {
@@ -356,7 +356,7 @@ impl Plugins {
     }
 }
 
-/// 测试与调试用：从字符串建插件并执行 crawl（供集成测试）。
+/// For testing and debugging: builds a plugin from a string and runs crawl (for integration tests).
 pub fn run_content_crawl(content: &str) -> Result<HashMap<String, Item>, String> {
     let mut p = Plugin::from_content(content.to_string());
     p.load()?;
@@ -369,7 +369,7 @@ mod tests {
 
     #[test]
     fn pipeline_with_plain_lua_plugin() {
-        // 最小插件：crawl 用核心绑定产出版本表；验证 load→crawl→平台过滤→ic 读取。
+        // Minimal plugin: crawl uses the core bindings to produce a version table; verifies load→crawl→platform filtering→ic reading.
         let (os, arch) = os_arch();
         let src = format!(
             r#"
@@ -400,7 +400,7 @@ mod tests {
         let versions = p.get_sdk_versions().expect("crawl");
         assert_eq!(versions.len(), 1, "仅保留当前平台条目");
         assert_eq!(versions["1.2.3"].os, os);
-        // 排序：只有 1.2.3 → 最新即它。
+        // Sorting: only 1.2.3 → the latest is it.
         assert_eq!(p.sorted_versions(), vec!["1.2.3"]);
     }
 }

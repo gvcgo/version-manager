@@ -1,17 +1,20 @@
-//! reqwest 封装与镜像/反代/代理优先级链（对齐 Go `cnf/common.go GetFetcher`）。
+//! reqwest wrapper with the mirror / reverse-proxy / proxy priority chain,
+//! mirroring Go `cnf/common.go GetFetcher`.
 //!
-//! 优先级链（plan.md §3.3、description.md §3.4）：
-//! 1. 镜像替换（仅 `VMR_USE_CUSTOMED_MIRRORS` 开启时，走 vmr-core）。
-//! 2. 本地代理 `VMR_LOCAL_PROXY` → 反代判定：本地代理非空或 gitee → 不反代；
-//!    `VMR_REVERSE_PROXY` 非空用之，否则 URL 含 `github` → 默认反代
-//!    `https://proxy.vmr.dpdns.org/proxy/`。
-//! 3. 仅当反代非空**且镜像未改 URL** 时：`url = 反代前缀 + url`
-//!    （前缀已补尾 `/`，实际样例为 `proxy/https://…`，不加额外 `/`）。
-//! 4. 代理：仅当**非 gitee 且镜像未改 URL** 时使用本地代理；
-//!    本地代理为空回退 `GVC_DEFAULT_PROXY`（goutils 行为）。
+//! Priority chain (plan.md §3.3, description.md §3.4):
+//! 1. Mirror substitution (only when `VMR_USE_CUSTOMED_MIRRORS` is on; goes through vmr-core).
+//! 2. Local proxy `VMR_LOCAL_PROXY` → reverse-proxy decision: local proxy non-empty or
+//!    gitee → no reverse proxy; non-empty `VMR_REVERSE_PROXY` → use it; otherwise a URL
+//!    containing `github` → default reverse proxy `https://proxy.vmr.dpdns.org/proxy/`.
+//! 3. Only when the reverse proxy is non-empty **and the mirror left the URL unchanged**:
+//!    `url = reverse-proxy prefix + url` (the prefix already ends in `/`; the real sample
+//!    is `proxy/https://…`, with no extra `/`).
+//! 4. Proxy: the local proxy is used only when the URL is **not gitee and the mirror left
+//!    the URL unchanged**; when the local proxy is empty, it falls back to
+//!    `GVC_DEFAULT_PROXY` (goutils behavior).
 //!
-//! 客户端默认行为对齐 Go/goutils：无自定义 UA、无重试、无超时；支持
-//! http/https/socks5 代理。
+//! Client defaults mirror Go/goutils: no custom UA, no retry, no timeout; supports
+//! http/https/socks5 proxies.
 
 use std::collections::HashMap;
 
@@ -19,9 +22,10 @@ use vmr_core::default_reverse_proxy;
 use vmr_core::envs;
 use vmr_core::{apply_customed_mirror, load_customed_mirror};
 
-/// 反代判定（对齐 Go `GetReverseProxyUri`，纯参数版）：
-/// 本地代理非空或 URL 含 `gitee.com` → 空；`reverse_proxy_env` 非空用之；
-/// 否则 URL 含 `github` 子串 → 默认反代；结果补尾部 `/`。
+/// Reverse-proxy decision (mirrors Go `GetReverseProxyUri`, pure-parameter version):
+/// non-empty local proxy or URL containing `gitee.com` → empty; non-empty
+/// `reverse_proxy_env` → use it; otherwise a URL containing the `github` substring
+/// → the default reverse proxy; the result is padded with a trailing `/`.
 fn reverse_proxy_for(url: &str, local_proxy: &str, rp_env: &str) -> String {
     if !local_proxy.is_empty() || url.contains("gitee.com") {
         return String::new();
@@ -41,10 +45,11 @@ fn reverse_proxy_for(url: &str, local_proxy: &str, rp_env: &str) -> String {
     rp
 }
 
-/// 代理链解析的纯函数核心（env 与 conf 已读入参数，便于单测）。
+/// Pure-function core of the proxy-chain resolution (env and conf are passed in as
+/// parameters, for easier unit testing).
 ///
-/// 返回 `(请求 URL, 应设置的代理)`。`mirror_on` 表示镜像开关开启；
-/// `mirrors` 为镜像表（空表等价未替换）。
+/// Returns `(request URL, proxy to set)`. `mirror_on` indicates the mirror switch is
+/// on; `mirrors` is the mirror table (an empty table is equivalent to no substitution).
 pub fn chain_url(
     d_url: &str,
     mirror_on: bool,
@@ -53,26 +58,27 @@ pub fn chain_url(
     reverse_proxy_env: &str,
     gvc_proxy: &str,
 ) -> (String, Option<String>) {
-    // 1. 镜像替换。
+    // 1. Mirror substitution.
     let mut url = d_url.to_string();
     if mirror_on {
         url = apply_customed_mirror(&url, mirrors);
     }
     let mirror_changed = url != d_url;
 
-    // 2. 反代判定（对镜像后 URL 判定）。
+    // 2. Reverse-proxy decision (made on the URL after mirroring).
     let rp = reverse_proxy_for(&url, local_proxy, reverse_proxy_env);
 
-    // 3. 反代叠加（仅镜像未改 URL 时）。
+    // 3. Prepend the reverse proxy (only when the mirror left the URL unchanged).
     let mut proxy: Option<String> = None;
     if !rp.is_empty() && !mirror_changed {
         url = format!("{rp}{url}");
     } else if !rp.is_empty() {
-        // 镜像已改 URL：反代前缀保留本地策略同 Go——Go 只在镜像未改时叠加，
-        // 这里镜像已改则不再叠反代。
+        // The mirror changed the URL: keeping the local policy identical to Go — Go only
+        // prepends when the mirror left the URL unchanged, so here, since the mirror
+        // changed it, the reverse proxy is no longer prepended.
     }
 
-    // 4. 代理（仅非 gitee 且镜像未改）。
+    // 4. Proxy (only when not gitee and the mirror left the URL unchanged).
     if !url.contains("gitee.com") && !mirror_changed {
         if !local_proxy.is_empty() {
             proxy = Some(local_proxy.to_string());
@@ -83,7 +89,7 @@ pub fn chain_url(
     (url, proxy)
 }
 
-/// 从环境与配置读取当前值后执行优先级链。
+/// Reads the current values from the env and config, then runs the priority chain.
 pub fn resolve_chain(d_url: &str) -> (String, Option<String>) {
     let mirror_on = std::env::var(envs::USE_CUSTOMED_MIRRORS)
         .map(|v| matches!(v.to_lowercase().as_str(), "true" | "1" | "t" | "yes" | "on"))
@@ -106,19 +112,21 @@ pub fn resolve_chain(d_url: &str) -> (String, Option<String>) {
     )
 }
 
-/// 请求/下载封装。每个实例绑定解析好的代理（运行时权威 env 决定）。
+/// Request/download wrapper; each instance binds the resolved proxy (the env is the
+/// runtime authority).
 pub struct Fetcher {
     client: reqwest::blocking::Client,
 }
 
 impl Fetcher {
-    /// 构建客户端：应用代理（无代理则直连）。无 UA/无超时/无重试（Go 默认行为）。
+    /// Builds the client: applies the proxy (direct connection when there is none).
+    /// No UA, no timeout, no retry (Go's default behavior).
     pub fn new(proxy: Option<String>) -> reqwest::Result<Self> {
         let mut builder = reqwest::blocking::Client::builder()
             .user_agent("")
             .no_proxy();
         if let Some(p) = proxy {
-            // reqwest Proxy::all 支持 http/https/socks5（socks feature）。
+            // reqwest Proxy::all supports http/https/socks5 (socks feature).
             builder = builder.proxy(reqwest::Proxy::all(p)?);
         }
         Ok(Fetcher {
@@ -126,7 +134,8 @@ impl Fetcher {
         })
     }
 
-    /// 依目标 URL 解析链后构造客户端（代理与 URL 相关时使用）。
+    /// Builds the client after resolving the chain for the target URL (use when the
+    /// proxy depends on the URL).
     pub fn for_url(d_url: &str) -> reqwest::Result<Self> {
         let (_url, proxy) = resolve_chain(d_url);
         Self::new(proxy)
@@ -136,12 +145,13 @@ impl Fetcher {
         &self.client
     }
 
-    /// GET 文本（默认 UA 为空串；服务器不接受空 UA 时调用方可覆盖 header）。
+    /// GETs text (the default UA is an empty string; callers may override the header
+    /// when the server does not accept an empty UA).
     pub fn get(&self, url: &str) -> reqwest::Result<String> {
         self.client.get(url).send()?.error_for_status()?.text()
     }
 
-    /// GET 字节。
+    /// GETs bytes.
     pub fn get_bytes(&self, url: &str) -> reqwest::Result<Vec<u8>> {
         self.client
             .get(url)
@@ -167,7 +177,7 @@ mod tests {
 
     const LOCAL: &str = "http://127.0.0.1:7890";
     const GVC: &str = "http://gvc:8080";
-    const RP: &str = ""; // env 空 → 默认反代
+    const RP: &str = ""; // empty env → default reverse proxy
 
     #[test]
     fn github_gets_default_reverse_proxy_when_no_local_proxy() {
@@ -224,7 +234,8 @@ mod tests {
             RP,
             GVC,
         );
-        // 非 gitee、无本地代理 → GVC 回退生效；URL 含 github 子串判定用默认反代。
+        // Not gitee and no local proxy → the GVC fallback applies; since the URL contains
+        // the github substring, the default reverse proxy is used for the decision.
         assert_eq!(proxy.as_deref(), Some(GVC));
         assert!(
             url.contains("proxy.vmr.dpdns.org"),
@@ -251,7 +262,8 @@ mod tests {
 
     #[test]
     fn mirror_not_matching_keeps_normal_rules() {
-        // 镜像开启但表内无匹配 → URL 未变 → 常规规则：本地代理生效、反代被本地代理禁用。
+        // Mirror on but no entry in the table matches → URL unchanged → the normal rules
+        // apply: the local proxy takes effect and disables the reverse proxy.
         let (url, proxy) = chain_url(
             "https://github.com/a/b.zip",
             true,

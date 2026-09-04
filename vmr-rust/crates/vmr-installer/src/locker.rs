@@ -1,6 +1,7 @@
-//! `.vmr.lock` 项目锁（对齐 Go `installer/locker.go`）。
+//! `.vmr.lock` project lock (mirrors Go `installer/locker.go`).
 //!
-//! 文件格式：JSON `{"sdk":"version"}`（兼容旧 `sdk@version` 单行文本与 node 别名）。
+//! File format: JSON `{"sdk":"version"}` (also accepts the legacy `sdk@version`
+//! single-line text and node aliases).
 
 use std::collections::HashMap;
 use std::fs;
@@ -14,7 +15,8 @@ pub struct VersionLocker {
 }
 
 impl VersionLocker {
-    /// 从当前目录向上查找锁文件（含起始目录）。
+    /// Searches upward from the current directory for the lock file
+    /// (including the starting directory).
     pub fn find_locker_file(start: Option<&Path>) -> Option<PathBuf> {
         let mut d = start
             .map(Path::to_path_buf)
@@ -30,7 +32,7 @@ impl VersionLocker {
         }
     }
 
-    /// 读取锁（向上查找；找不到则空）。
+    /// Loads the lock (searching upward; empty when not found).
     pub fn load_from(dir: Option<&Path>) -> Self {
         let mut v = VersionLocker::default();
         let Some(p) = Self::find_locker_file(dir) else {
@@ -56,7 +58,7 @@ impl VersionLocker {
             self.versions
                 .insert(sdk.trim().to_string(), ver.trim().to_string());
         }
-        // node 别名兼容（对齐 Go）。
+        // node alias compatibility (mirrors Go).
         for (k, v) in self.versions.clone() {
             if k == "nodejs" || k == "node.js" {
                 self.versions.insert("node".to_string(), v);
@@ -64,7 +66,8 @@ impl VersionLocker {
         }
     }
 
-    /// 保存：写入当前/最近锁文件位置（不存在则在当前目录新建）。
+    /// Saves: writes to the current/nearest lock-file location (creates one in the
+    /// current directory when none exists).
     pub fn save(&mut self, dir: Option<&Path>, sdk: &str, version: &str) {
         let path = match Self::find_locker_file(dir) {
             Some(p) => p,

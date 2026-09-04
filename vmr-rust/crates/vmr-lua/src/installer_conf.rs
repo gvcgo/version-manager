@@ -1,8 +1,8 @@
-//! 安装配置绑定（vmrNewInstallerConfig/AddFlagFiles/EnableFlagDirExcepted/
-//! AddBinaryDirs/AddAdditionalEnvs）与全局 `ic` 读取。
+//! Installer-config bindings (vmrNewInstallerConfig/AddFlagFiles/EnableFlagDirExcepted/
+//! AddBinaryDirs/AddAdditionalEnvs) and reading the global `ic`.
 //!
-//! 对齐 Go `lua_global/installer.go`：链式调用返回同一 userdata；os 参数
-//! 空串时同时追加三平台；不认识的 os 原样返回（不改动）。
+//! Mirrors Go `lua_global/installer.go`: chained calls return the same userdata; when the os argument
+//! is an empty string, it appends to all three platforms at once; an unrecognized os is passed through unchanged.
 
 use mlua::{Lua, Table, UserData, Value};
 
@@ -115,7 +115,7 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
     Ok(())
 }
 
-/// 读全局 `ic`（脚本执行后调用），对齐 Go `GetInstallerConfig`。
+/// Reads the global `ic` (called after the script executes), mirroring Go `GetInstallerConfig`.
 pub fn ic_from_global(lua: &Lua) -> Option<InstallerConfig> {
     let v: Value = lua.globals().get("ic").ok()?;
     match v {

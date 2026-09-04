@@ -1,8 +1,8 @@
-//! 插件数据结构（对齐 Go `lua_global/version.go` 与 `installer.go`）。
+//! Plugin data structures (mirrors Go `lua_global/version.go` and `installer.go`).
 
 use serde::{Deserialize, Serialize};
 
-/// 单个版本条目（对齐 Go `Item`）。
+/// A single version entry (mirrors Go `Item`).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Item {
     #[serde(default)]
@@ -25,13 +25,13 @@ pub struct Item {
     pub extra: String,
 }
 
-/// 单个版本的候选条目集合（对齐 Go `SDKVersion`）。
+/// The set of candidate entries for a single version (mirrors Go `SDKVersion`).
 pub type SDKVersion = Vec<Item>;
 
-/// crawl 返回的版本表（对齐 Go `VersionList`）。
+/// The version table returned by crawl (mirrors Go `VersionList`).
 pub type VersionList = std::collections::HashMap<String, SDKVersion>;
 
-/// 平台文件列表（对齐 Go `FileItems`；json 键 darwin）。
+/// Per-platform file list (mirrors Go `FileItems`; json key `darwin`).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct FileItems {
     #[serde(default)]
@@ -42,10 +42,10 @@ pub struct FileItems {
     pub darwin: Vec<String>,
 }
 
-/// 路径组（一组相对路径 = 一个 bin 目录 / env 路径）。
+/// A path group (a set of relative paths = one bin directory / env path).
 pub type DirPath = Vec<String>;
 
-/// 各平台路径组列表（对齐 Go `DirItems`）。
+/// Per-platform path group lists (mirrors Go `DirItems`).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct DirItems {
     #[serde(default)]
@@ -56,7 +56,7 @@ pub struct DirItems {
     pub darwin: Vec<DirPath>,
 }
 
-/// 附加环境变量（对齐 Go `AdditionalEnv`）。
+/// Additional environment variables (mirrors Go `AdditionalEnv`).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct AdditionalEnv {
     #[serde(default)]
@@ -67,7 +67,7 @@ pub struct AdditionalEnv {
     pub version: String,
 }
 
-/// 二进制改名（对齐 Go `BinaryRename`；当前插件未用，保留契约）。
+/// Binary rename (mirrors Go `BinaryRename`; unused by current plugins, kept for contract).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct BinaryRename {
     #[serde(default)]
@@ -76,7 +76,7 @@ pub struct BinaryRename {
     pub rename_to: String,
 }
 
-/// 安装配置（对齐 Go `InstallerConfig`；Lua 全局变量名 `ic`）。
+/// Installer configuration (mirrors Go `InstallerConfig`; the Lua global variable name is `ic`).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct InstallerConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -92,7 +92,7 @@ pub struct InstallerConfig {
 }
 
 impl InstallerConfig {
-    /// 对齐 Go `NewInstallerConfig`：空指针字段置空结构（Lua 端按平台 append）。
+    /// Mirrors Go `NewInstallerConfig`: null pointer fields become empty structs (the Lua side appends per platform).
     pub fn new() -> Self {
         InstallerConfig {
             flag_files: Some(FileItems::default()),
@@ -104,7 +104,7 @@ impl InstallerConfig {
     }
 }
 
-/// 平台路径选择（对齐 Go `CollectEnvs` 等处的按平台取字段逻辑）。
+/// Per-platform field selection (mirrors the pick-by-platform logic in Go `CollectEnvs` and elsewhere).
 pub fn file_items_for<'a>(fi: &'a FileItems, os: &str) -> &'a Vec<String> {
     match os {
         "windows" => &fi.windows,
@@ -121,7 +121,7 @@ pub fn dir_items_for<'a>(di: &'a DirItems, os: &str) -> &'a Vec<DirPath> {
     }
 }
 
-/// installer 类型常量（对齐 Go `lua_global/version.go`）。
+/// installer kind constants (mirrors Go `lua_global/version.go`).
 pub mod installer_kind {
     pub const CONDA: &str = "conda";
     pub const CONDA_FORGE: &str = "conda-forge";

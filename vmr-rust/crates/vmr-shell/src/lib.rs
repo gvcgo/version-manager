@@ -1,14 +1,14 @@
-//! vmr-shell：shell hook 环境注入与 cd hook 自动切换（plan.md §3.8，要求 7）。
+//! vmr-shell: shell hook environment injection and automatic cd-hook switching (plan.md §3.8, requirement 7).
 //!
-//! 对齐 Go `internal/shell/`：bash/zsh/fish 共用模式——
-//! - 环境文件 `~/.vmr/vmr.sh`（bash/zsh）或 `~/.vmr/vmr.fish`（fish）；
-//! - `update_vmr_shell_file`：按 `# cd hook start … # cd hook end` 标记幂等替换；
-//! - rc 文件（`.bashrc`/`.zshrc`/`config.fish`）追加 source 块（`VM_DISABLE` 守卫）；
-//! - `PackPath`/`PackEnv` 行注入/按前缀摘除（Set/Unset）。
+//! Mirrors Go `internal/shell/`: a shared scheme for bash/zsh/fish —
+//! - Shell environment file `~/.vmr/vmr.sh` (bash/zsh) or `~/.vmr/vmr.fish` (fish);
+//! - `update_vmr_shell_file`: idempotent replacement between `# cd hook start … # cd hook end` markers;
+//! - rc files (`.bashrc`/`.zshrc`/`config.fish`) get a source block appended (`VM_DISABLE` guard);
+//! - `PackPath`/`PackEnv` line injection / prefix-based removal (Set/Unset).
 //!
-//! 会话契约：`VM_DISABLE=111` 时跳过注入；cd hook 调用 `vmr use -E` 自动切换。
-//! Windows 侧 powershell 配置生成含 cd hook 的 profile（注册表广播在 Windows
-//! 平台实现受限，Rust 侧仅提供 profile 写回，文档化）。
+//! Session contract: skip injection when `VM_DISABLE=111`; the cd hook calls `vmr use -E` for automatic switching.
+//! On Windows, the generated PowerShell config includes the cd hook (registry broadcast
+//! is limited on that platform; the Rust side only provides profile write-back — documented).
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -19,13 +19,13 @@ pub const VM_DISABLE_ENV_NAME: &str = "VM_DISABLE";
 pub const VM_CD_INIT_ENV_NAME: &str = "VMR_CD_INIT";
 pub const MODE_PERM: u32 = 0o644;
 
-/// 支持的 shell 类型。
+/// Supported shell types.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kind {
     Bash,
     Zsh,
     Fish,
-    /// Windows PowerShell（非 unix 主要路径）。
+    /// Windows PowerShell (not a primary unix path).
     PowerShell,
 }
 
@@ -37,7 +37,7 @@ impl Kind {
         }
     }
 
-    /// bash/zsh 共用 hook 模板（Go `vmEnvZsh`）。
+    /// Shared bash/zsh hook template (Go `vmEnvZsh`).
     fn hook_content(self, install_dir: &str, home_dir: &str) -> String {
         let inst = format_path_string(install_dir, home_dir);
         match self {
@@ -75,7 +75,7 @@ fi\n\
         }
     }
 
-    /// rc 中 source 块（VM_DISABLE 守卫）。
+    /// Source block for the rc file (VM_DISABLE guard).
     fn source_block(self, env_file: &str, home_dir: &str) -> String {
         let f = format_path_string(env_file, home_dir);
         match self {
@@ -89,7 +89,7 @@ fi\n\
     }
 }
 
-/// 路径展示化：`$HOME/...` → `~/...`（对齐 Go `FormatPathString`）。
+/// Path display: `$HOME/...` → `~/...` (mirrors Go `FormatPathString`).
 pub fn format_path_string(p: &str, home_dir: &str) -> String {
     if let Some(rest) = p.strip_prefix(home_dir) {
         return format!("~{rest}");
@@ -97,7 +97,7 @@ pub fn format_path_string(p: &str, home_dir: &str) -> String {
     p.to_string()
 }
 
-/// 检测当前 shell（SHELL env；docker 无 SHELL → bash）。
+/// Detect the current shell (SHELL env; docker without SHELL → bash).
 pub fn detect_kind() -> Kind {
     let shell = std::env::var("SHELL").unwrap_or_default();
     if shell.ends_with("zsh") {
@@ -109,7 +109,7 @@ pub fn detect_kind() -> Kind {
     }
 }
 
-/// 幂等替换环境文件中的 hook 区（对齐 Go `UpdateVMRShellFile`）。
+/// Idempotently replace the hook section in the shell environment file (mirrors Go `UpdateVMRShellFile`).
 pub fn update_vmr_shell_file(path: &Path, vmr_path_env: &str, new_hook: &str) {
     let old = fs::read_to_string(path).unwrap_or_default();
     if old.is_empty() {
@@ -124,7 +124,8 @@ pub fn update_vmr_shell_file(path: &Path, vmr_path_env: &str, new_hook: &str) {
         _ => None,
     };
     let content = if let Some(hook) = &old_hook {
-        // Go 语义：仅当旧 hook 区不含安装路径行时才剥离该行，随后整区替换。
+        // Go semantics: the install-path line is stripped only when the old hook section
+        // lacks it; the whole section is then replaced.
         let base = if hook.contains(vmr_path_env) {
             content
         } else {
@@ -132,14 +133,14 @@ pub fn update_vmr_shell_file(path: &Path, vmr_path_env: &str, new_hook: &str) {
         };
         base.replace(hook, new_hook)
     } else {
-        // 无旧 hook：剥离残留路径行后前置新 hook。
+        // No old hook: strip leftover install-path lines, then prepend the new hook.
         format!("{new_hook}\n{}", content.replace(vmr_path_env, ""))
     };
     let content = content.trim().to_string();
     let _ = fs::write(path, content);
 }
 
-/// rc 文件追加 source 块（幂等；对齐 Go WriteVMEnvToShell 尾段）。
+/// Append the source block to the rc file (idempotent; mirrors the tail of Go `WriteVMEnvToShell`).
 fn ensure_source_block(conf_path: &Path, block: &str) {
     let data = fs::read_to_string(conf_path).unwrap_or_default();
     let trimmed = block.trim().to_string();
@@ -154,7 +155,7 @@ fn ensure_source_block(conf_path: &Path, block: &str) {
     let _ = fs::write(conf_path, new_data);
 }
 
-/// shell 环境操作器（非 Windows）。
+/// Shell environment operator (non-Windows).
 #[derive(Debug, Clone)]
 pub struct Shell {
     pub kind: Kind,
@@ -175,7 +176,7 @@ impl Shell {
         sh
     }
 
-    /// rc 文件路径。
+    /// Path of the rc file.
     pub fn conf_path(&self) -> PathBuf {
         match self.kind {
             Kind::Fish => PathBuf::from(&self.home).join(".config/fish/config.fish"),
@@ -185,7 +186,7 @@ impl Shell {
         }
     }
 
-    /// vmr 环境文件路径（~/.vmr/vmr.sh|vmr.fish）。
+    /// Path of the vmr shell environment file (`~/.vmr/vmr.sh|vmr.fish`).
     pub fn vm_env_conf_path(&self) -> PathBuf {
         paths::work_dir().join(self.kind.env_file_name())
     }
@@ -263,7 +264,7 @@ impl Shell {
         self.write_env_file(&out.replace("\n\n", "\n"));
     }
 
-    /// 写 cd hook（环境文件）并确保 rc source 块（对齐 WriteVMEnvToShell）。
+    /// Write the cd hook (shell environment file) and ensure the rc source block (mirrors `WriteVMEnvToShell`).
     pub fn write_vm_env_to_shell(&self) {
         let install = paths::work_dir().to_string_lossy().into_owned();
         let env_file = self.vm_env_conf_path();
@@ -304,7 +305,7 @@ fn dirs_sys_home() -> Option<String> {
     }
 }
 
-/// Windows powershell profile 路径（对齐 Go win.go）。
+/// Windows PowerShell profile path (mirrors Go `win.go`).
 fn powershell_profile_path(home: &str) -> PathBuf {
     PathBuf::from(home).join("Documents/WindowsPowerShell/profile.ps1")
 }

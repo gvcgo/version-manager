@@ -1,16 +1,17 @@
-//! 系统命令执行（对齐 Go `vmr-go/internal/utils/exec.go` + goutils `ExecuteSysCommand`）。
+//! System command execution (mirrors Go `vmr-go/internal/utils/exec.go` + goutils `ExecuteSysCommand`).
 //!
-//! - Windows：`args` 前插 `/c` 后经 `cmd` 执行；其余平台直接执行 `args[0]`。
-//! - `collect_output`：stdout 收集到内部缓冲，否则继承父进程 stdout；
-//!   stderr/stdin 恒继承（对齐 Go）。
-//! - 环境：完整继承当前进程环境（Rust `Command` 默认行为，对齐 Go `cmd.Env = os.Environ()`）。
-//! - Go 的 unix `FlushPathEnvForUnix()` 实为无效调用（`source ~/.bashrc` 子进程
-//!   无法修改父进程环境、错误被忽略），Rust 侧省略。
+//! - Windows: `args` is run via `cmd` with `/c` prepended; other platforms execute `args[0]` directly.
+//! - `collect_output`: stdout is captured into an internal buffer, otherwise the parent's stdout is
+//!   inherited; stderr/stdin are always inherited (mirrors Go).
+//! - Environment: fully inherits the current process environment (Rust `Command`'s default behavior,
+//!   mirroring Go's `cmd.Env = os.Environ()`).
+//! - Go's unix `FlushPathEnvForUnix()` is effectively a no-op (a `source ~/.bashrc` child process
+//!   cannot modify the parent's environment, and errors are ignored), so it is omitted on the Rust side.
 
 use std::io;
 use std::process::{Child, Command, Stdio};
 
-/// 命令执行器（对齐 Go `SysCommandRunner`）。
+/// Command runner (mirrors Go `SysCommandRunner`).
 pub struct SysCommandRunner {
     args: Vec<String>,
     work_dir: Option<String>,
@@ -58,7 +59,7 @@ impl SysCommandRunner {
         cmd
     }
 
-    /// 启动子进程（对齐 Go `Run` 的 spawn 阶段；需随后 `wait`）。
+    /// Spawn the child process (mirrors the spawn phase of Go `Run`; `wait` must follow).
     pub fn spawn(&mut self) -> io::Result<()> {
         if self.child.is_some() {
             return Ok(());
@@ -67,7 +68,8 @@ impl SysCommandRunner {
         Ok(())
     }
 
-    /// 等待子进程结束并把 stdout 存入缓冲；返回退出状态是否成功。
+    /// Wait for the child to finish and store its stdout in the buffer; returns whether the exit
+    /// status was successful.
     pub fn wait(&mut self) -> io::Result<()> {
         let mut child = self
             .child
@@ -91,20 +93,20 @@ impl SysCommandRunner {
         Ok(())
     }
 
-    /// 阻塞执行（spawn + wait）。
+    /// Blocking execution (spawn + wait).
     pub fn run(&mut self) -> io::Result<()> {
         self.spawn()?;
         self.wait()
     }
 
-    /// 终止子进程（对齐 Go `Cancel`；须在另一线程等待时调用）。
+    /// Terminate the child process (mirrors Go `Cancel`; call it while another thread is waiting).
     pub fn cancel(&mut self) {
         if let Some(child) = self.child.as_mut() {
             let _ = child.kill();
         }
     }
 
-    /// 收集到的 stdout；未收集或尚未结束返回 `None`。
+    /// Collected stdout; `None` if not collected or not yet finished.
     pub fn get_output(&self) -> Option<&str> {
         self.output
             .as_deref()
@@ -112,10 +114,10 @@ impl SysCommandRunner {
     }
 }
 
-/// 一次性命令执行：`work_dir` 为空则不设置工作目录。
+/// One-shot command execution: an empty `work_dir` leaves the working directory unset.
 ///
-/// 对齐 goutils `ExecuteSysCommand(collectOutput, workDir, args...)`：
-/// collect 时返回收集到的 stdout 文本；非 collect 时返回空串。
+/// Mirrors goutils `ExecuteSysCommand(collectOutput, workDir, args...)`:
+/// with collect, the collected stdout text is returned; without collect, an empty string is returned.
 pub fn exec(collect_output: bool, work_dir: &str, args: &[String]) -> io::Result<String> {
     let mut runner = SysCommandRunner::new(collect_output, work_dir, args.to_vec());
     runner.run()?;

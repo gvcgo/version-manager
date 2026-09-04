@@ -1,8 +1,8 @@
-//! conda 绑定（vmrSearchByConda，要求 4）：查 conda 源 repodata（vmr-conda），
-//! 把当前平台全部版本追加进传入的版本表，Item.installer="conda"。
+//! conda bindings (`vmrSearchByConda`, requirement 4): query the conda source repodata (vmr-conda)
+//! and append every version for the current platform to the passed-in version table, with Item.installer="conda".
 //!
-//! Go 版走本机 `conda search` 命令（依赖 Miniconda）——重写后按要求改为
-//! 直接查 conda 源，**不依赖本机 conda**。
+//! The Go version runs the local `conda search` command (depends on Miniconda) — after the rewrite it
+//! queries the conda source directly instead, **without depending on a local conda**.
 
 use mlua::AnyUserData;
 
@@ -43,6 +43,6 @@ fn conda_item() -> Item {
     }
 }
 
-/// 表值→空转的兼容占位（保留引用以防未来扩展）。
+/// Compatibility placeholder mapping a table value to a no-op (kept for possible future extension).
 #[allow(dead_code)]
 fn _placeholder(_: &mlua::Table) {}

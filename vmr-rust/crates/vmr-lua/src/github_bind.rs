@@ -1,9 +1,9 @@
-//! github 绑定（vmrGetGithubRelease，要求 3）——拉 GitHub releases 分页，
-//! 6 个 Lua 回调过滤（tagFilter/versionParser/fileFilter/archParser/osParser/
-//! installerGetter），对齐 Go `lua_global/github.go` 语义：
-//! 回调内错误/非布尔/非字符串返回值按 false/"" 处理（Go recover 兜底）；
-//! 过滤 `archive/refs/` 资产。结果与其它版本表同型（VersionListUD），
-//! 因此可直接 vmrMergeVersionList / 作为 crawl 返回值。
+//! github bindings (`vmrGetGithubRelease`, requirement 3) — fetch GitHub releases with pagination,
+//! filtered through 6 Lua callbacks (tagFilter/versionParser/fileFilter/archParser/osParser/
+//! installerGetter), mirroring Go `lua_global/github.go` semantics:
+//! error/non-bool/non-string return values inside callbacks are treated as false/"" (Go recover fallback);
+//! `archive/refs/` assets are filtered out. The result shares the shape of other version tables (VersionListUD),
+//! so it can be fed straight into vmrMergeVersionList / used as the crawl return value.
 
 use mlua::{Function, Lua, Value};
 

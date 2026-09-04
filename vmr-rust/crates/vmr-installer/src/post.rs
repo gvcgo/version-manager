@@ -1,12 +1,13 @@
-//! SDK 差异化后处理（对齐 Go `internal/installer/post/` 注册表；精简实现）。
+//! Per-SDK post-processing (mirrors the Go `internal/installer/post/` registry;
+//! a lean implementation).
 //!
-//! 每项真实行为（linux/macOS）：
-//! - zig / upx / moonbit / bun：安装根内浅层找同名可执行 → chmod +x；
-//!   bun 额外在 bin 目录补 `bunx` 链接。
-//! - rustup：rustup-init 复制/查找并 chmod（Go 的 Library/bin 复制为
-//!   rustup 自身运行期行为，此处只保证可执行位）。
+//! Actual behavior per entry (linux/macOS):
+//! - zig / upx / moonbit / bun: shallow search under the install root for an executable
+//!   of the same name → chmod +x; bun additionally adds a `bunx` link in the bin directory.
+//! - rustup: rustup-init copies/finds and chmods (Go's Library/bin copy is rustup's own
+//!   runtime behavior; here only the executable bit is ensured).
 //!
-//! 未列出的插件 no-op（Ok）。
+//! Plugins not listed are a no-op (Ok).
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -53,7 +54,7 @@ fn chmod_x(path: &Path) {
 fn chmod_x(_path: &Path) {}
 
 fn add_bunx(bin_dir: &Path) {
-    // bun 安装根含 bin/bun；补 bunx 符号链接（unix）。
+    // bun's install root contains bin/bun; add a bunx symlink (unix).
     let bunx = bin_dir.join("bunx");
     if bunx.exists() {
         return;
@@ -65,7 +66,7 @@ fn add_bunx(bin_dir: &Path) {
     }
 }
 
-/// 执行后处理（安装根 = 版本目录）。
+/// Runs post-processing (install root = version directory).
 pub fn run_post_install(
     plugin_name: &str,
     install_root: &Path,

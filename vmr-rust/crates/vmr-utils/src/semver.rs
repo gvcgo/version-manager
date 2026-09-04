@@ -1,39 +1,44 @@
-//! 版本解析与排序（对齐 Go `vmr-go/internal/utils/sort_versions.go`）。
+//! Version parsing and sorting (mirrors Go `vmr-go/internal/utils/sort_versions.go`).
 //!
-//! 移植语义要点（与 Go 完全一致，含 quirk）：
-//! - 解析：小写化 → 取首个 `数字(任意字符+数字){0,2}` 匹配段 → 按 `.` 拆出
-//!   Major/Minor/Patch（Build 因正则最多 3 段而不可达，保留字段以备正则演进）。
-//!   版本段中无数字（`1.0` 前缀缺失）视为解析失败。
-//! - beta/rc：从整串取首个 `beta\.*数字` / `rc\.*数字` 段中的数字；
-//!   缺失时置最大整数哨兵（`i64::MAX`，对齐 Go `math.MaxInt`），
-//!   保证数值相同段间 **稳定版 > rc > beta**。
-//! - 排序：降序 `sort_versions` / 升序 `sort_versions_ascend`，逐级比较
-//!   Major→Minor→Patch→Build→Beta→RC。
-//! - 回退：任一侧解析失败即退化为纯字符串比较（Go 比较整行、Rust 无行概念，
-//!   对单版本字符串列表二者等价；多列行场景 Go 会把整行字符串化后比较，
-//!   此处按版本字符串比较——见 plan.md §3.2「解析失败回退字符串比较」）。
-//! - quirk 保留：版本正则 `.` 未转义（匹配任意字符）；`beta`/`rc` 为朴素
-//!   子串检测（如 `3.2.0-source` 因含 `rc` 子串被当作 rc 版）。
+//! Ported-semantics notes (identical to Go, quirks included):
+//! - Parsing: lowercase → take the first `digit(any-char-digit){0,2}` match → split by `.` into
+//!   Major/Minor/Patch (Build is unreachable because the regex matches at most 3 segments; the
+//!   field is kept in case the regex evolves). A version with no numeric segment (the `1.0`
+//!   digit prefix is missing) counts as a parse failure.
+//! - beta/rc: take the number from the first `beta\.*number` / `rc\.*number` segment of the whole
+//!   string; when missing, set the max-integer sentinel (`i64::MAX`, mirroring Go `math.MaxInt`),
+//!   which keeps **stable > rc > beta** among segments with equal numeric parts.
+//! - Sorting: descending `sort_versions` / ascending `sort_versions_ascend`, comparing level by
+//!   level: Major→Minor→Patch→Build→Beta→RC.
+//! - Fallback: if either side fails to parse, comparison falls back to plain string comparison
+//!   (Go compares whole rows while Rust has no row concept — for a list of single version strings
+//!   the two are equivalent; for multi-column rows Go stringifies the whole row before comparing,
+//!   whereas here the comparison is on the version string — see plan.md §3.2 "fallback to string
+//!   comparison when parsing fails").
+//! - Quirks preserved: the `.` in the version regex is unescaped (matches any character);
+//!   `beta`/`rc` use naive substring detection (e.g. `3.2.0-source` contains the `rc` substring
+//!   and is therefore treated as an rc version).
 
 use std::cmp::Ordering;
 use std::sync::LazyLock;
 
 use regex::Regex;
 
-/// 稳定版哨兵：beta/rc 缺失时置最大整数（Go `math.MaxInt`，64 位 = `i64::MAX`）。
+/// Stable-version sentinel: the largest integer is used when beta/rc are missing
+/// (Go `math.MaxInt`; on 64 bits that is `i64::MAX`).
 const MAX_INT: i64 = i64::MAX;
 
-/// 版本号段：`\d+(.\d+){0,2}`（Go `versionRegexp`，`.` 未转义 quirk）。
-/// Go RE2 的 `\d` 仅 ASCII，故用 `[0-9]`。
+/// Version segment: `\d+(.\d+){0,2}` (Go `versionRegexp`; the `.` is an unescaped quirk).
+/// `\d` in Go's RE2 is ASCII-only, hence `[0-9]` is used.
 static VERSION_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[0-9]+(.[0-9]+){0,2}").unwrap());
-/// beta 段：`beta\.*\d+`（Go `betaRegexp`）。
+/// beta segment: `beta\.*\d+` (Go `betaRegexp`).
 static BETA_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"beta\.*[0-9]+").unwrap());
-/// rc 段：`rc\.*\d+`（Go `rcRegexp`）。
+/// rc segment: `rc\.*\d+` (Go `rcRegexp`).
 static RC_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"rc\.*[0-9]+").unwrap());
-/// 段内数字：`\d+`（Go `numRegexp`）。
+/// In-segment number: `\d+` (Go `numRegexp`).
 static NUM_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[0-9]+").unwrap());
 
-/// 一个版本号的数值分解（对齐 Go `Version`）。
+/// Numeric decomposition of a version string (mirrors Go `Version`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Version {
     pub major: i64,
@@ -44,7 +49,8 @@ pub struct Version {
     pub rc: i64,
 }
 
-/// 解析版本字符串；不含任何数字段时返回 `None`（对齐 Go 返回 error）。
+/// Parse a version string; returns `None` when it contains no numeric segment (mirrors Go
+/// returning an error).
 pub fn parse_version(version: &str) -> Option<Version> {
     let version = version.to_lowercase();
     let numeric = VERSION_RE.find(&version)?.as_str();
@@ -58,7 +64,8 @@ pub fn parse_version(version: &str) -> Option<Version> {
         rc: 0,
     };
     for (idx, part) in numeric.split('.').enumerate() {
-        // 数字段一定是纯数字；超长溢出/异常时归 0（对齐 Go gconv.Int）。
+        // A numeric segment is always pure digits; on overflow/abnormality it falls back to 0
+        // (mirrors Go gconv.Int).
         let n = part.parse::<i64>().unwrap_or(0);
         match idx {
             0 => v.major = n,
@@ -69,7 +76,7 @@ pub fn parse_version(version: &str) -> Option<Version> {
         }
     }
 
-    // beta/rc 数字：取整串中首个 beta/rc 段内的首个数字串。
+    // beta/rc number: take the first number string inside the first beta/rc segment of the whole string.
     v.beta = BETA_RE
         .find(&version)
         .and_then(|m| NUM_RE.find(m.as_str()))
@@ -81,8 +88,9 @@ pub fn parse_version(version: &str) -> Option<Version> {
         .map(|m| m.as_str().parse::<i64>().unwrap_or(0))
         .unwrap_or(0);
 
-    // 哨兵：无 beta/rc 数字时——整串含该子串则视为无编号首版（1），
-    // 否则为稳定版（MAX_INT）。朴素子串检测 quirk 保留。
+    // Sentinel: when no beta/rc number exists — if the whole string contains that substring, treat
+    // it as an unnumbered first release (1); otherwise it is a stable version (MAX_INT). The naive
+    // substring-detection quirk is preserved.
     if v.beta == 0 {
         v.beta = if version.contains("beta") { 1 } else { MAX_INT };
     }
@@ -112,8 +120,9 @@ fn compare_fields_asc(a: &Version, b: &Version) -> Ordering {
         .then_with(|| a.rc.cmp(&b.rc))
 }
 
-/// 降序比较两个版本字符串：大版本在前。
-/// 任一侧解析失败回退为字符串降序比较（对齐 Go `SortVersions`）。
+/// Compare two version strings in descending order: the larger version comes first.
+/// If either side fails to parse, fall back to descending string comparison
+/// (mirrors Go `SortVersions`).
 fn compare_desc(a: &str, b: &str) -> Ordering {
     match (parse_version(a), parse_version(b)) {
         (Some(va), Some(vb)) => compare_fields_desc(&va, &vb),
@@ -121,8 +130,9 @@ fn compare_desc(a: &str, b: &str) -> Ordering {
     }
 }
 
-/// 升序比较两个版本字符串：小版本在前。
-/// 任一侧解析失败回退为字符串升序比较（对齐 Go `SortVersionAscend`）。
+/// Compare two version strings in ascending order: the smaller version comes first.
+/// If either side fails to parse, fall back to ascending string comparison
+/// (mirrors Go `SortVersionAscend`).
 fn compare_asc(a: &str, b: &str) -> Ordering {
     match (parse_version(a), parse_version(b)) {
         (Some(va), Some(vb)) => compare_fields_asc(&va, &vb),
@@ -130,17 +140,17 @@ fn compare_asc(a: &str, b: &str) -> Ordering {
     }
 }
 
-/// 版本列表**降序**排序（原地，最新在前）。
+/// Sort a version list **descending** (in place, newest first).
 ///
-/// 对齐 Go `utils.SortVersions`（Go 版作用于表格行、按行首版本字符串排序；
-/// Rust 侧直接作用于版本字符串列表）。
+/// Mirrors Go `utils.SortVersions` (the Go version sorts table rows by the leading version
+/// string of each row; the Rust side operates directly on a list of version strings).
 pub fn sort_versions(versions: &mut [String]) {
     versions.sort_by(|a, b| compare_desc(a, b));
 }
 
-/// 版本列表**升序**排序（原地，最旧在前）。
+/// Sort a version list **ascending** (in place, oldest first).
 ///
-/// 对齐 Go `utils.SortVersionAscend`。
+/// Mirrors Go `utils.SortVersionAscend`.
 pub fn sort_versions_ascend(versions: &mut [String]) {
     versions.sort_by(|a, b| compare_asc(a, b));
 }
@@ -191,7 +201,7 @@ mod tests {
                 rc: MAX
             }
         );
-        // 前缀/后缀噪声被忽略；取首个数字段。
+        // Prefix/suffix noise is ignored; the first numeric segment is taken.
         assert_eq!(
             parse_version("go1.21.5").unwrap(),
             Version {
@@ -218,7 +228,7 @@ mod tests {
 
     #[test]
     fn parse_beta_forms() {
-        // beta1 / beta.1 / beta 无编号 / beta02：均为 beta 段，rc 置哨兵。
+        // beta1 / beta.1 / unnumbered beta / beta02: all beta segments; rc gets the sentinel.
         for (s, n) in [
             ("1.2.3-beta1", 1),
             ("1.2.3-beta.1", 1),
@@ -251,7 +261,8 @@ mod tests {
 
     #[test]
     fn build_field_unreachable_by_regex() {
-        // 版本正则最多 3 个数字段，`.4` 不被纳入 → build 恒 0（Go 同）。
+        // The version regex matches at most 3 numeric segments; `.4` is not included → build is
+        // always 0 (same in Go).
         assert_eq!(
             parse_version("1.2.3.4").unwrap(),
             Version {
@@ -267,12 +278,13 @@ mod tests {
 
     #[test]
     fn naive_beta_rc_substring_quirk() {
-        // quirk：子串检测朴素——"source" 含 "rc" → 被当作 rc=1 版；
-        // 但 rc 正则需 rc 后跟数字，"3.2.0-source" 中无匹配 → rc 走 1 分支。
+        // quirk: naive substring detection — "source" contains "rc" → treated as rc=1;
+        // but the rc regex requires a digit after rc, which "3.2.0-source" lacks → rc takes the
+        // 1 branch.
         let v = parse_version("3.2.0-source").unwrap();
         assert_eq!(v.beta, MAX);
         assert_eq!(v.rc, 1);
-        // 因此它排在同数值稳定版之后。
+        // Hence it sorts after a stable version with the same numeric value.
         let mut list = vec!["3.2.0".to_string(), "3.2.0-source".to_string()];
         sort_versions(&mut list);
         assert_eq!(list, ["3.2.0", "3.2.0-source"]);
@@ -283,8 +295,8 @@ mod tests {
         let stable = parse_version("1.2.3").unwrap();
         let rc = parse_version("1.2.3-rc1").unwrap();
         let beta = parse_version("1.2.3-beta1").unwrap();
-        assert_eq!(compare_fields_desc(&stable, &rc), Ordering::Less); // stable 在前
-        assert_eq!(compare_fields_desc(&rc, &beta), Ordering::Less); // rc 在前
+        assert_eq!(compare_fields_desc(&stable, &rc), Ordering::Less); // stable first
+        assert_eq!(compare_fields_desc(&rc, &beta), Ordering::Less); // rc first
     }
 
     #[test]
@@ -331,7 +343,8 @@ mod tests {
 
     #[test]
     fn sort_falls_back_to_lexical_on_unparseable() {
-        // "latest" 无数字段 → 与两侧均走字符串比较；字母开头 > 数字开头。
+        // "latest" has no numeric segment → string comparison against both sides; a leading
+        // letter > a leading digit.
         let mut list = vec![
             "latest".to_string(),
             "1.10.0".to_string(),
@@ -348,7 +361,7 @@ mod tests {
         sort_versions_ascend(&mut list);
         assert_eq!(list, ["1.2.3", "1.10.0", "latest"]);
 
-        // 两个都不可解析：纯字符串序。
+        // Neither is parseable: plain string order.
         let mut list = vec!["beta".to_string(), "aaa".to_string()];
         sort_versions(&mut list);
         assert_eq!(list, ["beta", "aaa"]);

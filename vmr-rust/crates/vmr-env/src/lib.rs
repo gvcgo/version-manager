@@ -1,19 +1,21 @@
-//! vmr-env：环境变量收集与注入（plan.md §3.7，要求 6）。
+//! vmr-env: environment variable collection and injection (plan.md §3.7, requirement 6).
 //!
-//! - `collect`：按平台取 `ic.BinaryDirs.{linux|darwin|windows}`（空则版本目录本身）
-//!   + `ic.AdditionalEnvs`；只收**存在**的路径（对齐 Go `CollectEnvs`）。
-//! - `set_globally` / `unset_globally`：经 vmr-shell 写入 shell 环境文件。
-//! - `add_temporarily`：`VMR_ADD_TO_PATH_TEMPORARILY=1` 时把 SDK bin 注入当前
-//!   进程 PATH（会话/锁模式子 shell 用）。
-//! - `remove_global_sdk_path`：把当前 SDK 符号链接路径从环境文件摘除。
+//! - `collect`: takes `ic.BinaryDirs.{linux|darwin|windows}` per platform (the version
+//!   directory itself when empty) plus `ic.AdditionalEnvs`; keeps only **existing**
+//!   paths (mirrors Go `CollectEnvs`).
+//! - `set_globally` / `unset_globally`: write via vmr-shell to the shell environment file.
+//! - `add_temporarily`: injects the SDK bin into the current process PATH when
+//!   `VMR_ADD_TO_PATH_TEMPORARILY=1` (used by session/lock-mode subshells).
+//! - `remove_global_sdk_path`: removes the current SDK symlink path from the shell
+//!   environment file.
 //!
-//! 环境变量名契约见 vmr-core `envs`。
+//! The environment variable name contract is defined in vmr-core `envs`.
 
 use vmr_core::envs;
 use vmr_lua::types::{AdditionalEnv, InstallerConfig, dir_items_for};
 use vmr_shell::Shell;
 
-/// 收集结果：PATH 目录（绝对路径）与附加环境变量。
+/// Collection result: PATH directories (absolute paths) and additional environment variables.
 #[derive(Debug, Clone, Default)]
 pub struct EnvBundle {
     pub path_dirs: Vec<String>,
@@ -36,12 +38,12 @@ fn join_base(base: &std::path::Path, parts: &[String]) -> String {
     p.to_string_lossy().into_owned()
 }
 
-/// 从 ic + 安装根收集（对齐 Go `CollectEnvs(basePath)`）。
+/// Collects from ic + the install root (mirrors Go `CollectEnvs(basePath)`).
 pub fn collect(ic: &InstallerConfig, install_dir: &str, os: &str) -> EnvBundle {
     let mut out = EnvBundle::default();
     let base = std::path::Path::new(install_dir);
 
-    // BinaryDirs（空 → 版本目录本身）。
+    // BinaryDirs (empty → the version directory itself).
     let dirs = ic
         .binary_dirs
         .as_ref()
@@ -58,7 +60,8 @@ pub fn collect(ic: &InstallerConfig, install_dir: &str, os: &str) -> EnvBundle {
         }
     }
 
-    // AdditionalEnvs：逐条拼路径，仅存在路径入结果；同 name 的用分隔符合并。
+    // AdditionalEnvs: concatenate each path; only existing paths enter the result, and
+    // same-name ones are joined with the separator.
     for env in &ic.additional_envs {
         out.env_vars.extend(collect_additional_env(env, base));
     }
@@ -79,7 +82,7 @@ fn collect_additional_env(env: &AdditionalEnv, base: &std::path::Path) -> Vec<(S
     vec![(env.name.clone(), vals.join(&sep().to_string()))]
 }
 
-/// 把 SDK 安装路径从当前进程 PATH 摘除（会话/锁模式前调用）。
+/// Removes the SDK install path from the current process PATH (call before session/lock mode).
 pub fn remove_sdk_path_from_process_path(sdk_symlink: &str) {
     let Ok(cur) = std::env::var("PATH") else {
         return;
@@ -89,7 +92,7 @@ pub fn remove_sdk_path_from_process_path(sdk_symlink: &str) {
     unsafe { std::env::set_var("PATH", joined) };
 }
 
-/// 注入临时 PATH（Go `AddEnvsTemporarilly`：VMR_ADD_TO_PATH_TEMPORARILY=1 时）。
+/// Injects a temporary PATH (Go `AddEnvsTemporarilly`: when VMR_ADD_TO_PATH_TEMPORARILY=1).
 pub fn add_temporarily(bundle: &EnvBundle) {
     if !std::env::var(envs::ADD_TO_PATH_TEMPORARILY)
         .map(|v| v == "1")
@@ -103,7 +106,7 @@ pub fn add_temporarily(bundle: &EnvBundle) {
     unsafe { std::env::set_var("PATH", parts.join(&sep().to_string())) };
 }
 
-/// 把 PATH 中不存在的 dir 前置（供交互 hook 等场景）。
+/// Prepends dirs not already in the PATH (for interactive hooks and similar scenarios).
 pub fn prepend_process_path(dirs: &[String]) {
     let cur = std::env::var("PATH").unwrap_or_default();
     let mut parts: Vec<String> = dirs.to_vec();
@@ -111,8 +114,8 @@ pub fn prepend_process_path(dirs: &[String]) {
     unsafe { std::env::set_var("PATH", parts.join(&sep().to_string())) };
 }
 
-/// 全局写 shell 环境文件（对齐 Go `SetEnvGlobally`：逐 bin 目录 set_path、
-/// 逐附加 env set_env）。
+/// Writes the shell environment file globally (mirrors Go `SetEnvGlobally`:
+/// set_path per bin directory, set_env per additional env).
 pub fn set_globally(shell: &Shell, bundle: &EnvBundle) {
     for dir in &bundle.path_dirs {
         shell.set_path(dir);
@@ -122,7 +125,7 @@ pub fn set_globally(shell: &Shell, bundle: &EnvBundle) {
     }
 }
 
-/// 全局摘除（卸载当前版本 / 卸载 SDK 时）。
+/// Unsets globally (when uninstalling the current version / an SDK).
 pub fn unset_globally(shell: &Shell, bundle: &EnvBundle) {
     for dir in &bundle.path_dirs {
         shell.unset_path(dir);
@@ -132,12 +135,12 @@ pub fn unset_globally(shell: &Shell, bundle: &EnvBundle) {
     }
 }
 
-/// 把 SDK 符号链接路径从全局环境摘除（Go `RemoveGlobalSDKPathTemporarily`）。
+/// Removes the SDK symlink path from the global environment (Go `RemoveGlobalSDKPathTemporarily`).
 pub fn remove_global_sdk_path(shell: &Shell, sdk_symlink: &str) {
     shell.unset_path(sdk_symlink);
 }
 
-/// 供测试验证的纯收集函数（platform 取参）。
+/// A pure collection function for test verification (takes the platform as a parameter).
 #[allow(dead_code)]
 pub fn collect_for_test(ic: &InstallerConfig, dir: &str, os: &str) -> EnvBundle {
     collect(ic, dir, os)
@@ -175,9 +178,9 @@ mod tests {
         mkdirs(&dir, &["bin"]);
         let ic = ic_sample();
         let b = collect(&ic, dir.to_str().unwrap(), "linux");
-        // bin 存在、missing 不存在 → path_dirs 只有 bin。
+        // bin exists, missing does not → path_dirs contains only bin.
         assert_eq!(b.path_dirs, vec![format!("{}/bin", dir.display())]);
-        // GOROOT=base（空路径段→ base 本身，存在）。
+        // GOROOT=base (empty path segment → base itself, which exists).
         assert_eq!(
             b.env_vars,
             vec![("GOROOT".to_string(), dir.to_string_lossy().into_owned())]

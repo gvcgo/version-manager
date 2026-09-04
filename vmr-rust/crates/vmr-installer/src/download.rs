@@ -1,7 +1,9 @@
-//! 缓存下载（对齐 Go `internal/download/sdk_file.go`）。
+//! Cached downloads (mirrors Go `internal/download/sdk_file.go`).
 //!
-//! 缓存路径 `<cache>/<plugin>/<version>/<file>`；幂等（已存在且校验通过跳过）。
-//! 下载走后端 vmr-net（镜像/反代/代理链、多线程分片、校验和/大小校验）。
+//! Cache path `<cache>/<plugin>/<version>/<file>`; idempotent (skipped when the file
+//! already exists and passes checksum validation).
+//! Downloads go through the vmr-net backend (mirror / reverse proxy / proxy chain,
+//! multithreaded chunked download, checksum / size check).
 
 use std::path::PathBuf;
 
@@ -19,12 +21,12 @@ fn sum_type_of(s: &str) -> Option<SumType> {
     }
 }
 
-/// 线程数（vmr-core policy；env 权威）。
+/// Thread count (vmr-core policy; env is authoritative).
 fn threads() -> usize {
     vmr_core::policy::get_download_thread_num().max(1) as usize
 }
 
-/// URL 末段文件名（去 query）。
+/// File name from the last URL segment (query stripped).
 fn file_name_of(url: &str) -> String {
     let no_query = url.split(['?', '#']).next().unwrap_or(url);
     no_query
@@ -35,7 +37,7 @@ fn file_name_of(url: &str) -> String {
         .unwrap_or_else(|| "download".to_string())
 }
 
-/// 下载到缓存并返回路径；失败/空 URL 返回 None。
+/// Downloads to the cache and returns the path; returns None on failure or an empty URL.
 pub fn download_to_cache(plugin_name: &str, version: &str, item: &Item) -> Option<PathBuf> {
     if item.url.is_empty() {
         return None;
@@ -74,7 +76,7 @@ pub fn download_to_cache(plugin_name: &str, version: &str, item: &Item) -> Optio
     Some(dest)
 }
 
-/// 删除缓存文件（已存在时）。
+/// Removes the cached file (when present).
 pub fn remove_cached(plugin_name: &str, version: &str, file: &str) {
     let p = paths::cache_dir()
         .join(plugin_name)
@@ -83,7 +85,7 @@ pub fn remove_cached(plugin_name: &str, version: &str, file: &str) {
     let _ = std::fs::remove_file(p);
 }
 
-/// 判断缓存文件是否已就绪（存在且校验通过）。
+/// Whether the cached file is ready (present and passing checksum validation).
 pub fn is_cached(plugin_name: &str, version: &str, item: &Item) -> bool {
     if item.url.is_empty() {
         return false;

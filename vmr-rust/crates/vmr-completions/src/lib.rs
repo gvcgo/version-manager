@@ -1,11 +1,11 @@
-//! shell 补全安装（plan.md §3.10）：把补全脚本写入 `~/.vmr/vmr_completions.*`
-//! 并在 shell 配置里追加 source/import 块（`# VMR Completions` 标记）。
+//! Shell completions install (plan.md §3.10): writes the completion script to `~/.vmr/vmr_completions.*`
+//! and appends a source/import block to the shell configuration (the `# VMR Completions` marker).
 
 use std::fs;
 
 use vmr_core::paths;
 
-/// 支持的 shell（对齐 plan §3.10 与 Go 侧）。
+/// Supported shells (mirrors plan §3.10 and the Go side).
 #[derive(Debug, Clone, Copy)]
 pub enum ShellKind {
     Bash,
@@ -35,7 +35,7 @@ fn home() -> String {
     }
 }
 
-/// 补全目标文件与 shell 配置路径。
+/// The completion target file and shell configuration paths.
 fn targets(kind: ShellKind) -> (PathBuf, PathBuf) {
     let h = PathBuf::from(home());
     match kind {
@@ -58,7 +58,7 @@ fn targets(kind: ShellKind) -> (PathBuf, PathBuf) {
     }
 }
 
-/// 追加补全 source/import 块到配置（`# VMR Completions` 幂等）。
+/// Appends the completions source/import block to the configuration (idempotent via `# VMR Completions`).
 pub fn install_completions(kind: ShellKind, script: &str) -> Result<(), String> {
     let (file, conf) = targets(kind);
     fs::create_dir_all(paths::work_dir()).map_err(|e| e.to_string())?;
@@ -79,7 +79,7 @@ pub fn install_completions(kind: ShellKind, script: &str) -> Result<(), String> 
     };
     let data = fs::read_to_string(&conf).unwrap_or_default();
     if data.contains("# VMR Completions") {
-        return Ok(()); // 已安装（幂等）
+        return Ok(()); // already installed (idempotent)
     }
     let out = if data.trim().is_empty() {
         block

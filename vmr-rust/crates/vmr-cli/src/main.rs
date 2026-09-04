@@ -1,4 +1,4 @@
-//! vmr CLI（clap；命令/别名对齐 plan §3.11 与 Go cmd/vmr 表，无 TUI）。
+//! vmr CLI (clap; commands/aliases mirror the Go cmd/vmr table per plan §3.11; no TUI).
 
 mod table;
 
@@ -28,44 +28,44 @@ struct Cli {
 enum Cmd {
     #[command(alias = "v")]
     Version,
-    /// 设置本地代理。
+    /// Set the local proxy.
     #[command(alias = "sp")]
     SetProxy { uri: String },
-    /// 设置反向代理。
+    /// Set the reverse proxy.
     #[command(alias = "sr", alias = "srp")]
     SetReverseProxy { uri: String },
-    /// 设置下载线程数。
+    /// Set the number of download threads.
     #[command(alias = "sdt", alias = "st")]
     SetDownloadThreads { num: i32 },
-    /// 切换自定义镜像开关。
+    /// Toggle the custom-mirrors switch.
     #[command(alias = "tcm", alias = "tm")]
     ToggleCustomedMirrors,
-    /// 允许嵌套会话开关。
+    /// Toggle whether nested sessions are allowed.
     #[command(alias = "ns")]
     NestedSessions,
-    /// 查询会话模式（VM_DISABLE）。
+    /// Query the session mode (`VM_DISABLE`).
     #[command(alias = "ism")]
     IsSessionMode,
-    /// 列出可用 SDK（文本表格）。
+    /// List available SDKs (plain-text table).
     #[command(alias = "S")]
     Show,
-    /// 查询某 SDK 的版本列表；-c 走 conda 源。
+    /// Query an SDK's version list; `-c` queries the conda source.
     #[command(alias = "s")]
     Search {
         sdk: String,
         #[arg(short = 'c', long)]
         conda: bool,
     },
-    /// 显示某 SDK 已装版本（当前标 <current>）。
+    /// Show an SDK's installed versions (current marked `<current>`).
     #[command(alias = "l")]
     Local { sdk: String },
-    /// 列出已装 SDK。
+    /// List installed SDKs.
     #[command(alias = "in")]
     InstalledSdks,
-    /// 每个已装 SDK 的版本信息。
+    /// Show version info for each installed SDK.
     #[command(alias = "ii")]
     InstalledInfo,
-    /// 安装并切换 SDK 版本（sdk@version）；-E 项目锁 / -s 会话 / -l 锁版本 / -c conda。
+    /// Install and switch the SDK version (`sdk@version`); `-E` project lock / `-s` session / `-l` lock version / `-c` conda.
     #[command(alias = "u", alias = "h")]
     Use {
         spec: String,
@@ -78,22 +78,22 @@ enum Cmd {
         #[arg(short = 'c')]
         conda: bool,
     },
-    /// 卸载 sdk@version 或 @all。
+    /// Uninstall `sdk@version` or `@all`.
     #[command(alias = "uni", alias = "r")]
     Uninstall { spec: String },
-    /// 更新 Lua 插件。
+    /// Update Lua plugins.
     #[command(alias = "up")]
     UpdatePlugins,
-    /// 安装 shell 补全（bash/zsh/fish/powershell）。
+    /// Install shell completions (`bash`/`zsh`/`fish`/`powershell`).
     #[command(alias = "ac")]
     AddCompletions { shell: String },
-    /// 自安装。
+    /// Self-install.
     #[command(alias = "i", alias = "is")]
     InstallSelf {
         #[arg(long)]
         sdk_dir: Option<String>,
     },
-    /// 自卸载（供脚本调用）。
+    /// Self-uninstall (for use by scripts).
     #[command(alias = "Uins")]
     UninstallSelf,
 }
@@ -108,7 +108,7 @@ fn err_exit(e: String) -> ! {
 }
 
 fn main() {
-    // conf → env 回写（env 为运行时权威，对齐 Go 副作用初始化）。
+    // conf → env write-back (env is the runtime authority, mirroring Go's side-effect initialization).
     let _ = vmr_core::conf::VMRConf::new();
     let cli = Cli::parse();
     if let Err(e) = run(cli) {
@@ -369,7 +369,7 @@ fn cmd_use(
     conda: bool,
 ) -> Result<(), String> {
     if cd_hook {
-        // vmr use -E：按锁注入并进入会话（对齐 Go HookForCdCommand）。
+        // vmr use -E: inject from the lock file and enter the session (mirrors Go HookForCdCommand).
         let action = ins::hook_for_cd_command()?;
         if let ins::Action::RunSession = action {
             std::process::exit(vmr_pty::run_terminal());
@@ -407,7 +407,7 @@ fn cmd_use(
         } else {
             ins::InvokeMode::Globally
         },
-        no_envs: conda, // conda 安装提示手动加 PATH（Go 行为）。
+        no_envs: conda, // conda install prompts the user to add PATH manually (Go behavior).
     };
     let action = ins::install(&req)?;
     match action {

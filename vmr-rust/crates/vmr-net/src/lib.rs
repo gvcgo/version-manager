@@ -1,10 +1,12 @@
-//! vmr-net：请求 + 下载 + GitHub API（plan.md §3.3，要求 3/8）。
+//! vmr-net: requests + downloads + GitHub API (plan.md §3.3, requirements 3/8).
 //!
-//! - `fetcher`：reqwest 封装（无默认 UA/重试/超时，对齐 Go），镜像/反代/代理
-//!   优先级链（镜像替换先于反代；仅镜像未改 URL 才叠加反代；gitee 不反代也不用
-//!   本地代理）。
-//! - `download`：多线程分片下载（Range → `.part%v` → 合并）+ 校验和/大小校验。
-//! - `github`：GitHub REST API 客户端（releases 分页 + contents 文件列表）。
+//! - `fetcher`: reqwest wrapper (no default UA/retry/timeout, mirrors Go); the mirror /
+//!   reverse-proxy / proxy priority chain (mirror substitution precedes the reverse
+//!   proxy; the reverse proxy is prepended only when the mirror left the URL unchanged;
+//!   gitee gets neither a reverse proxy nor a local proxy).
+//! - `download`: multithreaded chunked download (Range → `.part%v` → merge) + checksum /
+//!   size verification.
+//! - `github`: GitHub REST API client (paginated releases + contents file listing).
 
 pub mod download;
 pub mod fetcher;
