@@ -1,0 +1,10 @@
+[package]
+name = "vmr-self"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "vmr self install/uninstall & helper scripts (plan §3.10)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
+vmr-shell = { path = "../vmr-shell" }

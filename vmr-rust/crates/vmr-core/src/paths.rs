@@ -7,7 +7,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::envs;
-use crate::{default_reverse_proxy, DEFAULT_HOST_URL, VMR_WORK_DIR_NAME};
+use crate::{DEFAULT_HOST_URL, VMR_WORK_DIR_NAME, default_reverse_proxy};
 
 fn home_dir() -> PathBuf {
     dirs::home_dir().unwrap_or_else(|| PathBuf::from("."))

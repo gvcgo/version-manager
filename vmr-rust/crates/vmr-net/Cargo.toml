@@ -1,0 +1,15 @@
+[package]
+name = "vmr-net"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "http fetcher, multipart downloader and github api client (plan §3.3)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls", "socks", "stream"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha1 = "0.10"
+sha2 = "0.10"
+md-5 = "0.10"

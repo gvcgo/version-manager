@@ -1,0 +1,18 @@
+[package]
+name = "vmr-lua"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "lua runtime, 50 vmr* plugin bindings and plugin lifecycle (plan §3.4)"
+
+[dependencies]
+vmr-core = { path = "../vmr-core" }
+vmr-net = { path = "../vmr-net" }
+vmr-utils = { path = "../vmr-utils" }
+vmr-conda = { path = "../vmr-conda" }
+mlua = { version = "0.10", features = ["lua54", "vendored"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "socks"] }
+scraper = "0.20"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

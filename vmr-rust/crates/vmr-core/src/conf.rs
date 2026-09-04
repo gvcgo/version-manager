@@ -157,11 +157,7 @@ pub fn get_github_token() -> String {
 /// 缓存保留时间秒数，未配置时为 86400（Go `GetCacheRetentionTime`）。
 pub fn get_cache_retention_time() -> i64 {
     let t = VMRConf::new().cache_retention_time;
-    if t == 0 {
-        86400
-    } else {
-        t
-    }
+    if t == 0 { 86400 } else { t }
 }
 
 /// 缓存是否被禁用（Go `GetCacheDisabled`）。

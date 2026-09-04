@@ -1,0 +1,8 @@
+[package]
+name = "vmr-pty"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "session interactive sub-shell runner (plan §3.9)"
+
+[dependencies]

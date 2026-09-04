@@ -3,13 +3,14 @@
 //! 优先级链（plan.md §3.3）：镜像替换先于反代；仅镜像未改 URL 才叠加反代；
 //! gitee 不反代也不用本地代理。vmr-core 只提供策略判定，实际请求在 vmr-net。
 
+use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
 
+use crate::default_reverse_proxy;
 use crate::envs;
 use crate::paths;
-use crate::default_reverse_proxy;
 
 /// 反代判定（对齐 Go `GetReverseProxyUri`）：
 /// 本地代理非空或 URL 含 `gitee.com` → 不反代；env 未设反代且 URL 含 `github`
@@ -37,11 +38,7 @@ pub fn get_download_thread_num() -> i32 {
         .ok()
         .and_then(|s| s.parse::<i32>().ok())
         .unwrap_or(0);
-    if num < 1 {
-        1
-    } else {
-        num
-    }
+    if num < 1 { 1 } else { num }
 }
 
 /// 读取镜像表；文件缺失或解析失败 → 空表（下载补全由 vmr-net 负责）。
@@ -58,7 +55,7 @@ pub fn load_customed_mirror() -> HashMap<String, String> {
 /// 用 query 参数 `version` 填充；缺失则原样返回。
 pub fn apply_customed_mirror(d_url: &str, mirrors: &HashMap<String, String>) -> String {
     let mut keys: Vec<&String> = mirrors.keys().collect();
-    keys.sort_by(|a, b| b.len().cmp(&a.len()));
+    keys.sort_by_key(|k| Reverse(k.len()));
     let mut result = d_url.to_string();
     for k in keys {
         let v = &mirrors[k];
@@ -98,10 +95,7 @@ pub fn use_customed_mirror_url(d_url: &str) -> String {
 /// 宽松布尔 env 解析（对齐 Go gconv.Bool 的常见取值）。
 fn env_bool(key: &str) -> bool {
     match env::var(key) {
-        Ok(v) => matches!(
-            v.to_lowercase().as_str(),
-            "true" | "1" | "t" | "yes" | "on"
-        ),
+        Ok(v) => matches!(v.to_lowercase().as_str(), "true" | "1" | "t" | "yes" | "on"),
         Err(_) => false,
     }
 }
