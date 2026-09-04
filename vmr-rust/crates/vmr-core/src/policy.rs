@@ -3,8 +3,8 @@
 //! 优先级链（plan.md §3.3）：镜像替换先于反代；仅镜像未改 URL 才叠加反代；
 //! gitee 不反代也不用本地代理。vmr-core 只提供策略判定，实际请求在 vmr-net。
 
-use std::cmp::Reverse;
 use std::collections::HashMap;
+
 use std::env;
 use std::fs;
 
@@ -54,11 +54,11 @@ pub fn load_customed_mirror() -> HashMap<String, String> {
 /// URL 以 `https://gradle.org/releases` 开头且镜像值含 `%s` 时，
 /// 用 query 参数 `version` 填充；缺失则原样返回。
 pub fn apply_customed_mirror(d_url: &str, mirrors: &HashMap<String, String>) -> String {
-    let mut keys: Vec<&String> = mirrors.keys().collect();
-    keys.sort_by_key(|k| Reverse(k.len()));
+    // 键按长度降序匹配（同长再按键序，确定性）；迭代键值对而非索引。
+    let mut entries: Vec<(&String, &String)> = mirrors.iter().collect();
+    entries.sort_by(|a, b| b.0.len().cmp(&a.0.len()).then_with(|| a.0.cmp(b.0)));
     let mut result = d_url.to_string();
-    for k in keys {
-        let v = &mirrors[k];
+    for (k, v) in entries {
         if !result.contains(k.as_str()) {
             continue;
         }
