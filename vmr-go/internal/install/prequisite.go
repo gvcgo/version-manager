@@ -1,5 +1,0 @@
-package install
-
-/*
-installs prequisite.
-*/
