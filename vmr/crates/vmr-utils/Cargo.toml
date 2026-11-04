@@ -1,0 +1,15 @@
+[package]
+name = "vmr-utils"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "basic utilities: version sorting, extraction, copy, dir finding, exec, symlink (leaf crate)"
+
+[dependencies]
+regex.workspace = true
+bzip2 = "0.5"
+flate2 = "1"
+tar = "0.4"
+xz2 = "0.1"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+zstd = "0.13"
