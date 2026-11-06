@@ -547,16 +547,29 @@ fn ensure_command(name: &str) -> Result<(), String> {
     }
 }
 
+#[cfg(test)]
+fn test_dir(name: &str) -> PathBuf {
+    // Compile-time base: CodeQL treats runtime temp_dir() as user input, which would make
+    // the test-only filesystem calls in this file look like production path injection.
+    let p = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("remove-path-tests")
+        .join(format!("{}-{name}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&p);
+    std::fs::create_dir_all(&p).unwrap();
+    p
+}
+
 #[cfg(all(test, windows))]
 mod tests {
     use super::remove_path;
+    use super::test_dir;
     use std::fs;
     use std::process::Command;
 
     #[test]
     fn remove_path_removes_junction_only() {
-        let base = std::env::temp_dir().join(format!("vmr-remove-path-{}", std::process::id()));
-        let _ = fs::remove_dir_all(&base);
+        let base = test_dir("junction");
         let target = base.join("target");
         let link = base.join("link");
         fs::create_dir_all(&target).unwrap();
@@ -587,22 +600,12 @@ mod tests {
 #[cfg(test)]
 mod remove_path_tests {
     use super::remove_path;
+    use super::test_dir;
     use std::fs;
-    use std::path::PathBuf;
-
-    fn temp_base(name: &str) -> PathBuf {
-        let p = std::env::temp_dir().join(format!(
-            "vmr-remove-path-safety-{}-{name}",
-            std::process::id()
-        ));
-        let _ = fs::remove_dir_all(&p);
-        fs::create_dir_all(&p).unwrap();
-        p
-    }
 
     #[test]
     fn removes_a_descendant_inside_root() {
-        let base = temp_base("inside");
+        let base = test_dir("inside");
         let root = base.join("versions");
         let child = root.join("go_versions/go-1.22");
         fs::create_dir_all(&child).unwrap();
@@ -615,7 +618,7 @@ mod remove_path_tests {
 
     #[test]
     fn rejects_outside_paths_and_parent_traversal() {
-        let base = temp_base("outside");
+        let base = test_dir("outside");
         let root = base.join("versions");
         fs::create_dir_all(&root).unwrap();
         let outside = base.join("outside.txt");
