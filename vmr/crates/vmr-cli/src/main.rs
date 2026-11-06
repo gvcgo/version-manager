@@ -278,14 +278,7 @@ pub(crate) fn plugin_rows(update_all: bool) -> Result<Vec<PluginRow>, String> {
 fn list_plugins(update_all: bool) -> Result<(), String> {
     let rows: Vec<Vec<String>> = plugin_rows(update_all)?
         .into_iter()
-        .map(|p| {
-            vec![
-                p.plugin_name,
-                p.plugin_version,
-                p.sdk_name,
-                p.homepage,
-            ]
-        })
+        .map(|p| vec![p.plugin_name, p.plugin_version, p.sdk_name, p.homepage])
         .collect();
     if update_all {
         println!("plugins updated.");
@@ -324,8 +317,7 @@ pub(crate) fn search_versions(
             .collect());
     }
 
-    let mut plugin =
-        find_plugin_for(sdk).ok_or_else(|| format!("no plugin found for: {sdk}"))?;
+    let mut plugin = find_plugin_for(sdk).ok_or_else(|| format!("no plugin found for: {sdk}"))?;
     let versions = plugin.get_sdk_versions_cached(!no_cache)?;
     let mut names: Vec<String> = versions.keys().cloned().collect();
     vmr_utils::semver::sort_versions(&mut names);
@@ -696,9 +688,9 @@ fn parse_freeze_file(data: &str) -> Result<Vec<FreezeEntry>, String> {
         }
         let mut parts = line.split_whitespace();
         let spec = parts.next().expect("non-empty line");
-        let (sdk, version) = spec.split_once('@').ok_or_else(|| {
-            format!("line {}: expected `sdk@version`, got `{spec}`", idx + 1)
-        })?;
+        let (sdk, version) = spec
+            .split_once('@')
+            .ok_or_else(|| format!("line {}: expected `sdk@version`, got `{spec}`", idx + 1))?;
         if sdk.is_empty() || version.is_empty() {
             return Err(format!(
                 "line {}: expected `sdk@version`, got `{spec}`",
@@ -731,8 +723,7 @@ fn parse_freeze_file(data: &str) -> Result<Vec<FreezeEntry>, String> {
 
 /// `vmr use -f FILE`: installs every entry, continuing past failures.
 fn cmd_use_file(file: &str) -> Result<(), String> {
-    let data =
-        std::fs::read_to_string(file).map_err(|e| format!("read {file} failed: {e}"))?;
+    let data = std::fs::read_to_string(file).map_err(|e| format!("read {file} failed: {e}"))?;
     let entries = parse_freeze_file(&data)?;
     println!("installing {} SDK version(s) from {file}", entries.len());
     let mut failed = Vec::new();
@@ -936,6 +927,34 @@ fn cmd_template(kind: Option<&str>, dir: Option<&str>) -> Result<(), String> {
 /// zsh `compdef` is deferred: rc files may evaluate `vmr init` before `compinit` (or never
 /// run `compinit` at all), so registration happens on the first prompt instead of silently
 /// being skipped. If no completion system is loaded by then, `compinit` is initialized.
+/// clap_complete emits `using namespace ...` at the top of the PowerShell script. `vmr init`
+/// output is evaluated with `Invoke-Expression` after other profile statements, where a
+/// `using` statement is a parse error. Remove those directives and fully qualify the four
+/// referenced types so the completion script can be embedded in the profile output.
+fn strip_powershell_usings(script: String) -> String {
+    script
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("using namespace "))
+        .collect::<Vec<_>>()
+        .join("\n")
+        .replace(
+            "[StringConstantExpressionAst]",
+            "[System.Management.Automation.Language.StringConstantExpressionAst]",
+        )
+        .replace(
+            "[StringConstantType]",
+            "[System.Management.Automation.Language.StringConstantType]",
+        )
+        .replace(
+            "[CompletionResultType]",
+            "[System.Management.Automation.CompletionResultType]",
+        )
+        .replace(
+            "[CompletionResult]",
+            "[System.Management.Automation.CompletionResult]",
+        )
+}
+
 fn completion_script(kind: vmr_shell::Kind) -> String {
     use clap_complete::Shell;
     const ZSH_TAIL: &str = r#"if [ "$funcstack[1]" = "_vmr" ]; then
@@ -972,6 +991,8 @@ fi"#;
             "if [ \"$funcstack[1]\" = \"_vmr\" ]; then\n    _vmr \"$@\"\nelse\n    compdef _vmr vmr\nfi",
             ZSH_TAIL,
         )
+    } else if matches!(kind, vmr_shell::Kind::PowerShell) {
+        strip_powershell_usings(script)
     } else {
         script
     }
@@ -1014,5 +1035,20 @@ mod tests {
     fn bash_completion_registers_complete() {
         let script = completion_script(vmr_shell::Kind::Bash);
         assert!(script.contains("complete -F _vmr"));
+    }
+
+    #[test]
+    fn powershell_completion_has_no_using_directives() {
+        let script = completion_script(vmr_shell::Kind::PowerShell);
+        assert!(!script.contains("using namespace"), "{script}");
+        assert!(
+            script.contains("[System.Management.Automation.CompletionResult]"),
+            "{script}"
+        );
+        assert!(
+            script.contains("[System.Management.Automation.Language.StringConstantExpressionAst]"),
+            "{script}"
+        );
+        assert!(script.contains("Register-ArgumentCompleter"), "{script}");
     }
 }
