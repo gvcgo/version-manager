@@ -388,12 +388,11 @@ fn remove_path_raw(path: &Path) {
         // point as a directory; the link target itself is left untouched.
         #[cfg(windows)]
         {
-            if std::fs::metadata(path).map(|m| m.is_dir()).unwrap_or(false) {
+            use std::os::windows::fs::FileTypeExt;
+            if meta.file_type().is_symlink_dir() {
                 let _ = std::fs::remove_dir(path);
-            } else if std::fs::remove_file(path).is_err() {
-                // Broken junction: metadata could not resolve the target, so retry as a
-                // directory to remove the reparse point itself.
-                let _ = std::fs::remove_dir(path);
+            } else {
+                let _ = std::fs::remove_file(path);
             }
         }
         #[cfg(not(windows))]
