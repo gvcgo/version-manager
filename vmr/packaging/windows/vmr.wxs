@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  vmr MSI package (WiX Toolset v3).
+
+  Build with packaging/windows/build-msi.ps1, or manually:
+    candle -arch x64 -dVersion=0.1.0 -dSourceDir=target\release vmr.wxs -out target\windows\vmr.wixobj
+    light -ext WixUtilExtension -out target\windows\vmr-0.1.0-x64.msi target\windows\vmr.wixobj
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*"
+           Name="vmr"
+           Language="1033"
+           Version="$(var.Version)"
+           Manufacturer="gvcgo"
+           UpgradeCode="6A20C4B5-7214-4C6C-BC2B-8C922AE00A98">
+    <Package InstallerVersion="500"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Platform="x64"
+             Description="vmr - cross-platform SDK version manager"
+             Comments="https://github.com/gvcgo/version-manager" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of vmr is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <CustomAction Id="SetARPINSTALLLOCATION"
+                  Property="ARPINSTALLLOCATION"
+                  Value="[INSTALLFOLDER]" />
+    <InstallExecuteSequence>
+      <Custom Action="SetARPINSTALLLOCATION" After="CostFinalize" />
+    </InstallExecuteSequence>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="vmr" />
+      </Directory>
+    </Directory>
+
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="VmrExe" Guid="*" Win64="yes">
+        <File Id="VmrExe" Source="$(var.SourceDir)\vmr.exe" KeyPath="yes" />
+      </Component>
+
+      <!-- Add the install directory to the machine PATH; the RegistryValue supplies the
+           component key path while the Environment row is removed on uninstall. -->
+      <Component Id="PathEnvironment" Guid="*" Win64="yes">
+        <Environment Id="PathEnvironment"
+                     Name="PATH"
+                     Value="[INSTALLFOLDER]"
+                     Permanent="no"
+                     Part="last"
+                     Action="set"
+                     System="yes" />
+        <RegistryValue Root="HKLM"
+                       Key="Software\gvcgo\vmr"
+                       Name="InstallDir"
+                       Type="string"
+                       Value="[INSTALLFOLDER]"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="MainFeature" Title="vmr" Level="1" Absent="disallow">
+      <ComponentRef Id="VmrExe" />
+      <ComponentRef Id="PathEnvironment" />
+    </Feature>
+  </Product>
+</Wix>

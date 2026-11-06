@@ -108,18 +108,35 @@ pub fn add_temporarily(bundle: &EnvBundle) {
     {
         return;
     }
-    let cur = std::env::var("PATH").unwrap_or_default();
-    let mut parts: Vec<String> = bundle.path_dirs.clone();
-    parts.extend(cur.split(sep()).map(|s| s.to_string()));
-    unsafe { std::env::set_var("PATH", parts.join(&sep().to_string())) };
+    prepend_process_path(&bundle.path_dirs);
 }
 
-/// Prepends dirs not already in the PATH (for interactive hooks and similar scenarios).
+/// Prepends dirs to the current process PATH.
+///
+/// Windows keeps the first existing entry (usually `C:\Windows\system32`) ahead of the SDK
+/// directories, matching the Go Windows fix (#204); Unix prepends as before.
 pub fn prepend_process_path(dirs: &[String]) {
+    if dirs.is_empty() {
+        return;
+    }
     let cur = std::env::var("PATH").unwrap_or_default();
-    let mut parts: Vec<String> = dirs.to_vec();
-    parts.extend(cur.split(sep()).map(|s| s.to_string()));
-    unsafe { std::env::set_var("PATH", parts.join(&sep().to_string())) };
+    let joined = dirs.join(&sep().to_string());
+    let new = if cur.is_empty() {
+        joined
+    } else {
+        #[cfg(windows)]
+        {
+            match cur.split_once(';') {
+                Some((first, rest)) => format!("{first};{joined};{rest}"),
+                None => format!("{cur};{joined}"),
+            }
+        }
+        #[cfg(not(windows))]
+        {
+            format!("{joined}{}{cur}", sep())
+        }
+    };
+    unsafe { std::env::set_var("PATH", new) };
 }
 
 /// Writes the shell environment file globally (mirrors Go `SetEnvGlobally`:
@@ -187,7 +204,10 @@ mod tests {
         let ic = ic_sample();
         let b = collect(&ic, dir.to_str().unwrap(), "linux");
         // bin exists, missing does not → path_dirs contains only bin.
-        assert_eq!(b.path_dirs, vec![format!("{}/bin", dir.display())]);
+        assert_eq!(
+            b.path_dirs,
+            vec![dir.join("bin").to_string_lossy().into_owned()]
+        );
         // GOROOT=base (empty path segment → base itself, which exists).
         assert_eq!(
             b.env_vars,
@@ -222,5 +242,19 @@ mod tests {
         let b = collect(&ic, dir.to_str().unwrap(), "linux");
         assert_eq!(b.path_dirs, vec![dir.to_string_lossy().into_owned()]);
         let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn temporary_path_keeps_first_windows_entry() {
+        let old = std::env::var_os("PATH");
+        unsafe { std::env::set_var("PATH", r"C:\Windows\system32;C:\Other") };
+        prepend_process_path(&[r"C:\vmr\go\bin".to_string()]);
+        let got = std::env::var("PATH").unwrap();
+        match old {
+            Some(v) => unsafe { std::env::set_var("PATH", v) },
+            None => unsafe { std::env::remove_var("PATH") },
+        }
+        assert_eq!(got, r"C:\Windows\system32;C:\vmr\go\bin;C:\Other");
     }
 }

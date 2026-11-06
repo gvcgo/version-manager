@@ -27,6 +27,18 @@ fn is_path(key: &str) -> bool {
     key.eq_ignore_ascii_case(PATH_VALUE)
 }
 
+/// Windows PATH entries are case-insensitive, accept `/` or `\`, and may be stored in the
+/// `%VMR_VERSIONS%\...` expand-string form; compare all of those as the same entry.
+fn path_eq(a: &str, b: &str) -> bool {
+    fn canonical(p: &str) -> String {
+        crate::win_patch::expand_versions(p)
+            .replace('/', "\\")
+            .trim_end_matches('\\')
+            .to_lowercase()
+    }
+    canonical(a) == canonical(b)
+}
+
 pub fn set_env(key: &str, value: &str) {
     if is_path(key) {
         return;
@@ -56,7 +68,7 @@ pub fn set_path(path: &str) {
     let path = crate::win_patch::tidy_path(path);
     let Some(k) = env_key() else { return };
     let old: String = k.get_value(PATH_VALUE).unwrap_or_default();
-    if old.split(';').any(|p| p.eq_ignore_ascii_case(&path)) {
+    if old.split(';').any(|p| path_eq(p, &path)) {
         return;
     }
     let new = if old.is_empty() {
@@ -70,12 +82,12 @@ pub fn set_path(path: &str) {
 }
 
 pub fn unset_path(path: &str) {
-    let path = crate::win_patch::tidy_path(path);
+    let path = crate::win_patch::untidy_path(path);
     let Some(k) = env_key() else { return };
     let old: String = k.get_value(PATH_VALUE).unwrap_or_default();
     let new = old
         .split(';')
-        .filter(|p| !p.eq_ignore_ascii_case(&path))
+        .filter(|p| !path_eq(p, &path))
         .collect::<Vec<_>>()
         .join(";");
     if new != old && write_expand(&k, &new).is_ok() {

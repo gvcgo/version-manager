@@ -10,15 +10,13 @@ use crate::exec::exec;
 
 /// Create a directory symlink for `oldname` at `newname`.
 ///
-/// Windows: run `cmd /c mklink /j <newname> <oldname>` with the user's home directory as cwd.
-/// Other platforms: `symlink(oldname, newname)`.
+/// Windows: run `mklink /j <newname> <oldname>` (the exec wrapper already invokes `cmd /c`)
+/// with the user's home directory as cwd. Other platforms: `symlink(oldname, newname)`.
 pub fn create_sym_link(oldname: &str, newname: &str) -> io::Result<()> {
     #[cfg(windows)]
     {
         let home = std::env::var("USERPROFILE").unwrap_or_default();
         let args = [
-            "cmd".to_string(),
-            "/c".to_string(),
             "mklink".to_string(),
             "/j".to_string(),
             newname.to_string(),
@@ -53,6 +51,24 @@ mod tests {
         assert_eq!(link, base.join("target"));
         // A directory link can be accessed as a directory.
         assert!(base.join("link").is_dir());
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn creates_junction_to_directory() {
+        let base = std::env::temp_dir().join(format!("vmr-utils-junction-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&base);
+        fs::create_dir_all(base.join("target")).unwrap();
+        let target = base.join("target");
+        let link = base.join("link");
+        create_sym_link(target.to_str().unwrap(), link.to_str().unwrap()).unwrap();
+        assert!(link.is_dir(), "junction should resolve as a directory");
+        let read = fs::canonicalize(fs::read_link(&link).unwrap()).unwrap();
+        assert_eq!(read, fs::canonicalize(&target).unwrap());
+        // Remove the junction itself, not the target.
+        fs::remove_dir(&link).unwrap();
+        assert!(target.is_dir());
         let _ = fs::remove_dir_all(&base);
     }
 }

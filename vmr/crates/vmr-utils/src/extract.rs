@@ -282,8 +282,9 @@ fn expand_nested_zips(dest_dir: &Path) {
 /// Extraction entry point (mirrors Go `utils.Extract`): system commands take priority; on failure
 /// it falls back to the library implementation.
 ///
-/// System commands: `.zip` → `unzip <src> -d <dest>`; `.tar*` → `tar -xf <src> -C <dest>`
-/// (on Windows the zip case uses the powershell `expand -r` branch, mirroring Go's `Unzip`).
+/// System commands: `.zip` → `unzip <src> -d <dest>`; `.tar*` → `tar -xf <src> -C <dest>`.
+/// Windows ships `tar.exe` (bsdtar), which also extracts zip archives, so the same `tar`
+/// invocation is used there; the library fallback below covers systems without it.
 pub fn extract(src: &Path, dest_dir: &Path) -> io::Result<()> {
     fs::create_dir_all(dest_dir)?;
     let name = src
@@ -295,19 +296,14 @@ pub fn extract(src: &Path, dest_dir: &Path) -> io::Result<()> {
     let sys_ok = if lower.ends_with(".zip") {
         #[cfg(windows)]
         {
-            // exec wraps cmd /c internally (mirrors Go ExecuteSysCommand); System32 is prepended
-            // to PATH so that powershell can be resolved.
-            let path = std::env::var("PATH").unwrap_or_default();
-            let prefixed = format!(r"C:\Windows\System32;{path}");
-            std::env::set_var("PATH", prefixed);
             exec(
                 true,
                 "",
                 &[
-                    "powershell".to_string(),
-                    "expand".to_string(),
-                    "-r".to_string(),
+                    "tar".to_string(),
+                    "-xf".to_string(),
                     src.display().to_string(),
+                    "-C".to_string(),
                     dest_dir.display().to_string(),
                 ],
             )
@@ -422,6 +418,21 @@ mod tests {
     }
 
     #[test]
+    #[cfg(windows)]
+    fn extract_zip_on_windows() {
+        // Exercises the Windows `tar.exe` branch (and the library fallback when tar is absent).
+        let t = TempDir::new("winzip");
+        let src = t.path().join("a.zip");
+        make_zip(&src, &[("pkg/bin/tool.exe", "tool-content")]);
+        let dest = t.path().join("out");
+        extract(&src, &dest).unwrap();
+        assert_eq!(
+            fs::read_to_string(dest.join("pkg/bin/tool.exe")).unwrap(),
+            "tool-content"
+        );
+    }
+
+    #[test]
     fn unpacks_tar_gz() {
         let t = TempDir::new("targz");
         let src = t.path().join("b.tar.gz");
@@ -479,7 +490,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(windows))] // requires the unzip system command (common on unix; windows uses powershell)
+    #[cfg(not(windows))] // requires the unzip system command (Windows uses tar.exe)
     fn extract_via_system_command_expands_nested_zip() {
         // The system-unzip preferred path: the outer zip embeds a zip file at its top level.
         let t = TempDir::new("syszip");

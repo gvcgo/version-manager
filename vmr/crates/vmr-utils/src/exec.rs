@@ -151,7 +151,11 @@ mod tests {
 
     #[test]
     fn non_zero_exit_is_error() {
-        let err = exec(true, "", &["sh".into(), "-c".into(), "exit 3".into()]).unwrap_err();
+        #[cfg(not(windows))]
+        let args = ["sh".to_string(), "-c".to_string(), "exit 3".to_string()];
+        #[cfg(windows)]
+        let args = ["exit".to_string(), "3".to_string()];
+        let err = exec(true, "", &args).unwrap_err();
         assert!(err.to_string().contains("exit"), "{err}");
     }
 
@@ -161,8 +165,21 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(windows))]
     fn work_dir_is_honored() {
         let out = exec(true, "/", &["pwd".into()]).unwrap();
         assert_eq!(out.trim(), "/");
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn work_dir_is_honored() {
+        let dir = std::env::temp_dir();
+        let out = exec(true, dir.to_str().unwrap(), &["cd".into()]).unwrap();
+        let strip = |s: &str| s.trim().trim_end_matches(['\\', '/']).to_string();
+        assert!(
+            strip(&out).eq_ignore_ascii_case(&strip(dir.to_str().unwrap())),
+            "{out:?} != {dir:?}"
+        );
     }
 }
