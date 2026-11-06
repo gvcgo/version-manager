@@ -24,7 +24,10 @@ pub fn copy_a_file(source: &Path, destination: &Path) -> io::Result<()> {
     let meta = fs::symlink_metadata(source)?;
     if meta.file_type().is_symlink() {
         let target = fs::read_link(source)?;
-        return symlink_rebuild(&target, destination);
+        // Windows has separate file/directory symlink types; resolve the link target so the
+        // recreated link keeps the same kind. (A junction reports as a symlink too.)
+        let is_dir = fs::metadata(source).map(|m| m.is_dir()).unwrap_or(false);
+        return symlink_rebuild(&target, destination, is_dir);
     }
     if meta.is_file() {
         fs::copy(source, destination)?;
@@ -38,15 +41,18 @@ pub fn copy_a_file(source: &Path, destination: &Path) -> io::Result<()> {
 }
 
 #[cfg(unix)]
-fn symlink_rebuild(target: &Path, destination: &Path) -> io::Result<()> {
+fn symlink_rebuild(target: &Path, destination: &Path, _is_dir: bool) -> io::Result<()> {
     std::os::unix::fs::symlink(target, destination)
 }
 
 #[cfg(windows)]
-fn symlink_rebuild(target: &Path, destination: &Path) -> io::Result<()> {
-    // Mirrors Go: rebuilding symlinks on Windows requires privileges; failures pass through.
-    std::os::windows::fs::symlink_dir(target, destination)
-        .or_else(|_| std::os::windows::fs::symlink_file(target, destination))
+fn symlink_rebuild(target: &Path, destination: &Path, is_dir: bool) -> io::Result<()> {
+    // Rebuilding symlinks on Windows requires privileges; failures pass through.
+    if is_dir {
+        std::os::windows::fs::symlink_dir(target, destination)
+    } else {
+        std::os::windows::fs::symlink_file(target, destination)
+    }
 }
 
 /// Recursively copy a directory (mirrors Go `CopyDirectory`).

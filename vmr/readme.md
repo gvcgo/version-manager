@@ -48,10 +48,22 @@ echo 'eval "$(vmr init zsh)"' >> ~/.zshrc
 ```
 
 `vmr init <shell>` supports `bash`, `zsh`, `fish`, and `powershell`; when omitted, the shell is
-inferred from `$SHELL`. Shell completions are emitted by `vmr init` itself, so no separate
-install step is needed. On zsh, if `compinit` has not run yet (or `vmr init` is evaluated before
-`compinit`), completion registration is deferred to the first prompt and `compinit` is
-initialized automatically when needed.
+inferred from `$SHELL` (on Windows, where PowerShell/cmd do not set it, the default is
+`powershell`; git-bash still reports `bash`). Shell completions are emitted by `vmr init`
+itself, so no separate install step is needed. On zsh, if `compinit` has not run yet (or
+`vmr init` is evaluated before `compinit`), completion registration is deferred to the first
+prompt and `compinit` is initialized automatically when needed.
+
+### Windows MSI
+
+```powershell
+powershell -ExecutionPolicy Bypass -File packaging\windows\build-msi.ps1
+```
+
+Builds `target\windows\vmr-<version>-x64.msi`: a per-machine install under `Program Files\vmr`
+that also adds the install directory to the machine `PATH`. The first run downloads the portable
+WiX Toolset v3.14 binaries into `target\wix314` (no admin install needed). Pass `-SkipBuild` to
+package the existing `target\release\vmr.exe`.
 
 ## Commands
 

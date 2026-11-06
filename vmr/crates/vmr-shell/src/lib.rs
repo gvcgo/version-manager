@@ -66,7 +66,7 @@ impl Kind {
     /// Static cd hook body, emitted by `vmr init` and evaluated from the rc file
     /// (bash/zsh and fish; PowerShell has no shell hook).
     fn hook_script(self, install_dir: &str, home_dir: &str) -> String {
-        let inst = format_path_string(install_dir, home_dir);
+        let inst = script_path(self, install_dir, home_dir);
         match self {
             Kind::Fish => format!(
                 "fish_add_path --global \"{inst}\"
@@ -128,6 +128,28 @@ pub fn format_path_string(p: &str, home_dir: &str) -> String {
     p.to_string()
 }
 
+/// Path form used in generated bash/zsh/fish scripts. Git-bash cannot use `C:\...` in
+/// `PATH` (the drive colon is a separator), so Windows paths are converted to mingw form.
+fn script_path(kind: Kind, p: &str, home_dir: &str) -> String {
+    #[cfg(windows)]
+    {
+        if matches!(kind, Kind::Bash | Kind::Zsh | Kind::Fish) {
+            let p = convert_to_mingw(p);
+            let home = convert_to_mingw(home_dir);
+            if !home.is_empty() {
+                if let Some(rest) = p.strip_prefix(&home) {
+                    if rest.is_empty() || rest.starts_with('/') {
+                        return format!("$HOME{rest}");
+                    }
+                }
+            }
+            return p;
+        }
+    }
+    let _ = kind;
+    format_path_string(p, home_dir)
+}
+
 /// Converts `C:\a\b` to `/c/a/b` (Go `ConvertWindowsPathToMingwPath`; used by the Windows
 /// git-bash layer).
 pub fn convert_to_mingw(path: &str) -> String {
@@ -135,6 +157,9 @@ pub fn convert_to_mingw(path: &str) -> String {
         return String::new();
     }
     let normalized = path.replace('\\', "/").replace(':', "");
+    if normalized.starts_with('/') {
+        return normalized;
+    }
     let mut parts: Vec<String> = normalized.split('/').map(str::to_string).collect();
     if let Some(first) = parts.first_mut() {
         *first = first.to_lowercase();
@@ -152,13 +177,25 @@ fn tilde_path(p: &str, home_dir: &str) -> String {
 }
 
 /// Detect the current shell (SHELL env; docker without SHELL → bash).
+/// Windows has no reliable `SHELL` in PowerShell/cmd, so those default to PowerShell
+/// (git-bash still reports bash via `SHELL`).
 pub fn detect_kind() -> Kind {
-    let shell = std::env::var("SHELL").unwrap_or_default();
-    if shell.ends_with("zsh") {
-        Kind::Zsh
-    } else if shell.ends_with("fish") {
-        Kind::Fish
-    } else {
+    let shell = std::env::var("SHELL").unwrap_or_default().to_lowercase();
+    if shell.contains("zsh") {
+        return Kind::Zsh;
+    }
+    if shell.contains("fish") {
+        return Kind::Fish;
+    }
+    if shell.contains("bash") || shell.ends_with("sh") || shell.ends_with("sh.exe") {
+        return Kind::Bash;
+    }
+    #[cfg(windows)]
+    {
+        Kind::PowerShell
+    }
+    #[cfg(not(windows))]
+    {
         Kind::Bash
     }
 }
@@ -428,8 +465,12 @@ impl Shell {
     /// the static cd hook, then defines `svmr` (leave a session and reload the config).
     /// `VM_DISABLE` guards the whole hook so session shells stay untouched.
     pub fn init_script(&self) -> String {
-        let env_file = format_path_string(&self.vm_env_conf_path().to_string_lossy(), &self.home);
-        let conf = format_path_string(&self.conf_path().to_string_lossy(), &self.home);
+        let env_file = script_path(
+            self.kind,
+            &self.vm_env_conf_path().to_string_lossy(),
+            &self.home,
+        );
+        let conf = script_path(self.kind, &self.conf_path().to_string_lossy(), &self.home);
         let install = paths::work_dir().to_string_lossy().into_owned();
         let hook = indent_block(&self.kind.hook_script(&install, &self.home), "    ");
         match self.kind {
@@ -490,20 +531,20 @@ impl Shell {
 }
 
 fn dirs_home() -> String {
-    std::env::var("HOME")
-        .ok()
-        .or_else(dirs_sys_home)
-        .unwrap_or_else(|| ".".to_string())
-}
-
-fn dirs_sys_home() -> Option<String> {
     #[cfg(windows)]
     {
-        std::env::var("USERPROFILE").ok()
+        // git-bash sets HOME to a POSIX path (/c/Users/...), which is not a valid Windows
+        // profile path; always prefer the native profile for registry/profile write-back.
+        std::env::var("USERPROFILE")
+            .ok()
+            .or_else(|| std::env::var("HOME").ok())
+            .unwrap_or_else(|| ".".to_string())
     }
     #[cfg(not(windows))]
     {
-        None
+        std::env::var("HOME")
+            .ok()
+            .unwrap_or_else(|| ".".to_string())
     }
 }
 
@@ -531,9 +572,33 @@ mod tests {
         );
         assert_eq!(convert_to_mingw(""), "");
         assert_eq!(convert_to_mingw(r"D:\x"), "/d/x");
+        assert_eq!(convert_to_mingw("/c/x"), "/c/x");
     }
 
     #[test]
+    #[cfg(windows)]
+    fn windows_bash_script_uses_mingw_paths() {
+        assert_eq!(
+            script_path(Kind::Bash, r"C:\Users\me\.vmr", r"C:\Users\me"),
+            "$HOME/.vmr"
+        );
+        assert_eq!(
+            script_path(Kind::Bash, r"C:\Users\me\.vmr", "/c/Users/me"),
+            "$HOME/.vmr"
+        );
+        assert_eq!(
+            script_path(Kind::Bash, r"D:\tools", r"C:\Users\me"),
+            "/d/tools"
+        );
+        // An unrelated home prefix must not be stripped mid-component.
+        assert_eq!(
+            script_path(Kind::Bash, r"C:\Users\meg\.vmr", r"C:\Users\me"),
+            "/c/Users/meg/.vmr"
+        );
+    }
+
+    #[test]
+    #[cfg(not(windows))]
     fn strip_hook_keeps_dynamic_env_lines() {
         let dir = std::env::temp_dir().join(format!("vmr-shell-test-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
@@ -635,5 +700,4 @@ mod tests {
         assert_eq!(fs::read_to_string(&rc).unwrap(), once);
         let _ = fs::remove_dir_all(&dir);
     }
-
 }

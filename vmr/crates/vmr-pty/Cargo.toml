@@ -6,3 +6,9 @@ rust-version.workspace = true
 description = "session interactive sub-shell runner (plan §3.9)"
 
 [dependencies]
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_System_Diagnostics_ToolHelp",
+] }

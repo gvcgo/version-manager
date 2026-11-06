@@ -225,8 +225,23 @@ pub fn remove_sdk_path_from_process(sdk_name: &str) {
     let sep = if cfg!(windows) { ';' } else { ':' };
     let symbolic = sdk_version_dir(sdk_name).join(sdk_name);
     let prefix = symbolic.to_string_lossy().into_owned();
+    let prefix_cmp = if cfg!(windows) {
+        prefix.to_lowercase()
+    } else {
+        prefix.clone()
+    };
     let cur = std::env::var("PATH").unwrap_or_default();
-    let parts: Vec<&str> = cur.split(sep).filter(|p| !p.starts_with(&prefix)).collect();
+    let parts: Vec<&str> = cur
+        .split(sep)
+        .filter(|p| {
+            let matches = if cfg!(windows) {
+                p.to_lowercase().starts_with(&prefix_cmp)
+            } else {
+                p.starts_with(&prefix)
+            };
+            !matches
+        })
+        .collect();
     unsafe { std::env::set_var("PATH", parts.join(&sep.to_string())) };
 }
 
@@ -274,7 +289,7 @@ pub fn uninstall(req: &InstallRequest) -> Result<(), String> {
     let dir = req.install_dir();
     let sym = req.symbol_path();
     let is_current = std::fs::read_link(&sym)
-        .map(|target| target == dir)
+        .map(|target| paths_equal(&target, &dir))
         .unwrap_or(false);
     let bundle = if is_current {
         Some(req.collect_bundle(&sym))
@@ -309,12 +324,55 @@ pub fn uninstall_all(sdk_name: &str, plugin_name: &str) {
     }
 }
 
+/// Compares two paths, tolerating case/format differences on Windows.
+fn paths_equal(a: &Path, b: &Path) -> bool {
+    if let (Ok(a), Ok(b)) = (std::fs::canonicalize(a), std::fs::canonicalize(b)) {
+        #[cfg(windows)]
+        {
+            return a
+                .to_string_lossy()
+                .eq_ignore_ascii_case(&b.to_string_lossy());
+        }
+        #[cfg(not(windows))]
+        {
+            return a == b;
+        }
+    }
+    #[cfg(windows)]
+    {
+        a.to_string_lossy()
+            .eq_ignore_ascii_case(&b.to_string_lossy())
+    }
+    #[cfg(not(windows))]
+    {
+        a == b
+    }
+}
+
 /// Removes a file, symlink or directory without following symlinks.
 pub fn remove_path(path: &Path) {
     let Ok(meta) = std::fs::symlink_metadata(path) else {
         return;
     };
-    if meta.file_type().is_symlink() || meta.is_file() {
+    if meta.file_type().is_symlink() {
+        // On Windows the version link is a directory junction (or a directory symlink).
+        // `remove_file` rejects those with ERROR_ACCESS_DENIED, so delete the reparse
+        // point as a directory; the link target itself is left untouched.
+        #[cfg(windows)]
+        {
+            if std::fs::metadata(path).map(|m| m.is_dir()).unwrap_or(false) {
+                let _ = std::fs::remove_dir(path);
+            } else if std::fs::remove_file(path).is_err() {
+                // Broken junction: metadata could not resolve the target, so retry as a
+                // directory to remove the reparse point itself.
+                let _ = std::fs::remove_dir(path);
+            }
+        }
+        #[cfg(not(windows))]
+        {
+            let _ = std::fs::remove_file(path);
+        }
+    } else if meta.is_file() {
         let _ = std::fs::remove_file(path);
     } else {
         let _ = std::fs::remove_dir_all(path);
@@ -459,5 +517,42 @@ fn ensure_command(name: &str) -> Result<(), String> {
     match probe {
         Ok(_) => Ok(()),
         Err(e) => Err(e.to_string()),
+    }
+}
+
+#[cfg(all(test, windows))]
+mod tests {
+    use super::remove_path;
+    use std::fs;
+    use std::process::Command;
+
+    #[test]
+    fn remove_path_removes_junction_only() {
+        let base = std::env::temp_dir().join(format!("vmr-remove-path-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&base);
+        let target = base.join("target");
+        let link = base.join("link");
+        fs::create_dir_all(&target).unwrap();
+        fs::write(target.join("keep.txt"), "keep").unwrap();
+        let status = Command::new("cmd")
+            .args([
+                "/c",
+                "mklink",
+                "/j",
+                link.to_str().unwrap(),
+                target.to_str().unwrap(),
+            ])
+            .status()
+            .unwrap();
+        assert!(status.success());
+
+        remove_path(&link);
+        assert!(!link.exists(), "junction should be removed");
+        assert_eq!(
+            fs::read_to_string(target.join("keep.txt")).unwrap(),
+            "keep",
+            "link target must not be deleted"
+        );
+        let _ = fs::remove_dir_all(&base);
     }
 }
