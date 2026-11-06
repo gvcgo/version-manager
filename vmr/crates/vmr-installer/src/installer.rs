@@ -262,7 +262,7 @@ pub fn install(req: &InstallRequest) -> Result<Action, String> {
             }
             // Rebuild the symlink + global env.
             let sym = req.symbol_path();
-            remove_path(&sym);
+            remove_path(&paths::versions_dir(), &sym);
             if req.install_dir().exists() {
                 create_sym_link(req.install_dir().to_str().unwrap(), sym.to_str().unwrap())
                     .map_err(|e| format!("create symlink failed: {e}"))?;
@@ -296,9 +296,10 @@ pub fn uninstall(req: &InstallRequest) -> Result<(), String> {
     } else {
         None
     };
-    remove_path(&dir);
+    let root = paths::versions_dir();
+    remove_path(&root, &dir);
     if is_current {
-        remove_path(&sym);
+        remove_path(&root, &sym);
         if let Some(bundle) = bundle {
             req.unset_env_bundle(&bundle);
         }
@@ -316,8 +317,9 @@ pub fn uninstall_all(sdk_name: &str, plugin_name: &str) {
             .and_then(|mut p| p.get_installer_config().ok())
             .map(|ic| vmr_env::collect(&ic, sym.to_str().unwrap_or(""), &current_os()))
     };
-    remove_path(&sdk_version_dir(sdk_name));
-    remove_path(&sym);
+    let root = paths::versions_dir();
+    remove_path(&root, &sdk_version_dir(sdk_name));
+    remove_path(&root, &sym);
     if let Some(bundle) = bundle {
         let shell = vmr_shell::Shell::detect();
         vmr_env::unset_globally(&shell, &bundle);
@@ -349,8 +351,34 @@ fn paths_equal(a: &Path, b: &Path) -> bool {
     }
 }
 
-/// Removes a file, symlink or directory without following symlinks.
-pub fn remove_path(path: &Path) {
+/// Reconstructs `path` only when it is a direct descendant of `root` with normal
+/// components. This rejects absolute paths, `..`, and root prefixes that a plugin or
+/// `VMR_SDK_INSTALLATION_DIR` could otherwise use to escape the versions directory.
+fn scoped_path(root: &Path, path: &Path) -> Option<PathBuf> {
+    let rel = path.strip_prefix(root).ok()?;
+    if rel.as_os_str().is_empty() {
+        return None;
+    }
+    let mut out = PathBuf::from(root);
+    for component in rel.components() {
+        match component {
+            std::path::Component::Normal(part) => out.push(part),
+            _ => return None,
+        }
+    }
+    Some(out)
+}
+
+/// Removes a file, symlink or directory under `root` without following symlinks.
+/// Paths outside `root` (or containing `..`) are ignored.
+pub fn remove_path(root: &Path, path: &Path) {
+    let Some(path) = scoped_path(root, path) else {
+        return;
+    };
+    remove_path_raw(&path);
+}
+
+fn remove_path_raw(path: &Path) {
     let Ok(meta) = std::fs::symlink_metadata(path) else {
         return;
     };
@@ -546,13 +574,62 @@ mod tests {
             .unwrap();
         assert!(status.success());
 
-        remove_path(&link);
+        remove_path(&base, &link);
         assert!(!link.exists(), "junction should be removed");
         assert_eq!(
             fs::read_to_string(target.join("keep.txt")).unwrap(),
             "keep",
             "link target must not be deleted"
         );
+        let _ = fs::remove_dir_all(&base);
+    }
+}
+
+#[cfg(test)]
+mod remove_path_tests {
+    use super::remove_path;
+    use std::fs;
+    use std::path::PathBuf;
+
+    fn temp_base(name: &str) -> PathBuf {
+        let p = std::env::temp_dir().join(format!(
+            "vmr-remove-path-safety-{}-{name}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&p);
+        fs::create_dir_all(&p).unwrap();
+        p
+    }
+
+    #[test]
+    fn removes_a_descendant_inside_root() {
+        let base = temp_base("inside");
+        let root = base.join("versions");
+        let child = root.join("go_versions/go-1.22");
+        fs::create_dir_all(&child).unwrap();
+        fs::write(child.join("file"), "x").unwrap();
+
+        remove_path(&root, &child);
+        assert!(!child.exists());
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn rejects_outside_paths_and_parent_traversal() {
+        let base = temp_base("outside");
+        let root = base.join("versions");
+        fs::create_dir_all(&root).unwrap();
+        let outside = base.join("outside.txt");
+        fs::write(&outside, "keep").unwrap();
+
+        // Not under root at all.
+        remove_path(&root, &outside);
+        assert!(outside.exists());
+
+        // Lexically under root, but escapes via `..`.
+        remove_path(&root, &root.join("..").join("outside.txt"));
+        assert!(outside.exists());
+
         let _ = fs::remove_dir_all(&base);
     }
 }

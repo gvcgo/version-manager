@@ -24,9 +24,16 @@ pub fn copy_a_file(source: &Path, destination: &Path) -> io::Result<()> {
     let meta = fs::symlink_metadata(source)?;
     if meta.file_type().is_symlink() {
         let target = fs::read_link(source)?;
-        // Windows has separate file/directory symlink types; resolve the link target so the
-        // recreated link keeps the same kind. (A junction reports as a symlink too.)
-        let is_dir = fs::metadata(source).map(|m| m.is_dir()).unwrap_or(false);
+        // Windows has separate file/directory link types. Read the reparse-point type from
+        // symlink_metadata instead of following the link with metadata(), so the copy never
+        // touches the (possibly untrusted) link target.
+        #[cfg(windows)]
+        let is_dir = {
+            use std::os::windows::fs::FileTypeExt;
+            meta.file_type().is_symlink_dir()
+        };
+        #[cfg(not(windows))]
+        let is_dir = false;
         return symlink_rebuild(&target, destination, is_dir);
     }
     if meta.is_file() {
