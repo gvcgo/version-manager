@@ -1,0 +1,29 @@
+{
+    "version": "@@VERSION@@",
+    "description": "Cross-platform SDK version manager",
+    "homepage": "https://github.com/gvcgo/version-manager",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/gvcgo/version-manager/releases/download/v@@VERSION@@/vmr-x86_64-pc-windows-msvc.zip",
+            "hash": "@@SHA256:vmr-x86_64-pc-windows-msvc.zip@@"
+        },
+        "arm64": {
+            "url": "https://github.com/gvcgo/version-manager/releases/download/v@@VERSION@@/vmr-aarch64-pc-windows-msvc.zip",
+            "hash": "@@SHA256:vmr-aarch64-pc-windows-msvc.zip@@"
+        }
+    },
+    "bin": "vmr.exe",
+    "checkver": {
+        "github": "https://github.com/gvcgo/version-manager"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/gvcgo/version-manager/releases/download/v$version/vmr-x86_64-pc-windows-msvc.zip"
+            },
+            "arm64": {
+                "url": "https://github.com/gvcgo/version-manager/releases/download/v$version/vmr-aarch64-pc-windows-msvc.zip"
+            }
+        }
+    }
+}

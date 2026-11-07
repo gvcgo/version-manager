@@ -19,7 +19,33 @@
 
 ## 安装
 
-### 1. 下载
+### 1. Homebrew（macOS / Linux）
+
+```bash
+brew install gvcgo/tap/vmr
+```
+
+公式直接使用各平台的预编译包，不在本地编译。Homebrew 只提供 `vmr` 可执行文件，各 SDK 的版本仍由 vmr 自己装到 `~/.vmr` 下。
+
+### 2. Scoop（Windows）
+
+```powershell
+scoop bucket add gvcgo https://github.com/gvcgo/scoop-bucket
+scoop install gvcgo/vmr
+```
+
+### 3. APT（Debian / Ubuntu）
+
+```bash
+curl -fsSL https://gvcgo.github.io/vmr-apt/vmr.gpg \
+  | sudo gpg --dearmor -o /usr/share/keyrings/vmr.gpg
+echo "deb [signed-by=/usr/share/keyrings/vmr.gpg] https://gvcgo.github.io/vmr-apt stable main" \
+  | sudo tee /etc/apt/sources.list.d/vmr.list
+sudo apt update
+sudo apt install vmr
+```
+
+### 4. 下载
 
 到 [Releases](https://github.com/gvcgo/version-manager/releases) 下载对应平台的包：
 
@@ -32,7 +58,7 @@
 | Windows (x64) | `vmr-x86_64-pc-windows-msvc.zip` |
 | Windows (ARM64) | `vmr-aarch64-pc-windows-msvc.zip` |
 
-### 2. 解压并放到 PATH
+### 5. 解压并放到 PATH
 
 Linux / macOS：
 
@@ -45,7 +71,7 @@ install -m 755 vmr-x86_64-apple-darwin/vmr ~/.local/bin/vmr
 
 Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 
-### 3. 校验（可选）
+### 6. 校验（可选）
 
 每个包都附带 `.sha256` 文件，Release 页面还有汇总的 `SHA256SUMS`：
 
@@ -53,7 +79,7 @@ Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 shasum -a 256 -c vmr-x86_64-apple-darwin.tar.xz.sha256
 ```
 
-### 4. 确认安装
+### 7. 确认安装
 
 ```bash
 vmr version
