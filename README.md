@@ -91,7 +91,25 @@ Then install:
 sudo pacman -Syu vmr
 ```
 
-### 6. Download
+### 6. Cargo (from source)
+
+Requires Rust 1.85+ and a C toolchain (Xcode Command Line Tools on macOS, MSVC Build Tools on Windows, `build-essential` and `pkg-config` on Linux). The workspace lives under `vmr/`, so clone the repository and install the `vmr-cli` package:
+
+```bash
+git clone https://github.com/gvcgo/version-manager
+cd version-manager
+cargo install --path vmr/crates/vmr-cli --locked
+```
+
+`vmr` is installed to `~/.cargo/bin`; make sure that directory is on `PATH`. To upgrade after pulling changes, rerun the last command with `--force`:
+
+```bash
+cargo install --path vmr/crates/vmr-cli --locked --force
+```
+
+The crates are not published to crates.io, so `cargo install vmr` is not available.
+
+### 7. Download
 
 Get the package for your platform from [Releases](https://github.com/gvcgo/version-manager/releases):
 
@@ -104,7 +122,7 @@ Get the package for your platform from [Releases](https://github.com/gvcgo/versi
 | Windows (x64) | `vmr-x86_64-pc-windows-msvc.zip` |
 | Windows (ARM64) | `vmr-aarch64-pc-windows-msvc.zip` |
 
-### 7. Extract and put it on PATH
+### 8. Extract and put it on PATH
 
 Linux / macOS:
 
@@ -117,7 +135,7 @@ install -m 755 vmr-x86_64-apple-darwin/vmr ~/.local/bin/vmr
 
 Windows: after extracting, put `vmr.exe` in any directory already on `PATH`.
 
-### 8. Verify (optional)
+### 9. Verify (optional)
 
 Every package ships with a `.sha256` file, and the release page also has an aggregated `SHA256SUMS`:
 
@@ -125,7 +143,7 @@ Every package ships with a `.sha256` file, and the release page also has an aggr
 shasum -a 256 -c vmr-x86_64-apple-darwin.tar.xz.sha256
 ```
 
-### 9. Confirm the install
+### 10. Confirm the install
 
 ```bash
 vmr version
