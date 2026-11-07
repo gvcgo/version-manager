@@ -111,3 +111,164 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: gh release upload "$TAG" * --clobber --repo "${{ github.repository }}"
+
+  homebrew:
+    name: homebrew tap
+    needs: publish
+    runs-on: ubuntu-22.04
+    # The workflow-level default runs in vmr/; these jobs work from the repository root.
+    defaults:
+      run:
+        working-directory: .
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      PUBLISH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+      GIT_TERMINAL_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: skip without a publish token
+        if: env.PUBLISH_TOKEN == ''
+        run: echo "::warning::TAP_GITHUB_TOKEN is unset; the Homebrew tap was not updated"
+
+      - name: render Formula/vmr.rb
+        if: env.PUBLISH_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${TAG#vmr-}"
+          version="${version#v}"
+          mkdir -p work
+          gh release download "$TAG" --repo "${{ github.repository }}" \
+            --pattern SHA256SUMS --dir work
+          vmr/packaging/render.sh vmr/packaging/homebrew/vmr.rb.in "$version" \
+            work/SHA256SUMS work/Formula/vmr.rb
+          cat work/Formula/vmr.rb
+
+      - name: push to gvcgo/homebrew-tap
+        if: env.PUBLISH_TOKEN != ''
+        run: |
+          set -euo pipefail
+          version="${TAG#vmr-}"
+          version="${version#v}"
+          git clone --depth 1 "https://x-access-token:${PUBLISH_TOKEN}@github.com/gvcgo/homebrew-tap.git" checkout
+          mkdir -p checkout/Formula
+          cp work/Formula/vmr.rb checkout/Formula/vmr.rb
+          vmr/packaging/commit-repo.sh checkout "vmr $version" Formula/vmr.rb
+
+  scoop:
+    name: scoop bucket
+    needs: publish
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: .
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      PUBLISH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+      GIT_TERMINAL_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: skip without a publish token
+        if: env.PUBLISH_TOKEN == ''
+        run: echo "::warning::TAP_GITHUB_TOKEN is unset; bucket/vmr.json was not updated"
+
+      - name: render bucket/vmr.json
+        if: env.PUBLISH_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${TAG#vmr-}"
+          version="${version#v}"
+          mkdir -p work
+          gh release download "$TAG" --repo "${{ github.repository }}" \
+            --pattern SHA256SUMS --dir work
+          vmr/packaging/render.sh vmr/packaging/scoop/vmr.json.in "$version" \
+            work/SHA256SUMS work/bucket/vmr.json
+          python3 -m json.tool work/bucket/vmr.json >/dev/null
+          cat work/bucket/vmr.json
+
+      - name: push to gvcgo/scoop-bucket
+        if: env.PUBLISH_TOKEN != ''
+        run: |
+          set -euo pipefail
+          version="${TAG#vmr-}"
+          version="${version#v}"
+          git clone --depth 1 "https://x-access-token:${PUBLISH_TOKEN}@github.com/gvcgo/scoop-bucket.git" checkout
+          mkdir -p checkout/bucket
+          cp work/bucket/vmr.json checkout/bucket/vmr.json
+          vmr/packaging/commit-repo.sh checkout "vmr $version" bucket/vmr.json
+
+  apt:
+    name: apt repository
+    needs: publish
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: .
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      PUBLISH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+      APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+      APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+      GIT_TERMINAL_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: skip without a publish token or signing key
+        if: env.PUBLISH_TOKEN == '' || env.APT_GPG_PRIVATE_KEY == ''
+        run: echo "::warning::TAP_GITHUB_TOKEN or APT_GPG_PRIVATE_KEY is unset; the APT repository was not updated"
+
+      - name: import the signing key
+        if: env.PUBLISH_TOKEN != '' && env.APT_GPG_PRIVATE_KEY != ''
+        env:
+          GNUPGHOME: ${{ runner.temp }}/gnupg
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$GNUPGHOME"
+          printf '%s\n' "$APT_GPG_PRIVATE_KEY" | gpg --batch --quiet --import
+          key="$(gpg --batch --list-secret-keys --with-colons | awk -F: '/^fpr/ {print $10; exit}')"
+          if [ -z "$key" ]; then
+            echo "::error::APT_GPG_PRIVATE_KEY did not import a secret key"
+            exit 1
+          fi
+          echo "GNUPGHOME=$GNUPGHOME" >>"$GITHUB_ENV"
+          echo "APT_GPG_KEY=$key" >>"$GITHUB_ENV"
+
+      - name: download the linux archives
+        if: env.PUBLISH_TOKEN != '' && env.APT_GPG_PRIVATE_KEY != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p work/artifacts
+          gh release download "$TAG" --repo "${{ github.repository }}" \
+            --pattern 'vmr-*-unknown-linux-gnu.tar.xz' --dir work/artifacts
+          ls -l work/artifacts
+
+      - name: build and sign the repository
+        if: env.PUBLISH_TOKEN != '' && env.APT_GPG_PRIVATE_KEY != ''
+        run: |
+          set -euo pipefail
+          version="${TAG#vmr-}"
+          version="${version#v}"
+          git clone --depth 1 "https://x-access-token:${PUBLISH_TOKEN}@github.com/gvcgo/vmr-apt.git" checkout
+          vmr/packaging/apt/build-repo.sh "$version" work/artifacts checkout
+          find checkout/pool checkout/dists -type f | sort
+
+      - name: push to gvcgo/vmr-apt
+        if: env.PUBLISH_TOKEN != '' && env.APT_GPG_PRIVATE_KEY != ''
+        run: |
+          set -euo pipefail
+          version="${TAG#vmr-}"
+          version="${version#v}"
+          vmr/packaging/commit-repo.sh checkout "vmr $version" pool dists vmr.gpg
