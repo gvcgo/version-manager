@@ -49,10 +49,23 @@ done
 rm -f "$dir/vmr.db" "$dir/vmr.files"
 repo-add --sign --verify "$dir/vmr.db.tar.gz" "${packages[@]}" >/dev/null
 
-rm -f "$dir/vmr.db" "$dir/vmr.files"
+# GitHub Pages stores symlinks as their target path, so every database file that pacman requests
+# must be materialised as a regular file.
+materialize() {
+    target="$1"
+    [ -e "$target" ] || return 0
+    temporary="$target.tmp"
+    cp -Lf "$target" "$temporary"
+    rm -f "$target"
+    mv "$temporary" "$target"
+}
+
 cp -f "$dir/vmr.db.tar.gz" "$dir/vmr.db"
 cp -f "$dir/vmr.files.tar.gz" "$dir/vmr.files"
-cp -f "$dir/vmr.db.tar.gz.sig" "$dir/vmr.db.sig"
+[ -e "$dir/vmr.db.sig" ] || cp -f "$dir/vmr.db.tar.gz.sig" "$dir/vmr.db.sig"
+for file in vmr.db vmr.db.sig vmr.files; do
+    materialize "$dir/$file"
+done
 
 gpg --armor --export "$PACMAN_GPG_KEY" >"$repo/vmr.gpg"
 
