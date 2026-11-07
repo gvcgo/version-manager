@@ -1,0 +1,113 @@
+name: release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag, e.g. vmr-v0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    working-directory: vmr
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-22.04
+            kind: unix
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-22.04-arm
+            kind: unix
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+            kind: unix
+          - target: aarch64-apple-darwin
+            os: macos-15
+            kind: unix
+          - target: x86_64-pc-windows-msvc
+            os: windows-2022
+            kind: windows
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
+            kind: windows
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: vmr -> target
+
+      - name: build
+        run: cargo build --release --locked -p vmr-cli --bin vmr
+
+      - name: package (unix)
+        if: matrix.kind == 'unix'
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="vmr-${{ matrix.target }}"
+          mkdir -p "stage/$name"
+          cp target/release/vmr "stage/$name/vmr"
+          cp readme.md "stage/$name/README.md"
+          tar -C stage -cJf "$name.tar.xz" "$name"
+          tar -tJf "$name.tar.xz"
+
+      - name: package (windows)
+        if: matrix.kind == 'windows'
+        shell: pwsh
+        run: |
+          $name = "vmr-${{ matrix.target }}"
+          $stage = "stage/$name"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item target\release\vmr.exe $stage
+          Copy-Item readme.md "$stage/README.md"
+          Compress-Archive -Path "$stage/*" -DestinationPath "$name.zip" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: vmr/vmr-${{ matrix.target }}.*
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: checksums
+        working-directory: dist
+        run: |
+          for f in *.tar.xz *.zip; do sha256sum "$f" > "$f.sha256"; done
+          sha256sum *.tar.xz *.zip > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: upload to release
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" * --clobber
