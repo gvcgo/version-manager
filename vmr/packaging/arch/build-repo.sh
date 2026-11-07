@@ -36,16 +36,18 @@ for pkg in "$@"; do
     cp -f "$pkg" "$dir/"
 done
 
+packages=()
 for pkg in "$dir"/*.pkg.tar.*; do
     case "$pkg" in
         *.sig) continue ;;
     esac
     [ -f "$pkg.sig" ] || gpg --batch --yes --detach-sign -u "$PACMAN_GPG_KEY" "$pkg"
+    packages+=("$pkg")
 done
 
 # repo-add refuses to create the database over an existing symlink of the same name.
 rm -f "$dir/vmr.db" "$dir/vmr.files"
-repo-add --sign --verify "$dir/vmr.db.tar.gz" "$dir"/*.pkg.tar.* >/dev/null
+repo-add --sign --verify "$dir/vmr.db.tar.gz" "${packages[@]}" >/dev/null
 
 rm -f "$dir/vmr.db" "$dir/vmr.files"
 cp -f "$dir/vmr.db.tar.gz" "$dir/vmr.db"
