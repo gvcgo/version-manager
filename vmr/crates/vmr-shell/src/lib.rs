@@ -7,8 +7,10 @@
 //! - `PackPath`/`PackEnv` line injection / prefix-based removal (Set/Unset).
 //!
 //! Session contract: skip injection when `VM_DISABLE=111`; the cd hook calls `vmr cdhook` for automatic switching.
-//! On Windows, the generated PowerShell config includes the cd hook (registry broadcast
-//! is limited on that platform; the Rust side only provides profile write-back — documented).
+//! On Windows, the generated PowerShell config includes the cd hook plus `vmrsource` and a
+//! `vmr` wrapper: the registry broadcast only reaches newly started processes, and a child
+//! process cannot change its parent's environment, so the wrapper re-reads
+//! `HKCU\Environment` after `vmr use` / `vmr uninstall` to refresh the current window.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -285,6 +287,84 @@ pub fn init_script(kind: Kind) -> String {
     Shell::new(kind).init_script()
 }
 
+/// Quotes a value for a PowerShell single-quoted literal.
+fn ps_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "''"))
+}
+
+/// Re-reads the vmr-managed part of the Windows user environment into the current
+/// PowerShell process.
+///
+/// A child process cannot change its parent's environment, so `vmr use` can only write
+/// `HKCU\Environment`; this block is evaluated from the profile and is what makes the
+/// current window see the new SDK. It replaces only entries under the versions directory
+/// (or the `%VMR_VERSIONS%` registry form) and keeps unrelated PATH entries, so developer
+/// shells that added their own directories are not reset.
+const POWERSHELL_REFRESH: &str = r#"function global:vmrsource {
+    $versions = [System.Environment]::GetEnvironmentVariable('VMR_VERSIONS', 'User')
+    if (-not $versions) { $versions = __VMR_VERSIONS_DIR__ }
+    if ($versions) { $env:VMR_VERSIONS = $versions }
+    $isVmPath = {
+        param($entry)
+        if (-not $entry) { return $false }
+        $p = $entry.Replace('/', '\').TrimEnd('\')
+        if ($p.StartsWith('%VMR_VERSIONS%', [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+        if (-not $versions) { return $false }
+        $v = $versions.Replace('/', '\').TrimEnd('\')
+        return ($p -ieq $v) -or $p.StartsWith($v + '\', [System.StringComparison]::OrdinalIgnoreCase)
+    }
+    $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $vmrEntries = @()
+    if ($userPath) {
+        foreach ($entry in $userPath.Split(';')) {
+            if (-not (& $isVmPath $entry)) { continue }
+            $expanded = $entry
+            if ($expanded.StartsWith('%VMR_VERSIONS%') -and $versions) {
+                $expanded = $versions + $expanded.Substring(('%VMR_VERSIONS%').Length)
+            }
+            if (-not ($vmrEntries -contains $expanded)) { $vmrEntries += $expanded }
+        }
+    }
+    $current = $env:Path
+    if (-not $current) { $current = '' }
+    $kept = @()
+    foreach ($entry in $current.Split(';')) {
+        if ($entry -and -not (& $isVmPath $entry)) { $kept += $entry }
+    }
+    $env:Path = (@($vmrEntries) + $kept) -join ';'
+    $keyFile = __VMR_ENV_KEYS__
+    if (Test-Path -LiteralPath $keyFile) {
+        foreach ($key in @(Get-Content -LiteralPath $keyFile)) {
+            $key = $key.Trim()
+            if (-not $key -or $key -ieq 'Path') { continue }
+            $value = [System.Environment]::GetEnvironmentVariable($key, 'User')
+            if ($null -ne $value) {
+                Set-Item -Path ('Env:' + $key) -Value $value
+            } else {
+                Remove-Item -Path ('Env:' + $key) -ErrorAction SilentlyContinue
+            }
+        }
+    }
+}
+$global:__vmr_exe = $null
+$vmrCommand = Get-Command -Name 'vmr' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($vmrCommand) { $global:__vmr_exe = $vmrCommand.Source }
+if (-not $global:__vmr_exe) {
+    $vmrFallback = Join-Path $HOME '.vmr\vmr.exe'
+    if (Test-Path -LiteralPath $vmrFallback) { $global:__vmr_exe = $vmrFallback }
+}
+if ($global:__vmr_exe) {
+    function global:vmr {
+        & $global:__vmr_exe @args
+        $vmrExit = $LASTEXITCODE
+        if ($vmrExit -eq 0 -and $args.Count -gt 0 -and (@('use', 'u', 'h', 'uninstall', 'uni', 'r') -contains [string]$args[0])) {
+            vmrsource
+        }
+        $global:LASTEXITCODE = $vmrExit
+    }
+}
+"#;
+
 /// Shell environment operator (non-Windows).
 #[derive(Debug, Clone)]
 pub struct Shell {
@@ -473,12 +553,22 @@ impl Shell {
         let conf = script_path(self.kind, &self.conf_path().to_string_lossy(), &self.home);
         let install = paths::work_dir().to_string_lossy().into_owned();
         let hook = indent_block(&self.kind.hook_script(&install, &self.home), "    ");
+        let refresh = POWERSHELL_REFRESH
+            .replace(
+                "__VMR_VERSIONS_DIR__",
+                &ps_quote(&paths::versions_dir().to_string_lossy()),
+            )
+            .replace(
+                "__VMR_ENV_KEYS__",
+                &ps_quote(&paths::work_dir().join("env_keys.txt").to_string_lossy()),
+            );
+        let refresh = indent_block(&refresh, "    ");
         match self.kind {
             Kind::Fish => format!(
                 "if not set -q {VM_DISABLE_ENV_NAME}\n    if test -f \"{env_file}\"\n        . \"{env_file}\"\n    end\n{hook}\nend\n\nfunction svmr --description \"leave a vmr session and reload the shell config\"\n    set -gx {VM_DISABLE_ENV_NAME} ''\n    source \"{conf}\"\nend\n"
             ),
             Kind::PowerShell => format!(
-                "if (-not $env:{VM_DISABLE_ENV_NAME}) {{\n    $env:Path = (Join-Path $HOME '.vmr') + ';' + $env:Path\n{hook}\n}}\nfunction global:svmr {{ $env:{VM_DISABLE_ENV_NAME} = ''; . $PROFILE }}\n"
+                "if (-not $env:{VM_DISABLE_ENV_NAME}) {{\n    $env:Path = (Join-Path $HOME '.vmr') + ';' + $env:Path\n{hook}\n{refresh}\n}}\nfunction global:svmr {{ $env:{VM_DISABLE_ENV_NAME} = ''; . $PROFILE }}\n"
             ),
             _ => format!(
                 "if [ -z \"${VM_DISABLE_ENV_NAME}\" ]; then\n    [ -f \"{env_file}\" ] && . \"{env_file}\"\n{hook}\nfi\nalias svmr='export {VM_DISABLE_ENV_NAME}=\"\" && source \"{conf}\"'\n"
@@ -661,6 +751,13 @@ mod tests {
         assert!(ps.contains("Set-Alias -Name cd"), "{ps}");
         assert!(ps.contains("VMR_CD_INIT"), "{ps}");
         assert!(ps.contains("function global:svmr"), "{ps}");
+        assert!(ps.contains("function global:vmrsource"), "{ps}");
+        assert!(ps.contains("function global:vmr "), "{ps}");
+        assert!(ps.contains("env_keys.txt"), "{ps}");
+        assert!(
+            ps.contains("'use', 'u', 'h', 'uninstall', 'uni', 'r'"),
+            "{ps}"
+        );
         assert!(!ps.contains("vmr.sh"), "{ps}");
     }
 
