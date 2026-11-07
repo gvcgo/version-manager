@@ -47,7 +47,7 @@ jobs:
             os: windows-11-arm
             kind: windows
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag }}
 
@@ -83,7 +83,7 @@ jobs:
           Copy-Item readme.md "$stage/README.md"
           Compress-Archive -Path "$stage/*" -DestinationPath "$name.zip" -Force
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.target }}
           path: vmr/vmr-${{ matrix.target }}.*
@@ -93,7 +93,7 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
@@ -110,4 +110,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
-        run: gh release upload "$TAG" * --clobber
+        run: gh release upload "$TAG" * --clobber --repo "${{ github.repository }}"
