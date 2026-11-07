@@ -127,7 +127,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          # A release runs the workflow from its own tag; a manual dispatch reuses the packaging
+          # scripts from the dispatched ref, which is what makes retrying an older tag possible.
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
 
       - name: skip without a publish token
         if: env.PUBLISH_TOKEN == ''
@@ -173,7 +175,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          # A release runs the workflow from its own tag; a manual dispatch reuses the packaging
+          # scripts from the dispatched ref, which is what makes retrying an older tag possible.
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
 
       - name: skip without a publish token
         if: env.PUBLISH_TOKEN == ''
@@ -222,7 +226,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          # A release runs the workflow from its own tag; a manual dispatch reuses the packaging
+          # scripts from the dispatched ref, which is what makes retrying an older tag possible.
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
 
       - name: skip without a publish token or signing key
         if: env.PUBLISH_TOKEN == '' || env.APT_GPG_PRIVATE_KEY == ''
