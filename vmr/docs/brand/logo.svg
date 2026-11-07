@@ -1,99 +1,144 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="656" height="280" viewBox="0 0 328 140" role="img" aria-label="vmr">
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="280" viewBox="0 0 340 140" role="img" aria-label="vmr">
   <defs>
-    <radialGradient id="halo" cx="50%" cy="46%" r="52%">
-      <stop offset="0%" stop-color="#C96B33" stop-opacity="0.16"/>
-      <stop offset="62%" stop-color="#E8A052" stop-opacity="0.08"/>
-      <stop offset="100%" stop-color="#E8A052" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="fur" x1="0.15" y1="0" x2="0.85" y2="1">
-      <stop offset="0%" stop-color="#E8A052" stop-opacity="0.95"/>
-      <stop offset="55%" stop-color="#C96B33" stop-opacity="0.94"/>
-      <stop offset="100%" stop-color="#C96B33" stop-opacity="0.86"/>
-    </linearGradient>
-    <linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="122" x2="0" y2="54">
-      <stop offset="0%" stop-color="#2F6B4C" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="#5E9464" stop-opacity="0.9"/>
-    </linearGradient>
-    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="7" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.9" xChannelSelector="R" yChannelSelector="G"/>
-      <feGaussianBlur stdDeviation="0.28"/>
-    </filter>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.8"/>
-    </filter>
     <filter id="blade" x="-20%" y="-20%" width="140%" height="140%">
       <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
     </filter>
+    <linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="122" x2="0" y2="54">
+      <stop offset="0%" stop-color="#2F6B4C" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#5E9464" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+<g transform="translate(-6,0) scale(0.94)">
+
+  <defs>
+    <linearGradient id="bodyG" x1="0.35" y1="0" x2="0.72" y2="1">
+      <stop offset="0%" stop-color="#F0A659"/>
+      <stop offset="45%" stop-color="#E08C3B"/>
+      <stop offset="100%" stop-color="#B45B22"/>
+    </linearGradient>
+    <linearGradient id="headG" x1="0.3" y1="0.05" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#F6B36C"/>
+      <stop offset="42%" stop-color="#E9953F"/>
+      <stop offset="100%" stop-color="#C0662A"/>
+    </linearGradient>
+    <linearGradient id="earG" x1="0.4" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#EFA354"/>
+      <stop offset="100%" stop-color="#C4682B"/>
+    </linearGradient>
+    <linearGradient id="whiteG" x1="0.25" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#FCF4E6"/>
+      <stop offset="100%" stop-color="#E3D0B3"/>
+    </linearGradient>
+    <linearGradient id="legG" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#F2A957"/>
+      <stop offset="60%" stop-color="#DC8535"/>
+      <stop offset="100%" stop-color="#B85E24"/>
+    </linearGradient>
+    <radialGradient id="headLight" cx="30%" cy="20%" r="70%">
+      <stop offset="0%" stop-color="#FFD8A6" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#FFBF7E" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#FFBF7E" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="b4" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="b2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="b1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.1"/></filter>
+    <linearGradient id="grass" gradientUnits="userSpaceOnUse" x1="0" y1="122" x2="0" y2="54">
+      <stop offset="0%" stop-color="#2F6B4C" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#5E9464" stop-opacity="0.9"/>
+    </linearGradient>
   </defs>
 
-  <ellipse cx="64" cy="74" rx="58" ry="50" fill="url(#halo)"/>
+  <!-- contact shadow -->
+  <ellipse cx="70" cy="129" rx="34" ry="6" fill="#8A4A1E" opacity="0.18" filter="url(#b4)"/>
 
-  <!-- ===== cat ===== -->
-  <g filter="url(#soft)" opacity="0.26">
-    <path d="M38 62 C31 74 29 88 31 100 C33 112 43 120 56 120 C70 120 80 112 82 100 C84 88 81 74 76 62 Z" fill="#C96B33"/>
-    <circle cx="56" cy="50" r="18" fill="#C96B33"/>
-  </g>
+  <!-- tail -->
+  <path d="M93 102 C104 104 110 112 108 120 C106 127 99 130 94 128" fill="none" stroke="#C4682B" stroke-width="10.5" stroke-linecap="round"/>
+  <path d="M99 124 C102 127.5 99 130.5 94 129.5" fill="none" stroke="url(#whiteG)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M95 104 C102 106 106 111 106 116" fill="none" stroke="#E9953F" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
 
-  <g filter="url(#rough)">
-    <!-- tail with white tip -->
-    <path d="M80 98 C92 100 97 108 94 116 C91 123 83 125 77 121" fill="none" stroke="#C96B33" stroke-width="8.5" stroke-linecap="round" opacity="0.95"/>
-    <path d="M88 119.5 C89 121.5 87 123 84 123 C82 123 80.5 122.4 79.5 121.4" fill="none" stroke="#FBF6EC" stroke-width="7" stroke-linecap="round" opacity="0.9"/>
-    <!-- body -->
-    <path d="M38 62 C31 74 29 88 31 100 C33 112 43 120 56 120 C70 120 80 112 82 100 C84 88 81 74 76 62 Z" fill="url(#fur)"/>
-    <!-- ears -->
-    <path d="M42 44 C39 36 36 29 34 25 C29 30 27 38 28 46 C33 46 38 46 42 44 Z" fill="url(#fur)"/>
-    <path d="M62 42 C67 36 71 30 76 26 C80 32 80 39 79 46 C74 46 67 45 62 42 Z" fill="url(#fur)"/>
-    
-    
-    <!-- head -->
-    <path d="M56 34 C68 34 76 41 76 51 C76 62 68 70 56 70 C44 70 36 62 36 51 C36 41 44 34 56 34 Z" fill="url(#fur)"/>
-  </g>
+  <!-- ===== body ===== -->
+  <path d="M56 66 C50 76 48 88 48 96 C48 106 46 115 48.5 121 C51.5 128 60 131 70 131 C80 131 88.5 128 91.5 121 C94 115 92 106 92 96 C92 88 90 76 84 66 Z" fill="url(#bodyG)"/>
+  <!-- body shading: right side -->
+  <path d="M84 66 C90 76 93 86 93 96 C93 106 96 114 95 119 C93 127 84 131 70 131 C81 127 87 119 87 106 C87 90 87 78 84 66 Z" fill="#8F3F12" opacity="0.22" filter="url(#b4)"/>
 
-  <!-- white markings: muzzle, chest, paws -->
-  <path d="M56 57 C62 57 67 60 67 63.5 C67 67 62 69.5 56 69.5 C50 69.5 45 67 45 63.5 C45 60 50 57 56 57 Z" fill="#FBF6EC" opacity="0.95"/>
-  <path d="M56 69 C61 70 64 74 65 80 C66 90 64 100 63 106 C62 110 59 112 56 112 C53 112 50 110 49 106 C48 100 46 90 47 80 C48 74 51 70 56 69 Z" fill="#FBF6EC" opacity="0.88"/>
-  <path d="M56 69 C50 69 46 72 45 77 C48 75 52 74 56 74 C60 74 64 75 67 77 C66 72 62 69 56 69 Z" fill="#FBF6EC" opacity="0.55"/>
-  <g fill="#FBF6EC" opacity="0.92">
-    <ellipse cx="48" cy="115" rx="7.5" ry="4.6"/>
-    <ellipse cx="64" cy="115" rx="7.5" ry="4.6"/>
-  </g>
-  <!-- toe lines -->
-  <g stroke="#3A2A20" stroke-width="0.8" fill="none" opacity="0.35" stroke-linecap="round">
-    <path d="M48 112 V117 M50 112.4 V117.2 M46 112.4 V117.2"/>
-    <path d="M64 112 V117 M66 112.4 V117.2 M62 112.4 V117.2"/>
+  <!-- chest -->
+  <path d="M70 66 C66 69 61 80 60.5 92 C60 104 64 114 70 114 C76 114 80 104 79.5 92 C79 80 74 69 70 66 Z" fill="url(#whiteG)"/>
+  <path d="M70 66 C66.5 68 63.5 73 61.8 79 C64.5 75.8 67 74.6 70 74.6 C73 74.6 75.5 75.8 78.2 79 C76.5 73 73.5 68 70 66 Z" fill="#FFFFFF"/>
+
+  <!-- legs -->
+  <path d="M57 86 C55 98 54.8 112 55.5 121 C56.2 126.6 62 129 66.5 127.5 C69.5 126.3 70 122 70 116 L70 86 Z" fill="url(#legG)"/>
+  <path d="M83 86 C85 98 85.2 112 84.5 121 C83.8 126.6 78 129 73.5 127.5 C70.5 126.3 70 122 70 116 L70 86 Z" fill="url(#legG)"/>
+  <path d="M68.8 92 L71.2 92 L71.2 124 L68.8 124 Z" fill="#8A3F12" opacity="0.22" filter="url(#b2)"/>
+
+  <!-- socks -->
+  <path d="M56 118 C54.8 123 55.2 127 57.4 128.6 C60.4 130.4 66.6 130.2 68.8 128.2 C70.6 126.6 70.4 122 69.6 117.6 Z" fill="url(#whiteG)"/>
+  <path d="M84 118 C85.2 123 84.8 127 82.6 128.6 C79.6 130.4 73.4 130.2 71.2 128.2 C69.4 126.6 69.6 122 70.4 117.6 Z" fill="url(#whiteG)"/>
+  <g stroke="#C6A585" stroke-width="0.8" fill="none" opacity="0.8" stroke-linecap="round">
+    <path d="M59.5 128.6 V124 M62.5 128.8 V124.2 M65.5 128.6 V124"/>
+    <path d="M74.5 128.6 V124 M77.5 128.8 V124.2 M80.5 128.6 V124"/>
   </g>
 
-  <!-- tabby hints -->
-  <g stroke="#A3441F" stroke-linecap="round" fill="none" opacity="0.45">
-    <path d="M51 38 C54 40 58 40 61 38" stroke-width="1.8"/>
-    <path d="M53 43 C55 44 57 44 59 43" stroke-width="1.5"/>
+  <!-- ===== head ===== -->
+  <!-- ears -->
+  <path d="M52 36 C49 29 47 21 46.5 14 C53 18 60 24 63 31 Z" fill="url(#earG)"/>
+  <path d="M88 36 C91 29 93 21 93.5 14 C87 18 80 24 77 31 Z" fill="url(#earG)"/>
+  <path d="M54 33 C52 27 51 22 50.6 18 C55 21 59.4 25 61.2 29 Z" fill="#EBA79B"/>
+  <path d="M86 33 C88 27 89 22 89.4 18 C85 21 80.6 25 78.8 29 Z" fill="#EBA79B"/>
+
+  <!-- skull: wider, softer, cheeks full -->
+  <path d="M70 27 C83 27 92 33 94 43 C96 51 96 57 93 62 C89 68 81 71 70 71 C59 71 51 68 47 62 C44 57 44 51 46 43 C48 33 57 27 70 27 Z" fill="url(#headG)"/>
+  <path d="M70 27 C83 27 92 33 94 43 C96 51 96 57 93 62 C89 68 81 71 70 71 Z" fill="url(#headLight)"/>
+  <!-- under-head shadow -->
+  <path d="M52 62 C57 68 63 71 70 71 C77 71 83 68 88 62 C86 68 79 73 70 73 C61 73 54 68 52 62 Z" fill="#8F3F12" opacity="0.22" filter="url(#b2)"/>
+
+  <!-- cheek fluff -->
+  <g fill="url(#headG)">
+    <path d="M47 50 C43 51 41 53.5 41.5 56 C43.5 56 45.5 56.6 47 57.4 C45 58.4 44 60 44.6 61.6 C46.2 62.2 47.4 62.2 48.4 62.2 Z"/>
+    <path d="M93 50 C97 51 99 53.5 98.5 56 C96.5 56 94.5 56.6 93 57.4 C95 58.4 96 60 95.4 61.6 C93.8 62.2 92.6 62.2 91.6 62.2 Z"/>
   </g>
 
-  <!-- face -->
-  <g stroke="#3A2A20" fill="none" stroke-linecap="round" stroke-width="2.4">
-    <path d="M45 52 C47 56 51 56 53 52"/>
-    <path d="M60 52 C62 56 66 56 68 52"/>
+  <!-- muzzle pads -->
+  <path d="M70 53 C65 53 60.5 55.4 60.5 59.4 C60.5 64 65 67.6 70 67.6 C75 67.6 79.5 64 79.5 59.4 C79.5 55.4 75 53 70 53 Z" fill="url(#whiteG)" opacity="0.96"/>
+  <path d="M70 53 C68.2 56 68.2 60 70 62.6 C71.8 60 71.8 56 70 53 Z" fill="#F6E8D6" opacity="0.9"/>
+
+
+  <!-- eyes: closed, tilted, lashes -->
+  <g stroke="#43302A" fill="none" stroke-linecap="round">
+    <path d="M57.8 46.8 C60.8 51 65.2 51 68.2 46.8" stroke-width="2.5"/>
+    <path d="M71.8 46.8 C74.8 51 79.2 51 82.2 46.8" stroke-width="2.5"/>
   </g>
-  <path d="M56.5 58 L60 59.8 L56.5 62.4 Z" fill="#A3441F"/>
-  <path d="M56.5 62.4 C56.5 65 54 66 52.5 64.6 M56.5 62.4 C56.5 65 59 66 60.5 64.6" fill="none" stroke="#3A2A20" stroke-width="1.3" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- nose + philtrum + mouth -->
+  <path d="M67.2 56.6 C68.3 55.9 71.7 55.9 72.8 56.6 C72.4 58.3 71.1 59.3 70 59.3 C68.9 59.3 67.6 58.3 67.2 56.6 Z" fill="#DE8E7E"/>
+  <path d="M70 59.3 V61.6" stroke="#8C6A52" stroke-width="1" stroke-linecap="round"/>
+  <path d="M70 61.6 C69.4 63.2 67.8 63.6 66.8 62.8 M70 61.6 C70.6 63.2 72.2 63.6 73.2 62.8" fill="none" stroke="#8C6A52" stroke-width="1" stroke-linecap="round"/>
 
   <!-- whiskers -->
-  <g stroke="#3A2A20" stroke-linecap="round" fill="none">
-    <path d="M45 60 C40 58.5 35 58 31 58" stroke-width="1" opacity="0.42"/>
-    <path d="M44 64 C39 65 34 66 30 67.5" stroke-width="1" opacity="0.38"/>
-    <path d="M68 60 C73 58.5 78 58 82 58" stroke-width="1" opacity="0.42"/>
-    <path d="M69 64 C74 65 79 66 83 67.5" stroke-width="1" opacity="0.38"/>
+  <g stroke="#8C6A52" fill="none" stroke-linecap="round" opacity="0.62">
+    <path d="M59.5 58.6 C53 57 47 56.6 42 57.2" stroke-width="0.95"/>
+    <path d="M59 61.2 C52.5 61.8 46.5 63.2 42 65.2" stroke-width="0.9"/>
+    <path d="M80.5 58.6 C87 57 93 56.6 98 57.2" stroke-width="0.95"/>
+    <path d="M81 61.2 C87.5 61.8 93.5 63.2 98 65.2" stroke-width="0.9"/>
   </g>
 
-  <g filter="url(#blade)" stroke="#5E9464" fill="none" stroke-linecap="round" opacity="0.75">
-    <path d="M28 123 C29 117 29 112 27 108" stroke-width="2.2"/>
-    <path d="M32 123 C35 119 36 115 35 112" stroke-width="1.8"/>
-    <path d="M24 123 C22 119 21 116 22 113" stroke-width="1.6"/>
+  <!-- blush -->
+  <g fill="#E88A68" opacity="0.22" filter="url(#b2)">
+    <ellipse cx="55.5" cy="57.5" rx="5" ry="3"/>
+    <ellipse cx="84.5" cy="57.5" rx="5" ry="3"/>
   </g>
 
-  <!-- ===== grass wordmark vmr ===== -->
+  <!-- fur direction strokes -->
+  <g stroke="#C4783A" stroke-width="0.7" fill="none" opacity="0.22" stroke-linecap="round">
+    <path d="M62 34 C63 37 62 39.5 60 41.5"/>
+    <path d="M70 31 C71 34 70.4 37 69 39"/>
+    <path d="M78 34 C77 37 78 39.5 80 41.5"/>
+    <path d="M64 88 C65 91 65 94 64 96"/>
+    <path d="M76 88 C75 91 75 94 76 96"/>
+  </g>
+
+</g>
   <g filter="url(#blade)">
     <g stroke="#2F6B4C" stroke-linecap="round" fill="none" opacity="0.26">
       <path d="M152 121 C162 119.6 172 119.2 182 119.6" stroke-width="1.8"/>
