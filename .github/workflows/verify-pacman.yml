@@ -1,0 +1,102 @@
+name: verify-pacman
+
+# Builds the pacman package for an existing release and installs it from the generated repository
+# inside a disposable Arch container. Run it before merging packaging changes, or to seed
+# gvcgo/vmr-pacman without cutting a new release:
+#
+#   gh workflow run verify-pacman.yml --ref <branch> -f tag=v0.8.0
+#   gh run download <run-id> -n pacman-repo -D work
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag whose assets to package, e.g. v0.8.0"
+        required: true
+        default: v0.8.0
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    env:
+      TAG: ${{ inputs.tag }}
+      APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: import the signing key
+        if: env.APT_GPG_PRIVATE_KEY != ''
+        env:
+          GNUPGHOME: ${{ runner.temp }}/gnupg
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$GNUPGHOME"
+          printf '%s\n' "$APT_GPG_PRIVATE_KEY" | gpg --batch --quiet --import
+          key="$(gpg --batch --list-secret-keys --with-colons | awk -F: '/^fpr/ {print $10; exit}')"
+          if [ -z "$key" ]; then
+            echo "::error::APT_GPG_PRIVATE_KEY did not import a secret key"
+            exit 1
+          fi
+          echo "GNUPGHOME=$GNUPGHOME" >>"$GITHUB_ENV"
+          echo "PACMAN_GPG_KEY=$key" >>"$GITHUB_ENV"
+
+      - name: download the linux archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p work
+          gh release download "$TAG" --repo "${{ github.repository }}" \
+            --pattern SHA256SUMS \
+            --pattern 'vmr-x86_64-unknown-linux-gnu.tar.xz' --dir work
+          ls -l work
+
+      - name: render PKGBUILD
+        run: |
+          set -euo pipefail
+          version="${TAG#vmr-}"
+          version="${version#v}"
+          vmr/packaging/render.sh vmr/packaging/arch/PKGBUILD.in "$version" \
+            work/SHA256SUMS work/PKGBUILD
+          cat work/PKGBUILD
+
+      - name: build the repository
+        run: |
+          set -euo pipefail
+          mkdir -p work/checkout
+          cp vmr/packaging/arch/build-repo.sh vmr/packaging/arch/verify.sh work/
+          chmod +x work/build-repo.sh work/verify.sh
+          docker run --rm \
+            -v "$PWD/work:/work" \
+            -v "$GNUPGHOME:/gnupg" \
+            -e GNUPGHOME=/gnupg \
+            -e PACMAN_GPG_KEY="$PACMAN_GPG_KEY" \
+            -w /work archlinux:base-devel bash -c '
+              set -euo pipefail
+              pacman -Sy --needed --noconfirm base-devel >/dev/null
+              useradd -m builder
+              mkdir -p /home/builder/build
+              cp PKGBUILD vmr-x86_64-unknown-linux-gnu.tar.xz /home/builder/build/
+              chown -R builder /home/builder/build
+              su builder -c "cd /home/builder/build && makepkg -f --nodeps --noconfirm"
+              ./build-repo.sh /work/checkout /home/builder/build/vmr-*.pkg.tar.zst
+            '
+
+      - name: verify the package installs
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD/work/checkout:/repo:ro" \
+            -v "$PWD/work/verify.sh:/verify.sh:ro" \
+            archlinux:base bash /verify.sh /repo
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pacman-repo
+          path: |
+            work/checkout
+            work/PKGBUILD
+          if-no-files-found: error

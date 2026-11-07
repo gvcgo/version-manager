@@ -45,7 +45,29 @@ sudo apt update
 sudo apt install vmr
 ```
 
-### 4. 下载
+### 4. pacman（Arch Linux）
+
+```bash
+curl -fsSLO https://gvcgo.github.io/vmr-pacman/vmr.gpg
+sudo pacman-key --add vmr.gpg
+sudo pacman-key --lsign-key C387E9AE5C936248D446868C44E5A0323545E858
+```
+
+把仓库追加到 `/etc/pacman.conf`：
+
+```ini
+[vmr]
+SigLevel = Required DatabaseOptional
+Server = https://gvcgo.github.io/vmr-pacman/$arch
+```
+
+然后安装：
+
+```bash
+sudo pacman -Syu vmr
+```
+
+### 5. 下载
 
 到 [Releases](https://github.com/gvcgo/version-manager/releases) 下载对应平台的包：
 
@@ -58,7 +80,7 @@ sudo apt install vmr
 | Windows (x64) | `vmr-x86_64-pc-windows-msvc.zip` |
 | Windows (ARM64) | `vmr-aarch64-pc-windows-msvc.zip` |
 
-### 5. 解压并放到 PATH
+### 6. 解压并放到 PATH
 
 Linux / macOS：
 
@@ -71,7 +93,7 @@ install -m 755 vmr-x86_64-apple-darwin/vmr ~/.local/bin/vmr
 
 Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 
-### 6. 校验（可选）
+### 7. 校验（可选）
 
 每个包都附带 `.sha256` 文件，Release 页面还有汇总的 `SHA256SUMS`：
 
@@ -79,7 +101,7 @@ Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 shasum -a 256 -c vmr-x86_64-apple-darwin.tar.xz.sha256
 ```
 
-### 7. 确认安装
+### 8. 确认安装
 
 ```bash
 vmr version
