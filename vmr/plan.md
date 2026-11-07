@@ -57,7 +57,7 @@ vmr-rust/
 │   ├── vmr-lua/                # Lua 运行时 + 插件生命周期 + 50 个 vmr* 绑定（含 github/conda 桥）
 │   ├── vmr-installer/          # 安装器：unarchiver / executable / conda / coursier / dpkg/rpm + post 后处理
 │   ├── vmr-env/                # 环境变量：收集（BinaryDirs/AdditionalEnvs）、全局设置、临时注入
-│   ├── vmr-shell/              # shell hook：bash/zsh/fish/powershell/git-bash 环境注入 + cd hook
+│   ├── vmr-shell/              # shell hook：bash/zsh/fish/powershell/git-bash 环境注入 + cd hook；脚本模板在 scripts/（include_str! 嵌入）
 │   ├── vmr-pty/                # 会话模式交互子 shell（PTY/ConPTY）
 │   └── vmr-cli/                # 命令行入口（clap），全部子命令，文本输出
 └── plugins/                    # （可选）插件样例
@@ -195,7 +195,7 @@ clap 实现，保留原命令名/别名（脚本兼容）：
 | `plugins [-u]` | | 列出插件（扫描 `~/.vmr/plugins`），**文本表格**；`-u` 先刷新上游插件 |
 | `search <sdk>` | `s` | 版本列表，**文本表格**；`-p` 走 conda repodata；`-n` 忽略版本缓存（插件表与 repodata） |
 | `local [sdk] [-c]` | `l` | 已装版本，**文本表格**（当前版本标 `<current>`）；不带参数时分组列出所有已装 SDK；`-c` 仅当前版本（带 `sdk` 打印该版本，不带则 `SDK/CURRENT` 表，无结果不输出） |
-| `nested` / `session` | `ns`/`ism` | 会话开关/查询 |
+| `nested` / `session` | `ns`/`se` | 会话开关/查询 |
 | `init [shell]` | | 输出 shell 集成脚本（`eval "$(vmr init zsh)"`） |
 | `template <kind>` | `-d/--dir` | 输出插件模板（`github`/`html`/`json`/`pixi`） |
 | `version` | `v` | `gitTag(gitHash[:7])` |

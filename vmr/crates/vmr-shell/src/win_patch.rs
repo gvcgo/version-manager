@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use vmr_core::paths;
 
 use crate::convert_to_mingw;
+use crate::scripts;
 use crate::win_reg;
 
 const VMR_VERSIONS_ENV: &str = "VMR_VERSIONS";
@@ -118,27 +119,7 @@ fn remove_one_path_env(path_env: &str) {
 }
 
 fn mingw_cd_hook(install: &str) -> String {
-    format!(
-        "# cd hook start
-export PATH=\"{install}:${{PATH}}\"
-
-if [ -z \"$VM_DISABLE\" ]; then
-    cdhook() {{
-        if [ $# -eq 0 ]; then
-            builtin cd
-        else
-            builtin cd \"$@\" && vmr cdhook
-        fi
-    }}
-    alias cd='cdhook'
-
-    if [ -z \"${{VMR_CD_INIT}}\" ]; then
-        VMR_CD_INIT=\"vmr_cd_init\"
-        cdhook \"$(pwd)\"
-    fi
-fi
-# cd hook end"
-    )
+    crate::fill(scripts::HOOK_GITBASH, &[("__VMR_INSTALL__", install)])
 }
 
 fn patch_cd_hook() {

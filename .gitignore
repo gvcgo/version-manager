@@ -34,5 +34,6 @@ build/*64
 *.zip
 test.sh
 *.fish
+!vmr/crates/vmr-shell/scripts/*.fish
 *.cast
 *.gif
