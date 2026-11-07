@@ -23,6 +23,12 @@ therefore no longer required on the host.
   (dynamic environment lines only); on Windows it writes the `HKCU\Environment` registry key and
   broadcasts the change. Shell configuration needs only one line, `eval "$(vmr init zsh)"`
   (fish: `vmr init fish | source`).
+- Automatic refresh (bash/zsh/fish): that line also defines a `vmr` wrapper, so a successful
+  `vmr use` or `vmr uninstall` reloads the environment into the current shell instead of
+  requiring a new terminal. The refresh removes vmr-managed `PATH` entries and re-applies the
+  env file, so repeated switches do not stack duplicates; variables vmr owns (e.g. `GOROOT`) are
+  unset first, so values removed by an uninstall do not linger. `command vmr ...` bypasses the
+  wrapper.
 - Windows PowerShell: `vmr init powershell` also defines `vmrsource` and wraps `vmr`, so
   `vmr use` / `vmr uninstall` refresh the current window's `PATH` (and vmr-managed variables such
   as `GOROOT`) immediately instead of requiring a new terminal. `vmrsource` can be run by hand to
@@ -160,7 +166,7 @@ timeout; clients should confirm write operations with the user before invoking t
 ~/.vmr/
 ├── conf.toml                 # Configuration (PascalCase keys)
 ├── vmr.sh | vmr.fish         # Dynamic env lines (PATH/GOROOT); the cd hook is emitted by vmr init
-├── env_keys.txt              # Windows: non-PATH variables refreshed by vmrsource
+├── env_keys.txt              # non-PATH variables cleared before an env refresh
 ├── plugins/*.lua             # SDK plugins
 ├── cache/
 │   ├── <plugin>/<version>/   # Legacy plugin download cache
