@@ -39,12 +39,35 @@ fn path_eq(a: &str, b: &str) -> bool {
     canonical(a) == canonical(b)
 }
 
+/// Lists the additional (non-PATH) variables vmr has written so the PowerShell profile can
+/// refresh the current window without touching variables it does not own. Keys removed
+/// from the registry stay listed so a refresh also clears them from `$env:`.
+fn env_keys_path() -> std::path::PathBuf {
+    vmr_core::paths::work_dir().join("env_keys.txt")
+}
+
+fn remember_env_key(key: &str) {
+    let path = env_keys_path();
+    let data = std::fs::read_to_string(&path).unwrap_or_default();
+    if data.lines().any(|l| l.trim().eq_ignore_ascii_case(key)) {
+        return;
+    }
+    let mut out = data;
+    if !out.is_empty() && !out.ends_with('\n') {
+        out.push('\n');
+    }
+    out.push_str(key);
+    out.push('\n');
+    let _ = std::fs::write(&path, out);
+}
+
 pub fn set_env(key: &str, value: &str) {
     if is_path(key) {
         return;
     }
     let Some(k) = env_key() else { return };
     if k.set_value(key, &value).is_ok() {
+        remember_env_key(key);
         broadcast();
     }
 }

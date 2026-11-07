@@ -23,6 +23,10 @@ therefore no longer required on the host.
   (dynamic environment lines only); on Windows it writes the `HKCU\Environment` registry key and
   broadcasts the change. Shell configuration needs only one line, `eval "$(vmr init zsh)"`
   (fish: `vmr init fish | source`).
+- Windows PowerShell: `vmr init powershell` also defines `vmrsource` and wraps `vmr`, so
+  `vmr use` / `vmr uninstall` refresh the current window's `PATH` (and vmr-managed variables such
+  as `GOROOT`) immediately instead of requiring a new terminal. `vmrsource` can be run by hand to
+  re-read `HKCU\Environment`; unrelated `PATH` entries added by the current session are kept.
 - Multi-threaded downloads, checksums, reverse proxies, local proxies, and `HTTP(S)_PROXY`
   environment proxies.
 - All network downloads show `indicatif` progress bars: SDK packages, plugin bundles, pixi
@@ -156,6 +160,7 @@ timeout; clients should confirm write operations with the user before invoking t
 ~/.vmr/
 ├── conf.toml                 # Configuration (PascalCase keys)
 ├── vmr.sh | vmr.fish         # Dynamic env lines (PATH/GOROOT); the cd hook is emitted by vmr init
+├── env_keys.txt              # Windows: non-PATH variables refreshed by vmrsource
 ├── plugins/*.lua             # SDK plugins
 ├── cache/
 │   ├── <plugin>/<version>/   # Legacy plugin download cache
