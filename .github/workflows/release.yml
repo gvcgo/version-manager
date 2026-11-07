@@ -57,7 +57,18 @@ jobs:
         with:
           workspaces: vmr -> target
 
+      - name: resolve version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          v=$(awk '/^\[workspace\.package\]/{f=1;next} /^\[/{f=0} f && /^version *=/{gsub(/"/,"",$3); print $3; exit}' Cargo.toml)
+          [ -n "$v" ] || { echo "failed to read the workspace version from Cargo.toml"; exit 1; }
+          echo "value=$v" >> "$GITHUB_OUTPUT"
+
       - name: build
+        env:
+          VMR_VERSION: ${{ steps.version.outputs.value }}
         run: cargo build --release --locked -p vmr-cli --bin vmr
 
       - name: package (unix)
