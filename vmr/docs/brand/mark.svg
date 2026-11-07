@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128" role="img" aria-label="vmr ink cat">
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="46%" r="52%">
+      <stop offset="0%" stop-color="#20395A" stop-opacity="0.20"/>
+      <stop offset="58%" stop-color="#3F6E8C" stop-opacity="0.11"/>
+      <stop offset="100%" stop-color="#3F6E8C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="inkBody" x1="0.05" y1="0.1" x2="0.95" y2="0.95">
+      <stop offset="0%" stop-color="#20395A" stop-opacity="0.97"/>
+      <stop offset="46%" stop-color="#20395A" stop-opacity="0.94"/>
+      <stop offset="78%" stop-color="#3F6E8C" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#3F6E8C" stop-opacity="0.80"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#B5432F" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#C99A3E" stop-opacity="0.55"/>
+    </linearGradient>
+    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="0.35"/>
+    </filter>
+    <filter id="soft" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="2.4"/>
+    </filter>
+    <filter id="brush" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.7" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- coloured washes behind the cat -->
+  <ellipse cx="64" cy="64" rx="56" ry="48" fill="url(#halo)"/>
+  <ellipse cx="44" cy="78" rx="30" ry="24" fill="#3F6E8C" opacity="0.13"/>
+  <ellipse cx="86" cy="54" rx="26" ry="24" fill="#B5432F" opacity="0.07"/>
+  
+  <ellipse cx="70" cy="80" rx="24" ry="16" fill="#3F6E8C" opacity="0.07"/>
+  <!-- wet bleed -->
+  <g filter="url(#soft)" opacity="0.34">
+    <path d="M34 50 C44 34 68 28 88 36 C102 42 110 56 110 72 C110 80 108 86 106 90
+             C104 78 96 68 84 64 C70 59 52 62 40 70 C34 74 30 76 28 78
+             C26 68 28 58 34 50 Z" fill="#20395A"/>
+    <path d="M104 84 C102 96 88 106 70 106 C54 106 42 100 38 92
+             C42 96 52 100 64 100 C82 100 96 94 100 82 Z" fill="#3F6E8C"/>
+  </g>
+
+  <g filter="url(#rough)">
+    <!-- body -->
+    <path d="M34 50 C44 34 68 28 88 36 C102 42 110 56 110 72 C110 80 108 86 106 90
+             C104 78 96 68 84 64 C70 59 52 62 40 70 C34 74 30 76 28 78
+             C26 68 28 58 34 50 Z" fill="url(#inkBody)"/>
+    <!-- tail, wet vermilion at the tip -->
+    <path d="M104 84 C102 96 88 105 70 105 C56 105 44 100 39 93
+             C44 97 54 100 65 100 C82 100 96 93 100 81 Z" fill="url(#inkBody)" opacity="0.94"/>
+    
+    <!-- ears then head -->
+    <path d="M37 50 L28 33 L46 43 Z" fill="url(#inkBody)"/>
+    <path d="M50 44 L58 30 L64 45 Z" fill="url(#inkBody)"/>
+    <path d="M52 43 L58 33 L61 44 Z" fill="#B5432F" opacity="0.35"/>
+    <path d="M42 50 C56 47 66 55 65 66 C64 77 55 83 46 81 C36 79 30 71 32 62 C33 55 37 52 42 50 Z" fill="url(#inkBody)"/>
+  </g>
+
+  <!-- warm ink bleeding over the ridge -->
+  <path d="M62 33 C74 31 84 34 90 40 C82 37 70 36 60 40 Z" fill="#B5432F" opacity="0.13" filter="url(#rough)"/>
+  <path d="M94 60 C101 66 104 73 104 80 C100 73 96 67 91 63 Z" fill="#C99A3E" opacity="0.14" filter="url(#rough)"/>
+
+  <!-- paper showing through: dry brush -->
+  <g fill="#F6F0E4" opacity="0.12">
+    <path d="M40 44 C56 33 78 33 92 41 C82 36 60 36 44 47 Z"/>
+    <path d="M46 91 C58 99 78 99 90 93 C80 98 58 98 46 94 Z"/>
+  </g>
+
+  <!-- whiskers -->
+  <g stroke="#20395A" stroke-linecap="round" fill="none">
+    <path d="M28 76 C22 78 16 79 11 79" stroke-width="1.2" opacity="0.62"/>
+    <path d="M28 80 C23 83 18 86 14 90" stroke-width="1" opacity="0.52"/>
+    <path d="M31 83 C29 87 27 91 26 95" stroke-width="0.9" opacity="0.42"/>
+  </g>
+
+  <!-- face -->
+  <path d="M39 69 C43 73 49 73 53 69" fill="none" stroke="#F6F0E4" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M31 76 L37 74.5 L34 79.5 Z" fill="#B5432F"/>
+
+  <!-- splatter -->
+  <g fill="#3F6E8C">
+    <circle cx="18" cy="41" r="1.6" opacity="0.38"/>
+    <circle cx="24" cy="34" r="0.9" opacity="0.26"/>
+    <circle cx="114" cy="44" r="1.1" opacity="0.3"/>
+    <circle cx="112" cy="34" r="2.2" opacity="0.14"/>
+  </g>
+
+  <!-- seal -->
+  <g transform="rotate(-4 105 105)">
+    <rect x="94" y="94" width="22" height="22" rx="4" fill="#B5432F"/>
+    <text x="105" y="109.5" font-family="ui-monospace, Menlo, monospace" font-size="8.5" font-weight="700" fill="#F6F0E4" text-anchor="middle">vmr</text>
+  </g>
+</svg>

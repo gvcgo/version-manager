@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo-dark.svg">
+    <img src="docs/brand/logo.svg" alt="vmr" width="312">
+  </picture>
+</p>
+
 # vmr (Rust)
 
 A cross-platform SDK version manager rewritten in Rust, CLI only (no TUI). Commands and the
