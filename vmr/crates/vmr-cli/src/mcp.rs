@@ -125,9 +125,7 @@ fn handle_message(message: &Value) -> Option<Value> {
         return Some(rpc_error(Value::Null, -32600, "Invalid Request", None));
     };
     // Notifications (initialized, cancelled, progress, ...) get no response.
-    let Some(id) = object.get("id") else {
-        return None;
-    };
+    let id = object.get("id")?;
     if id.is_null() || !(id.is_string() || id.is_number()) {
         return Some(rpc_error(
             Value::Null,
@@ -378,7 +376,7 @@ fn call_tool(params: &Value) -> Result<Value, RpcError> {
     }
     match name {
         "vmr_list_plugins" => Ok(tool_result(
-            crate::plugin_rows(false).map(|rows| installed_plugins_json(rows)),
+            crate::plugin_rows(false).map(installed_plugins_json),
         )),
         "vmr_search_versions" => {
             let sdk = str_arg(&args, "sdk")?;
@@ -393,9 +391,10 @@ fn call_tool(params: &Value) -> Result<Value, RpcError> {
                 }
             };
             let no_cache = opt_bool_arg(&args, "no_cache")?.unwrap_or(false);
-            Ok(tool_result(crate::search_versions(&sdk, pixi, no_cache).map(
-                |rows| versions_json(&sdk, &backend, rows),
-            )))
+            Ok(tool_result(
+                crate::search_versions(&sdk, pixi, no_cache)
+                    .map(|rows| versions_json(&sdk, &backend, rows)),
+            ))
         }
         "vmr_list_installed" => {
             let sdk = opt_str_arg(&args, "sdk")?;
@@ -419,17 +418,17 @@ fn call_tool(params: &Value) -> Result<Value, RpcError> {
                 }
             };
             let spec = format!("{sdk}@{version}");
-            Ok(tool_result(crate::install_spec(&spec, pixi).map(|s| {
-                install_json(s)
-            })))
+            Ok(tool_result(
+                crate::install_spec(&spec, pixi).map(install_json),
+            ))
         }
         "vmr_uninstall" => {
             let sdk = str_arg(&args, "sdk")?;
             let version = str_arg(&args, "version")?;
             let spec = format!("{sdk}@{version}");
-            Ok(tool_result(crate::uninstall_spec(&spec).map(|message| {
-                json!({"message": message})
-            })))
+            Ok(tool_result(
+                crate::uninstall_spec(&spec).map(|message| json!({"message": message})),
+            ))
         }
         "vmr_freeze" => {
             let file = opt_str_arg(&args, "file")?;
@@ -675,8 +674,9 @@ mod tests {
             json!([MODERN_VERSION])
         );
         assert_eq!(response["result"]["capabilities"]["tools"], json!({}));
-        assert!(response["result"]["_meta"]["io.modelcontextprotocol/serverInfo"]["name"]
-            .is_string());
+        assert!(
+            response["result"]["_meta"]["io.modelcontextprotocol/serverInfo"]["name"].is_string()
+        );
     }
 
     #[test]
@@ -707,9 +707,11 @@ mod tests {
 
     #[test]
     fn notifications_get_no_response() {
-        assert!(handle_message(&json!({
-            "jsonrpc": "2.0", "method": "notifications/initialized"
-        }))
-        .is_none());
+        assert!(
+            handle_message(&json!({
+                "jsonrpc": "2.0", "method": "notifications/initialized"
+            }))
+            .is_none()
+        );
     }
 }
