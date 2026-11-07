@@ -1,8 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo-dark.svg">
-    <img src="docs/brand/logo.svg" alt="vmr" width="340">
-  </picture>
+  <img src="docs/brand/logo.png" alt="vmr" width="620">
 </p>
 
 # vmr (Rust)
