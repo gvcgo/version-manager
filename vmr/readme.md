@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo-dark.svg">
-    <img src="docs/brand/logo.svg" alt="vmr" width="312">
+    <img src="docs/brand/logo.svg" alt="vmr" width="328">
   </picture>
 </p>
 
