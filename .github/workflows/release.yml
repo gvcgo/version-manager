@@ -324,11 +324,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p work/artifacts
+          mkdir -p work
           gh release download "$TAG" --repo "${{ github.repository }}" \
             --pattern SHA256SUMS \
-            --pattern 'vmr-x86_64-unknown-linux-gnu.tar.xz' --dir work/artifacts
-          ls -l work/artifacts
+            --pattern 'vmr-x86_64-unknown-linux-gnu.tar.xz' --dir work
+          ls -l work
 
       - name: render PKGBUILD
         if: env.PUBLISH_TOKEN != '' && env.APT_GPG_PRIVATE_KEY != ''
@@ -337,7 +337,7 @@ jobs:
           version="${TAG#vmr-}"
           version="${version#v}"
           vmr/packaging/render.sh vmr/packaging/arch/PKGBUILD.in "$version" \
-            work/artifacts/SHA256SUMS work/PKGBUILD
+            work/SHA256SUMS work/PKGBUILD
           cat work/PKGBUILD
 
       - name: build and publish in an Arch container
