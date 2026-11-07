@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/brand/logo.png" alt="vmr" width="620">
+  <img src="docs/brand/logo.png" alt="vmr" width="640">
 </p>
 
 # vmr (Rust)

@@ -1,14 +1,11 @@
 # Brand assets
 
-- Source photo: "pexels-badesaba-15044747" by Badesaba (Pexels License: free use and
-  modification, attribution not required).
-- Style: the photo is re-rendered with AnimeGANv2 (`face_paint_512_v2`, ONNX, 512×512),
-  then upscaled and sharpened — same cat, anime treatment.
-- `logo.png` / `mark.png` are composed from that render by `build.py` (cream card, white-ring
-  medallion, "vmr" set in SF Compact Rounded, vermilion accent dot).
+| file | purpose |
+|---|---|
+| `logo.png` | 1200×702 README banner: cream card with the illustration |
+| `mark.png` | 512×512 avatar / favicon |
+| `cat-vines.png` | 1200×1030 transparent cut-out of the illustration, for compositing on any background |
 
-Rebuild either asset from any square-ish source image:
-
-```bash
-python3 build.py --src <image> --box <left,top,right,bottom>
-```
+- Illustration: supplied by the project owner (cat sitting on "vmr" grown from vines).
+- Background removed by flood-fill keying of the flat white backdrop (interior whites kept),
+  then the art is placed on the cream card (`#FBF5EA`) and palette-optimised to 256 colours.
