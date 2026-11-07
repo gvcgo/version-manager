@@ -127,7 +127,7 @@ enum Cmd {
 }
 
 fn version_str() -> &'static str {
-    option_env!("VMR_VERSION").unwrap_or("0.1.0(dev)")
+    option_env!("VMR_VERSION").unwrap_or(concat!(env!("CARGO_PKG_VERSION"), "(dev)"))
 }
 
 fn err_exit(e: String) -> ! {
