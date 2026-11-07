@@ -34,6 +34,9 @@ for pkg in "$@"; do
         exit 1
     fi
     cp -f "$pkg" "$dir/"
+    # Re-running a release rebuilds the same version, so the package bytes change even though the
+    # filename does not. Never keep a signature that was copied from a previous run.
+    rm -f "$dir/$(basename "$pkg").sig"
 done
 
 packages=()
@@ -41,7 +44,8 @@ for pkg in "$dir"/*.pkg.tar.*; do
     case "$pkg" in
         *.sig) continue ;;
     esac
-    [ -f "$pkg.sig" ] || gpg --batch --yes --detach-sign -u "$PACMAN_GPG_KEY" "$pkg"
+    gpg --batch --yes --detach-sign -u "$PACMAN_GPG_KEY" "$pkg"
+    gpg --batch --verify "$pkg.sig" "$pkg" >/dev/null
     packages+=("$pkg")
 done
 
@@ -64,6 +68,9 @@ materialize() {
 for file in vmr.db vmr.db.sig vmr.files; do
     materialize "$dir/$file"
 done
+
+# repo-add keeps the previous database as *.old / *.old.sig; they are not part of the repository.
+rm -f "$dir"/*.old "$dir"/*.old.sig
 
 gpg --armor --export "$PACMAN_GPG_KEY" >"$repo/vmr.gpg"
 
