@@ -46,7 +46,7 @@ for pkg in "$dir"/*.pkg.tar.*; do
 done
 
 # repo-add refuses to create the database over an existing symlink of the same name.
-rm -f "$dir/vmr.db" "$dir/vmr.files"
+rm -f "$dir/vmr.db" "$dir/vmr.files" "$dir/vmr.db.sig" "$dir/vmr.files.sig"
 repo-add --sign --verify "$dir/vmr.db.tar.gz" "${packages[@]}" >/dev/null
 
 # GitHub Pages stores symlinks as their target path, so every database file that pacman requests
@@ -60,8 +60,6 @@ materialize() {
     mv "$temporary" "$target"
 }
 
-cp -f "$dir/vmr.db.tar.gz" "$dir/vmr.db"
-cp -f "$dir/vmr.files.tar.gz" "$dir/vmr.files"
 [ -e "$dir/vmr.db.sig" ] || cp -f "$dir/vmr.db.tar.gz.sig" "$dir/vmr.db.sig"
 for file in vmr.db vmr.db.sig vmr.files; do
     materialize "$dir/$file"
