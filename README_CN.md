@@ -91,7 +91,25 @@ Server = https://gvcgo.github.io/vmr-pacman/$arch
 sudo pacman -Syu vmr
 ```
 
-### 6. 下载
+### 6. Cargo（源码安装）
+
+需要 Rust 1.85+ 和 C 工具链（macOS 安装 Xcode Command Line Tools，Windows 安装 MSVC Build Tools，Linux 安装 `build-essential` 与 `pkg-config`）。workspace 位于 `vmr/` 下，因此先克隆仓库，再安装 `vmr-cli`：
+
+```bash
+git clone https://github.com/gvcgo/version-manager
+cd version-manager
+cargo install --path vmr/crates/vmr-cli --locked
+```
+
+`vmr` 会安装到 `~/.cargo/bin`，请确保该目录在 `PATH` 中。更新代码后重新执行并加 `--force`：
+
+```bash
+cargo install --path vmr/crates/vmr-cli --locked --force
+```
+
+这些 crate 尚未发布到 crates.io，因此暂不支持 `cargo install vmr`。
+
+### 7. 下载
 
 到 [Releases](https://github.com/gvcgo/version-manager/releases) 下载对应平台的包：
 
@@ -104,7 +122,7 @@ sudo pacman -Syu vmr
 | Windows (x64) | `vmr-x86_64-pc-windows-msvc.zip` |
 | Windows (ARM64) | `vmr-aarch64-pc-windows-msvc.zip` |
 
-### 7. 解压并放到 PATH
+### 8. 解压并放到 PATH
 
 Linux / macOS：
 
@@ -117,7 +135,7 @@ install -m 755 vmr-x86_64-apple-darwin/vmr ~/.local/bin/vmr
 
 Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 
-### 8. 校验（可选）
+### 9. 校验（可选）
 
 每个包都附带 `.sha256` 文件，Release 页面还有汇总的 `SHA256SUMS`：
 
@@ -125,7 +143,7 @@ Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 shasum -a 256 -c vmr-x86_64-apple-darwin.tar.xz.sha256
 ```
 
-### 9. 确认安装
+### 10. 确认安装
 
 ```bash
 vmr version
