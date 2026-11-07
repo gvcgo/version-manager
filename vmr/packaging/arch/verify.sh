@@ -12,7 +12,7 @@ repo="$(cd "${1:?usage: verify.sh <repo-dir>}" && pwd)"
 
 pacman-key --init >/dev/null
 pacman-key --add "$repo/vmr.gpg" >/dev/null
-key="$(pacman-key --list-keys --with-colons | awk -F: '/^fpr/ {print $10; exit}')"
+key="$(gpg --show-keys --with-colons "$repo/vmr.gpg" | awk -F: '/^fpr/ {print $10; exit}')"
 if [ -z "$key" ]; then
     echo "error: no key found in $repo/vmr.gpg" >&2
     exit 1
