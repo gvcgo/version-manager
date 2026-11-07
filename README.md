@@ -45,7 +45,29 @@ sudo apt update
 sudo apt install vmr
 ```
 
-### 4. Download
+### 4. pacman (Arch Linux)
+
+```bash
+curl -fsSLO https://gvcgo.github.io/vmr-pacman/vmr.gpg
+sudo pacman-key --add vmr.gpg
+sudo pacman-key --lsign-key C387E9AE5C936248D446868C44E5A0323545E858
+```
+
+Append the repository to `/etc/pacman.conf`:
+
+```ini
+[vmr]
+SigLevel = Required DatabaseOptional
+Server = https://gvcgo.github.io/vmr-pacman/$arch
+```
+
+Then install:
+
+```bash
+sudo pacman -Syu vmr
+```
+
+### 5. Download
 
 Get the package for your platform from [Releases](https://github.com/gvcgo/version-manager/releases):
 
@@ -58,7 +80,7 @@ Get the package for your platform from [Releases](https://github.com/gvcgo/versi
 | Windows (x64) | `vmr-x86_64-pc-windows-msvc.zip` |
 | Windows (ARM64) | `vmr-aarch64-pc-windows-msvc.zip` |
 
-### 5. Extract and put it on PATH
+### 6. Extract and put it on PATH
 
 Linux / macOS:
 
@@ -71,7 +93,7 @@ install -m 755 vmr-x86_64-apple-darwin/vmr ~/.local/bin/vmr
 
 Windows: after extracting, put `vmr.exe` in any directory already on `PATH`.
 
-### 6. Verify (optional)
+### 7. Verify (optional)
 
 Every package ships with a `.sha256` file, and the release page also has an aggregated `SHA256SUMS`:
 
@@ -79,7 +101,7 @@ Every package ships with a `.sha256` file, and the release page also has an aggr
 shasum -a 256 -c vmr-x86_64-apple-darwin.tar.xz.sha256
 ```
 
-### 7. Confirm the install
+### 8. Confirm the install
 
 ```bash
 vmr version
