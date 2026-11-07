@@ -1,7 +1,13 @@
 # Brand assets
 
-- `mark.png`, `logo.png`: crop of the photograph "pexels-badesaba-15044747" by Badesaba,
-  published on Pexels under the Pexels License (free to use and modify, attribution not required).
-- Wordmark "vmr" set in SF Compact Rounded.
+- `logo.png`, `mark.png`: cropped from the project's anime-style cat illustration
+  (supplied by the project owner; provenance to be recorded by them).
+- Wordmark "vmr" set in SF Compact Rounded on the card, accent dot in vermilion.
 
-The earlier hand-drawn vector mascot is retired; it remains in git history.
+Rebuild either asset from any square-ish source image:
+
+```bash
+python3 build.py --src <image> --box <left,top,right,bottom>
+```
+
+Earlier drafts (hand-drawn vector mascot, photographic cat) remain in git history.
