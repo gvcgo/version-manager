@@ -27,14 +27,38 @@ brew install gvcgo/tap/vmr
 
 The formula ships the prebuilt binary for your platform, so nothing is compiled locally. Homebrew only provides the `vmr` executable — SDK versions are still installed by vmr itself under `~/.vmr`.
 
-### 2. Scoop (Windows)
+### 2. MacPorts (macOS)
+
+MacPorts has no Homebrew-style tap mechanism, so vmr publishes a small port source. Add it once and install:
+
+```bash
+sudo mkdir -p /opt/local/var/macports/sources/github.com/gvcgo
+sudo git clone https://github.com/gvcgo/vmr-macports \
+  /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports
+echo "file:///opt/local/var/macports/sources/github.com/gvcgo/vmr-macports [nosync]" \
+  | sudo tee -a /opt/local/etc/macports/sources.conf
+sudo portindex /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports
+sudo port install vmr
+```
+
+The port installs the same prebuilt binary as Homebrew and the release archives, so nothing is compiled locally. Replace `/opt/local` with your MacPorts prefix if it differs. To update later, pull the source, regenerate the index, and upgrade:
+
+```bash
+sudo git -C /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports pull
+sudo portindex /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports
+sudo port upgrade vmr
+```
+
+See [vmr-macports](https://github.com/gvcgo/vmr-macports) for details.
+
+### 3. Scoop (Windows)
 
 ```powershell
 scoop bucket add gvcgo https://github.com/gvcgo/scoop-bucket
 scoop install gvcgo/vmr
 ```
 
-### 3. APT (Debian / Ubuntu)
+### 4. APT (Debian / Ubuntu)
 
 ```bash
 curl -fsSL https://gvcgo.github.io/vmr-apt/vmr.gpg \
@@ -45,7 +69,7 @@ sudo apt update
 sudo apt install vmr
 ```
 
-### 4. pacman (Arch Linux)
+### 5. pacman (Arch Linux)
 
 ```bash
 curl -fsSLO https://gvcgo.github.io/vmr-pacman/vmr.gpg
@@ -67,7 +91,7 @@ Then install:
 sudo pacman -Syu vmr
 ```
 
-### 5. Download
+### 6. Download
 
 Get the package for your platform from [Releases](https://github.com/gvcgo/version-manager/releases):
 
@@ -80,7 +104,7 @@ Get the package for your platform from [Releases](https://github.com/gvcgo/versi
 | Windows (x64) | `vmr-x86_64-pc-windows-msvc.zip` |
 | Windows (ARM64) | `vmr-aarch64-pc-windows-msvc.zip` |
 
-### 6. Extract and put it on PATH
+### 7. Extract and put it on PATH
 
 Linux / macOS:
 
@@ -93,7 +117,7 @@ install -m 755 vmr-x86_64-apple-darwin/vmr ~/.local/bin/vmr
 
 Windows: after extracting, put `vmr.exe` in any directory already on `PATH`.
 
-### 7. Verify (optional)
+### 8. Verify (optional)
 
 Every package ships with a `.sha256` file, and the release page also has an aggregated `SHA256SUMS`:
 
@@ -101,7 +125,7 @@ Every package ships with a `.sha256` file, and the release page also has an aggr
 shasum -a 256 -c vmr-x86_64-apple-darwin.tar.xz.sha256
 ```
 
-### 8. Confirm the install
+### 9. Confirm the install
 
 ```bash
 vmr version

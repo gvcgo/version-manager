@@ -27,14 +27,38 @@ brew install gvcgo/tap/vmr
 
 公式直接使用各平台的预编译包，不在本地编译。Homebrew 只提供 `vmr` 可执行文件，各 SDK 的版本仍由 vmr 自己装到 `~/.vmr` 下。
 
-### 2. Scoop（Windows）
+### 2. MacPorts（macOS）
+
+MacPorts 没有 Homebrew tap 那样的第三方仓库机制，因此 vmr 维护了一个独立的 port source。添加一次后即可安装：
+
+```bash
+sudo mkdir -p /opt/local/var/macports/sources/github.com/gvcgo
+sudo git clone https://github.com/gvcgo/vmr-macports \
+  /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports
+echo "file:///opt/local/var/macports/sources/github.com/gvcgo/vmr-macports [nosync]" \
+  | sudo tee -a /opt/local/etc/macports/sources.conf
+sudo portindex /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports
+sudo port install vmr
+```
+
+该 port 使用与 Homebrew、Release 包相同的预编译二进制，不在本地编译。如果你的 MacPorts 前缀不是 `/opt/local`，请自行替换。后续升级：
+
+```bash
+sudo git -C /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports pull
+sudo portindex /opt/local/var/macports/sources/github.com/gvcgo/vmr-macports
+sudo port upgrade vmr
+```
+
+详见 [vmr-macports](https://github.com/gvcgo/vmr-macports)。
+
+### 3. Scoop（Windows）
 
 ```powershell
 scoop bucket add gvcgo https://github.com/gvcgo/scoop-bucket
 scoop install gvcgo/vmr
 ```
 
-### 3. APT（Debian / Ubuntu）
+### 4. APT（Debian / Ubuntu）
 
 ```bash
 curl -fsSL https://gvcgo.github.io/vmr-apt/vmr.gpg \
@@ -45,7 +69,7 @@ sudo apt update
 sudo apt install vmr
 ```
 
-### 4. pacman（Arch Linux）
+### 5. pacman（Arch Linux）
 
 ```bash
 curl -fsSLO https://gvcgo.github.io/vmr-pacman/vmr.gpg
@@ -67,7 +91,7 @@ Server = https://gvcgo.github.io/vmr-pacman/$arch
 sudo pacman -Syu vmr
 ```
 
-### 5. 下载
+### 6. 下载
 
 到 [Releases](https://github.com/gvcgo/version-manager/releases) 下载对应平台的包：
 
@@ -80,7 +104,7 @@ sudo pacman -Syu vmr
 | Windows (x64) | `vmr-x86_64-pc-windows-msvc.zip` |
 | Windows (ARM64) | `vmr-aarch64-pc-windows-msvc.zip` |
 
-### 6. 解压并放到 PATH
+### 7. 解压并放到 PATH
 
 Linux / macOS：
 
@@ -93,7 +117,7 @@ install -m 755 vmr-x86_64-apple-darwin/vmr ~/.local/bin/vmr
 
 Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 
-### 7. 校验（可选）
+### 8. 校验（可选）
 
 每个包都附带 `.sha256` 文件，Release 页面还有汇总的 `SHA256SUMS`：
 
@@ -101,7 +125,7 @@ Windows：解压后把 `vmr.exe` 放到任意已在 `PATH` 里的目录。
 shasum -a 256 -c vmr-x86_64-apple-darwin.tar.xz.sha256
 ```
 
-### 8. 确认安装
+### 9. 确认安装
 
 ```bash
 vmr version
