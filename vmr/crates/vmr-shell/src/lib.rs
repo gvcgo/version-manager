@@ -19,6 +19,8 @@ use std::path::{Path, PathBuf};
 
 use vmr_core::paths;
 
+mod scripts;
+pub use scripts::ZSH_COMPLETION_TAIL;
 #[cfg(windows)]
 mod win_patch;
 #[cfg(windows)]
@@ -72,58 +74,22 @@ impl Kind {
     fn hook_script(self, install_dir: &str, home_dir: &str) -> String {
         let inst = script_path(self, install_dir, home_dir);
         match self {
-            Kind::Fish => format!(
-                "fish_add_path --global \"{inst}\"
-
-function _vmr_cdhook --on-variable=\"PWD\" --description \"version manager cd hook\"
-    if type -q vmr
-        vmr cdhook
-    end
-end
-
-if set -q \"$VMR_CD_INIT\"
-    set VMR_CD_INIT \"vmr_cd_init\"
-    cd \"$(pwd)\"
-end"
-            ),
-            Kind::PowerShell => String::from(
-                "function cdhook {
-    if (Test-Path $args[0]) {
-        chdir $args[0]
-        vmr cdhook
-    }
-}
-
-Set-Alias -Name cd -Option AllScope -Value cdhook
-
-if (\"\" -eq \"$env:VMR_CD_INIT\") {
-    $env:VMR_CD_INIT = \"vmr_cd_init\"
-    cdhook (Get-Location).Path
-}",
-            ),
+            Kind::Fish => fill(scripts::HOOK_FISH, &[("__VMR_INSTALL__", &inst)]),
+            Kind::PowerShell => scripts::HOOK_POWERSHELL.to_string(),
             _ => {
                 // Unix gets the install directory from `_vmr_refresh`; git-bash has no env
                 // file refresh, so it keeps the inline PATH line.
-                let path_line = if cfg!(windows) {
-                    format!("export PATH=\"{inst}\":\"${{PATH}}\"\n\n")
-                } else {
-                    String::new()
-                };
-                format!(
-                    "{path_line}cdhook() {{
-    if [ $# -eq 0 ]; then
-        builtin cd
-    else
-        builtin cd \"$@\" && vmr cdhook
-    fi
-}}
-alias cd='cdhook'
-
-if [ -z \"${{VMR_CD_INIT}}\" ]; then
-    VMR_CD_INIT=\"vmr_cd_init\"
-    cdhook \"$(pwd)\"
-fi"
-                )
+                #[cfg(windows)]
+                {
+                    format!(
+                        "export PATH=\"{inst}\":\"${{PATH}}\"\n\n{}",
+                        scripts::HOOK_SH
+                    )
+                }
+                #[cfg(not(windows))]
+                {
+                    scripts::HOOK_SH.to_string()
+                }
             }
         }
     }
@@ -209,6 +175,13 @@ pub fn detect_kind() -> Kind {
     {
         Kind::Bash
     }
+}
+
+/// Substitutes `__VMR_*__` placeholders in an embedded script template.
+fn fill(template: &str, vars: &[(&str, &str)]) -> String {
+    vars.iter().fold(template.to_string(), |s, (key, value)| {
+        s.replace(key, value)
+    })
 }
 
 /// Indents every non-empty line of `block` with `pad`.
@@ -300,202 +273,6 @@ pub fn init_script(kind: Kind) -> String {
 fn ps_quote(value: &str) -> String {
     format!("'{}'", value.replace('\'', "''"))
 }
-
-/// Re-reads the vmr-managed part of the Windows user environment into the current
-/// PowerShell process.
-///
-/// A child process cannot change its parent's environment, so `vmr use` can only write
-/// `HKCU\Environment`; this block is evaluated from the profile and is what makes the
-/// current window see the new SDK. It replaces only entries under the versions directory
-/// (or the `%VMR_VERSIONS%` registry form) and keeps unrelated PATH entries, so developer
-/// shells that added their own directories are not reset.
-const POWERSHELL_REFRESH: &str = r#"function global:vmrsource {
-    $versions = [System.Environment]::GetEnvironmentVariable('VMR_VERSIONS', 'User')
-    if (-not $versions) { $versions = __VMR_VERSIONS_DIR__ }
-    if ($versions) { $env:VMR_VERSIONS = $versions }
-    $isVmPath = {
-        param($entry)
-        if (-not $entry) { return $false }
-        $p = $entry.Replace('/', '\').TrimEnd('\')
-        if ($p.StartsWith('%VMR_VERSIONS%', [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
-        if (-not $versions) { return $false }
-        $v = $versions.Replace('/', '\').TrimEnd('\')
-        return ($p -ieq $v) -or $p.StartsWith($v + '\', [System.StringComparison]::OrdinalIgnoreCase)
-    }
-    $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
-    $vmrEntries = @()
-    if ($userPath) {
-        foreach ($entry in $userPath.Split(';')) {
-            if (-not (& $isVmPath $entry)) { continue }
-            $expanded = $entry
-            if ($expanded.StartsWith('%VMR_VERSIONS%') -and $versions) {
-                $expanded = $versions + $expanded.Substring(('%VMR_VERSIONS%').Length)
-            }
-            if (-not ($vmrEntries -contains $expanded)) { $vmrEntries += $expanded }
-        }
-    }
-    $current = $env:Path
-    if (-not $current) { $current = '' }
-    $kept = @()
-    foreach ($entry in $current.Split(';')) {
-        if ($entry -and -not (& $isVmPath $entry)) { $kept += $entry }
-    }
-    $env:Path = (@($vmrEntries) + $kept) -join ';'
-    $keyFile = __VMR_ENV_KEYS__
-    if (Test-Path -LiteralPath $keyFile) {
-        foreach ($key in @(Get-Content -LiteralPath $keyFile)) {
-            $key = $key.Trim()
-            if (-not $key -or $key -ieq 'Path') { continue }
-            $value = [System.Environment]::GetEnvironmentVariable($key, 'User')
-            if ($null -ne $value) {
-                Set-Item -Path ('Env:' + $key) -Value $value
-            } else {
-                Remove-Item -Path ('Env:' + $key) -ErrorAction SilentlyContinue
-            }
-        }
-    }
-}
-$global:__vmr_exe = $null
-$vmrCommand = Get-Command -Name 'vmr' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-if ($vmrCommand) { $global:__vmr_exe = $vmrCommand.Source }
-if (-not $global:__vmr_exe) {
-    $vmrFallback = Join-Path $HOME '.vmr\vmr.exe'
-    if (Test-Path -LiteralPath $vmrFallback) { $global:__vmr_exe = $vmrFallback }
-}
-if ($global:__vmr_exe) {
-    function global:vmr {
-        & $global:__vmr_exe @args
-        $vmrExit = $LASTEXITCODE
-        if ($vmrExit -eq 0 -and $args.Count -gt 0 -and (@('use', 'u', 'h', 'uninstall', 'uni', 'r') -contains [string]$args[0])) {
-            vmrsource
-        }
-        $global:LASTEXITCODE = $vmrExit
-    }
-}
-"#;
-
-/// bash/zsh refresh used by the `vmr` wrapper (and by the integration itself).
-///
-/// Drops every vmr-managed PATH entry (`~/.vmr` plus the versions directory) and unsets the
-/// variables recorded in `env_keys.txt`, then re-sources the env file. Filtering first keeps
-/// repeated refreshes from stacking duplicate PATH entries; unsetting first makes variables
-/// that disappeared from the file (uninstall) disappear from the shell too.
-const UNIX_REFRESH_SH: &str = r#"_vmr_refresh() {
-    [ -n "${VM_DISABLE}" ] && return 0
-    local _vmr_root="$HOME/.vmr" _vmr_versions _vmr_rest _vmr_item _vmr_keep=
-    if [ -n "${VMR_SDK_INSTALLATION_DIR}" ]; then
-        _vmr_versions="${VMR_SDK_INSTALLATION_DIR}/versions"
-    else
-        _vmr_versions="${_vmr_root}/versions"
-    fi
-    _vmr_rest="${PATH}:"
-    while [ -n "${_vmr_rest}" ]; do
-        _vmr_item="${_vmr_rest%%:*}"
-        _vmr_rest="${_vmr_rest#*:}"
-        case "${_vmr_item}" in
-            "${_vmr_root}"|"${_vmr_versions}"|"${_vmr_versions}"/*) ;;
-            *)
-                if [ -z "${_vmr_keep}" ]; then
-                    _vmr_keep="${_vmr_item}"
-                else
-                    _vmr_keep="${_vmr_keep}:${_vmr_item}"
-                fi
-                ;;
-        esac
-    done
-    PATH="${_vmr_root}${_vmr_keep:+:${_vmr_keep}}"
-    export PATH
-    if [ -f "__VMR_ENV_KEYS__" ]; then
-        while IFS= read -r _vmr_item; do
-            case "${_vmr_item}" in
-                ''|PATH) ;;
-                *) unset "${_vmr_item}" 2>/dev/null || true ;;
-            esac
-        done < "__VMR_ENV_KEYS__"
-    fi
-    if [ -f "__VMR_ENV_FILE__" ]; then
-        . "__VMR_ENV_FILE__"
-    fi
-    return 0
-}
-"#;
-
-/// bash/zsh `vmr` wrapper: run the binary, then refresh the current shell after commands
-/// that change the global environment.
-const UNIX_WRAPPER_SH: &str = r#"vmr() {
-    command vmr "$@"
-    local _vmr_status=$?
-    if [ "${_vmr_status}" -eq 0 ] && [ $# -gt 0 ]; then
-        case "$1" in
-            use|u|h|uninstall|uni|r) _vmr_refresh ;;
-        esac
-    fi
-    return "${_vmr_status}"
-}
-"#;
-
-/// fish refresh (PATH dedupe uses the list form; `fish_add_path` in the env file is already
-/// idempotent, so only stale entries are filtered out here).
-const UNIX_REFRESH_FISH: &str = r#"function _vmr_refresh --description "reload vmr-managed environment into the current shell"
-    if set -q VM_DISABLE; and test -n "$VM_DISABLE"
-        return 0
-    end
-    set -l _vmr_versions "$HOME/.vmr/versions"
-    if set -q VMR_SDK_INSTALLATION_DIR; and test -n "$VMR_SDK_INSTALLATION_DIR"
-        set _vmr_versions "$VMR_SDK_INSTALLATION_DIR/versions"
-    end
-    set -l _vmr_keep
-    for _vmr_item in $PATH
-        if test "$_vmr_item" = "$_vmr_versions"; or string match -q -- "$_vmr_versions/*" "$_vmr_item"
-            continue
-        end
-        set -a _vmr_keep $_vmr_item
-    end
-    if test (count $_vmr_keep) -gt 0
-        set -gx PATH $_vmr_keep
-    end
-    # `fish_add_path` skips entries already in `fish_user_paths` even after PATH was reset,
-    # so stale vmr entries have to leave that list too, or re-sourcing would not re-add them.
-    set -l _vmr_user_keep
-    if set -q fish_user_paths
-        for _vmr_item in $fish_user_paths
-            if test "$_vmr_item" = "$_vmr_versions"; or string match -q -- "$_vmr_versions/*" "$_vmr_item"
-                continue
-            end
-            set -a _vmr_user_keep $_vmr_item
-        end
-    end
-    if test (count $_vmr_user_keep) -gt 0
-        set -g fish_user_paths $_vmr_user_keep
-    else
-        set -e -g fish_user_paths 2>/dev/null
-    end
-    if test -f "__VMR_ENV_KEYS__"
-        for _vmr_item in (cat "__VMR_ENV_KEYS__")
-            if test -n "$_vmr_item"; and test "$_vmr_item" != PATH
-                set -e $_vmr_item 2>/dev/null
-            end
-        end
-    end
-    if test -f "__VMR_ENV_FILE__"
-        source "__VMR_ENV_FILE__"
-    end
-end
-"#;
-
-/// fish `vmr` wrapper (same contract as [`UNIX_WRAPPER_SH`]).
-const UNIX_WRAPPER_FISH: &str = r#"function vmr --description "vmr with automatic environment refresh"
-    command vmr $argv
-    set -l _vmr_status $status
-    if test $_vmr_status -eq 0; and test (count $argv) -gt 0
-        switch $argv[1]
-            case use u h uninstall uni r
-                _vmr_refresh
-        end
-    end
-    return $_vmr_status
-end
-"#;
 
 /// List of non-PATH variables vmr has written, read by `_vmr_refresh`. Keys stay listed
 /// after `unset_env`, so a refresh clears variables an uninstall removed.
@@ -732,60 +509,95 @@ impl Shell {
             &self.home,
         );
         let ps_refresh = indent_block(
-            &POWERSHELL_REFRESH
-                .replace(
-                    "__VMR_VERSIONS_DIR__",
-                    &ps_quote(&paths::versions_dir().to_string_lossy()),
-                )
-                .replace(
-                    "__VMR_ENV_KEYS__",
-                    &ps_quote(&paths::work_dir().join("env_keys.txt").to_string_lossy()),
-                ),
+            &fill(
+                scripts::REFRESH_POWERSHELL,
+                &[
+                    (
+                        "__VMR_VERSIONS_DIR__",
+                        &ps_quote(&paths::versions_dir().to_string_lossy()),
+                    ),
+                    (
+                        "__VMR_ENV_KEYS__",
+                        &ps_quote(&paths::work_dir().join("env_keys.txt").to_string_lossy()),
+                    ),
+                ],
+            ),
             "    ",
         );
         match self.kind {
             Kind::Fish => {
                 #[cfg(windows)]
                 {
-                    format!(
-                        "if not set -q {VM_DISABLE_ENV_NAME}\n    if test -f \"{env_file}\"\n        . \"{env_file}\"\n    end\n{hook}\nend\n\nfunction svmr --description \"leave a vmr session and reload the shell config\"\n    set -gx {VM_DISABLE_ENV_NAME} ''\n    source \"{conf}\"\nend\n"
+                    fill(
+                        scripts::INIT_FISH_WINDOWS,
+                        &[
+                            ("__VMR_ENV_FILE__", &env_file),
+                            ("__VMR_HOOK__", &hook),
+                            ("__VMR_CONF__", &conf),
+                        ],
                     )
                 }
                 #[cfg(not(windows))]
                 {
                     let refresh = indent_block(
-                        &UNIX_REFRESH_FISH
-                            .replace("__VMR_ENV_FILE__", &env_file)
-                            .replace("__VMR_ENV_KEYS__", &keys_file),
+                        &fill(
+                            scripts::REFRESH_FISH,
+                            &[
+                                ("__VMR_ENV_FILE__", &env_file),
+                                ("__VMR_ENV_KEYS__", &keys_file),
+                            ],
+                        ),
                         "    ",
                     );
-                    let wrapper = indent_block(UNIX_WRAPPER_FISH, "    ");
-                    format!(
-                        "if not set -q {VM_DISABLE_ENV_NAME}\n{refresh}\n{wrapper}\n    _vmr_refresh\n{hook}\nend\n\nfunction svmr --description \"leave a vmr session and reload the shell config\"\n    set -gx {VM_DISABLE_ENV_NAME} ''\n    source \"{conf}\"\nend\n"
+                    let wrapper = indent_block(scripts::WRAPPER_FISH, "    ");
+                    fill(
+                        scripts::INIT_FISH,
+                        &[
+                            ("__VMR_REFRESH__", &refresh),
+                            ("__VMR_WRAPPER__", &wrapper),
+                            ("__VMR_HOOK__", &hook),
+                            ("__VMR_CONF__", &conf),
+                        ],
                     )
                 }
             }
-            Kind::PowerShell => format!(
-                "if (-not $env:{VM_DISABLE_ENV_NAME}) {{\n    $env:Path = (Join-Path $HOME '.vmr') + ';' + $env:Path\n{hook}\n{ps_refresh}\n}}\nfunction global:svmr {{ $env:{VM_DISABLE_ENV_NAME} = ''; . $PROFILE }}\n"
+            Kind::PowerShell => fill(
+                scripts::INIT_POWERSHELL,
+                &[("__VMR_HOOK__", &hook), ("__VMR_REFRESH__", &ps_refresh)],
             ),
             _ => {
                 #[cfg(windows)]
                 {
-                    format!(
-                        "if [ -z \"${VM_DISABLE_ENV_NAME}\" ]; then\n    [ -f \"{env_file}\" ] && . \"{env_file}\"\n{hook}\nfi\nalias svmr='export {VM_DISABLE_ENV_NAME}=\"\" && source \"{conf}\"'\n"
+                    fill(
+                        scripts::INIT_SH_WINDOWS,
+                        &[
+                            ("__VMR_ENV_FILE__", &env_file),
+                            ("__VMR_HOOK__", &hook),
+                            ("__VMR_CONF__", &conf),
+                        ],
                     )
                 }
                 #[cfg(not(windows))]
                 {
                     let refresh = indent_block(
-                        &UNIX_REFRESH_SH
-                            .replace("__VMR_ENV_FILE__", &env_file)
-                            .replace("__VMR_ENV_KEYS__", &keys_file),
+                        &fill(
+                            scripts::REFRESH_SH,
+                            &[
+                                ("__VMR_ENV_FILE__", &env_file),
+                                ("__VMR_ENV_KEYS__", &keys_file),
+                            ],
+                        ),
                         "    ",
                     );
-                    let wrapper = indent_block(UNIX_WRAPPER_SH, "    ");
-                    format!(
-                        "if [ -z \"${VM_DISABLE_ENV_NAME}\" ]; then\n{refresh}\n{wrapper}\n    _vmr_refresh\n{hook}\nfi\nalias svmr='export {VM_DISABLE_ENV_NAME}=\"\" && source \"{conf}\"'\n"
+                    let wrapper = indent_block(scripts::WRAPPER_SH, "    ");
+                    fill(
+                        scripts::INIT_SH,
+                        &[
+                            ("__VMR_REFRESH__", &refresh),
+                            ("__VMR_WRAPPER__", &wrapper),
+                            ("__VMR_HOOK__", &hook),
+                            ("__VMR_CONF__", &conf),
+                        ],
                     )
                 }
             }
@@ -1042,9 +854,6 @@ mod tests {
             "GOROOT\nJAVA_HOME\n"
         );
         // A list without a trailing newline still gets one separator.
-        assert_eq!(
-            merge_env_key("GOROOT", "JAVA_HOME"),
-            "GOROOT\nJAVA_HOME\n"
-        );
+        assert_eq!(merge_env_key("GOROOT", "JAVA_HOME"), "GOROOT\nJAVA_HOME\n");
     }
 }

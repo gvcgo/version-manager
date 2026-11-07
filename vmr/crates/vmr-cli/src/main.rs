@@ -50,7 +50,7 @@ enum Cmd {
     #[command(name = "nested", visible_alias = "ns")]
     NestedSessions,
     /// Query the session mode (`VM_DISABLE`).
-    #[command(name = "session", visible_alias = "ism")]
+    #[command(name = "session", visible_alias = "se")]
     IsSessionMode,
     /// List available plugins and the SDKs they support (plain-text table).
     Plugins {
@@ -957,24 +957,7 @@ fn strip_powershell_usings(script: String) -> String {
 
 fn completion_script(kind: vmr_shell::Kind) -> String {
     use clap_complete::Shell;
-    const ZSH_TAIL: &str = r#"if [ "$funcstack[1]" = "_vmr" ]; then
-    _vmr "$@"
-elif (( $+functions[compdef] )); then
-    compdef _vmr vmr
-else
-    autoload -Uz add-zsh-hook
-    _vmr_register_completion() {
-        if ! (( $+functions[compdef] )) && (( ! ${+_vmr_compinit_tried} )); then
-            typeset -g _vmr_compinit_tried=1
-            autoload -Uz compinit && compinit -i
-        fi
-        if (( $+functions[compdef] )); then
-            compdef _vmr vmr
-            add-zsh-hook -d precmd _vmr_register_completion
-        fi
-    }
-    add-zsh-hook precmd _vmr_register_completion
-fi"#;
+    const ZSH_TAIL: &str = vmr_shell::ZSH_COMPLETION_TAIL;
     let shell = match kind {
         vmr_shell::Kind::Bash => Shell::Bash,
         vmr_shell::Kind::Zsh => Shell::Zsh,

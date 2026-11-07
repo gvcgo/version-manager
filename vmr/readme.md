@@ -96,7 +96,7 @@ package the existing `target\release\vmr.exe`.
 | `local -c [sdk]` | | Only the active version: with `sdk`, print that SDK's active version; without, print the `SDK/CURRENT` table for all SDKs; prints nothing when there is no result |
 | `uninstall <sdk>@<version>` | `uni`/`r` | Uninstall; `@all` removes every version of the SDK |
 | `nested` | `ns` | Allow/forbid nested sessions |
-| `session` | `ism` | Query whether the shell is in a vmr session |
+| `session` | `se` | Query whether the shell is in a vmr session |
 
 ### Examples
 
