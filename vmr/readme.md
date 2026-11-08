@@ -251,7 +251,8 @@ only enough for a handful of plugins.
 Plugin directory: `~/.vmr/plugins/*.lua`. Plugins are no longer compiled into the binary: when the
 directory is empty they are downloaded from `gvcgo/vmr_plugins` automatically, or refresh them
 manually with `vmr plugins -u`; pre-generated `.version.json` files from `gvcgo/vsources` are not
-used.
+used. The full plugin format and binding reference is in
+[docs/plugin-api.md](docs/plugin-api.md) ([简体中文](docs/plugin-api.zh-CN.md)).
 
 Each plugin makes live upstream requests in `crawl()` and returns a version table; vmr caches the
 result for the current platform in `~/.vmr/cache/<plugin>/<plugin>.versions.json` and uses it

@@ -200,6 +200,8 @@ vmr uninstall go@all     # 卸载这个 SDK 的所有版本
 
 `vmr search` 的结果来自插件实时抓取，第一次查询会联网；加 `-n` 可忽略本地缓存重新拉取。
 
+编写插件请参考 [Lua 插件 API 文档](vmr/docs/plugin-api.zh-CN.md)（English: [plugin-api.md](vmr/docs/plugin-api.md)）。
+
 ## 常用命令
 
 | 命令 | 别名 | 说明 |
