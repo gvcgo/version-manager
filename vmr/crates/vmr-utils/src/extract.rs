@@ -139,7 +139,9 @@ fn unpack_zip(path: &Path, dest: &Path) -> io::Result<()> {
         if entry.is_dir() {
             continue;
         }
-        let name = entry.name().to_string();
+        // zip >= 9 decodes names as UTF-8 and falls back to CP437, reporting failure only for
+        // inputs that are neither; propagate that instead of extracting under a wrong name.
+        let name = entry.name()?;
         let target = safe_join(dest, &name)?;
         if let Some(parent) = target.parent() {
             fs::create_dir_all(parent)?;

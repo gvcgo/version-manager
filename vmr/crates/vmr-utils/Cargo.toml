@@ -11,5 +11,5 @@ bzip2 = "0.5"
 flate2 = "1"
 tar = "0.4"
 xz2 = "0.1"
-zip = { version = "2", default-features = false, features = ["deflate"] }
+zip = { version = "9", default-features = false, features = ["deflate"] }
 zstd = "0.13"
