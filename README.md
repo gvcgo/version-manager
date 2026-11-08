@@ -200,6 +200,8 @@ vmr uninstall go@all     # uninstall all versions of this SDK
 
 `vmr search` results come from live plugin lookups, so the first query goes online; add `-n` to ignore the local cache and refetch.
 
+Writing a plugin: see the [Lua plugin API reference](vmr/docs/plugin-api.md) (简体中文: [plugin-api.zh-CN.md](vmr/docs/plugin-api.zh-CN.md)).
+
 ## Common commands
 
 | Command | Alias | Description |

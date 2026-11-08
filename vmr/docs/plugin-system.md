@@ -1,5 +1,8 @@
 # VMR Lua Plugin System
 
+> For the plugin file format and the complete `vmr*` binding reference, see
+> [plugin-api.md](plugin-api.md) ([简体中文](plugin-api.zh-CN.md)).
+
 ## 1. Goal
 
 Each SDK is described by a Lua plugin:
@@ -18,12 +21,14 @@ A plugin is a `.lua` file loaded in an isolated Lua state. It must define:
 |---|---|
 | `plugin_name` | stable plugin id |
 | `sdk_name` | SDK id used under `versions/` |
-| `plugin_version` | plugin revision, e.g. `0.1` |
+| `plugin_version` | optional plugin revision, e.g. `0.1` |
 | `homepage` | SDK homepage |
 | `ic` | installer config (`vmrNewInstallerConfig()` chain) |
 | `crawl()` | returns a `VersionList` (`vmrNewVersionList()` / `vmrAddItem`) |
 
-Optional globals: `install(path, version)` and `postInstall(path, version)` custom handlers.
+The optional `install(path, version)` and `postInstall(path, version)` globals are legacy
+handlers that the current install pipeline does not call; installs dispatch on
+`Item.installer`. See [plugin-api.md](plugin-api.md) for the full contract.
 
 A version item contains:
 
