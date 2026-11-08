@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/vmr-core", "crates/vmr-utils", "crates/vmr-net", "crates/vmr-pixi", "crates/vmr-lua", "crates/vmr-shell", "crates/vmr-env", "crates/vmr-installer", "crates/vmr-pty", "crates/vmr-cli"]
 
 [workspace.package]
-version = "0.8.0"
+version = "0.8.1"
 edition = "2024"
 rust-version = "1.88"
 
