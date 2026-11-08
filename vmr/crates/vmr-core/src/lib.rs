@@ -5,10 +5,12 @@
 //! requests.
 
 pub mod conf;
+pub mod names;
 pub mod paths;
 pub mod policy;
 
 pub use conf::VMRConf;
+pub use names::*;
 pub use paths::*;
 pub use policy::*;
 

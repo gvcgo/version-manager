@@ -380,6 +380,7 @@ fn call_tool(params: &Value) -> Result<Value, RpcError> {
         )),
         "vmr_search_versions" => {
             let sdk = str_arg(&args, "sdk")?;
+            vmr_core::names::check_name("sdk name", &sdk).map_err(RpcError::invalid_params)?;
             let backend = opt_str_arg(&args, "backend")?.unwrap_or_else(|| "plugin".to_string());
             let pixi = match backend.as_str() {
                 "plugin" => false,
@@ -398,6 +399,9 @@ fn call_tool(params: &Value) -> Result<Value, RpcError> {
         }
         "vmr_list_installed" => {
             let sdk = opt_str_arg(&args, "sdk")?;
+            if let Some(sdk) = sdk.as_deref() {
+                vmr_core::names::check_name("sdk name", sdk).map_err(RpcError::invalid_params)?;
+            }
             let entries = match sdk {
                 Some(sdk) => vec![crate::sdk_versions(&sdk)],
                 None => crate::installed_versions_all(),
@@ -443,6 +447,7 @@ fn call_tool(params: &Value) -> Result<Value, RpcError> {
         }
         "vmr_env" => {
             let sdk = str_arg(&args, "sdk")?;
+            vmr_core::names::check_name("sdk name", &sdk).map_err(RpcError::invalid_params)?;
             Ok(tool_result(env_json(&sdk)))
         }
         other => Err(RpcError::invalid_params(format!("Unknown tool: {other}"))),
