@@ -99,7 +99,7 @@ sudo pacman -Syu vmr
 
 ### 6. Cargo (from source)
 
-Requires Rust 1.85+ and a C toolchain (Xcode Command Line Tools on macOS, MSVC Build Tools on Windows, `build-essential` and `pkg-config` on Linux). The workspace lives under `vmr/`, so clone the repository and install the `vmr-cli` package:
+Requires Rust 1.88+ and a C toolchain (Xcode Command Line Tools on macOS, MSVC Build Tools on Windows, `build-essential` and `pkg-config` on Linux). The workspace lives under `vmr/`, so clone the repository and install the `vmr-cli` package:
 
 ```bash
 git clone https://github.com/gvcgo/version-manager

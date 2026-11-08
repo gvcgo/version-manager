@@ -5,7 +5,7 @@ members = ["crates/vmr-core", "crates/vmr-utils", "crates/vmr-net", "crates/vmr-
 [workspace.package]
 version = "0.8.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
