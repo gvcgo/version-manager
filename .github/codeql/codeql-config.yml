@@ -1,0 +1,28 @@
+name: "vmr CodeQL config"
+
+queries:
+  # Same suite as the previous default setup (which ran `security-extended`).
+  - uses: security-extended
+
+# Default setup ran with `threat_model: remote_and_local`, so mirror it. Limit to keep in mind:
+# threat models are still a preview restricted to Java/Kotlin and C# (GitHub docs), so this key is
+# accepted but has no observable effect on the Rust analysis - two runs with and without it both
+# reported 0 results, i.e. the env-var-sourced `rust/command-line-injection` hit on `vmr-pty` from
+# default setup is not reproduced by this workflow.
+threat-models: local
+
+query-filters:
+  # `vmr` is a version manager: every file-system sink is reached from a CLI argument, a config
+  # value, or an archive entry name, so this query fires on all ~140 sinks by design. It also
+  # reports the unit tests in `#[cfg(test)]` modules (paths derived from `TempDir`), which cannot
+  # be excluded separately because CodeQL has no per-directory test notion for Rust and no
+  # in-source suppression for Rust queries (github/codeql#21637).
+  #
+  # The one class that matters here is archive extraction: `unpack_zip`/`unpack_tar` feed entry
+  # names through `safe_join` (rejects `..` and absolute paths) and that guard is pinned by
+  # `extract::tests::rejects_path_traversal_entries`.
+  #
+  # Command execution stays enabled: `rust/command-line-injection` is the query this repository
+  # actually wants reviewed, since `vmr` executes shell hooks and plugin-provided commands.
+  - exclude:
+      id: rust/path-injection
