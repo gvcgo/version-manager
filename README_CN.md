@@ -17,6 +17,12 @@
 
 支持 Linux / macOS / Windows，x86_64 与 aarch64 均有预编译包。
 
+## 演示
+
+![vmr 演示](vmr/docs/demo.gif)
+
+演示由 [VHS](https://github.com/charmbracelet/vhs) 根据 [`vmr/docs/demo.tape`](vmr/docs/demo.tape) 录制生成。
+
 ## 安装
 
 ### 1. Homebrew（macOS / Linux）

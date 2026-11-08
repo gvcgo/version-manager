@@ -17,6 +17,12 @@ English | [简体中文](README_CN.md)
 
 Linux / macOS / Windows are supported, with prebuilt packages for both x86_64 and aarch64.
 
+## Demo
+
+![vmr demo](vmr/docs/demo.gif)
+
+The recording is generated from [`vmr/docs/demo.tape`](vmr/docs/demo.tape) with [VHS](https://github.com/charmbracelet/vhs).
+
 ## Installation
 
 ### 1. Homebrew (macOS / Linux)

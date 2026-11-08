@@ -37,3 +37,4 @@ test.sh
 !vmr/crates/vmr-shell/scripts/*.fish
 *.cast
 *.gif
+!vmr/docs/demo.gif
