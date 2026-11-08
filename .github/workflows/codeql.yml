@@ -11,6 +11,12 @@ on:
     - cron: '23 4 * * 1'
   workflow_dispatch:
 
+concurrency:
+  # Superseded analyses on the same ref are cancelled: merging several PRs in a row otherwise
+  # leaves one full analysis queue per commit.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
