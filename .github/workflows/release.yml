@@ -51,9 +51,13 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag }}
 
-      - uses: dtolnay/rust-toolchain@stable
+      # Pinned to a master-branch commit (2026-10-16); see the note in ci.yml. A SHA ref requires
+      # the toolchain to be passed explicitly.
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
         with:
           workspaces: vmr -> target
 
