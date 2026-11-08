@@ -1,0 +1,49 @@
+name: codeql
+
+# Advanced setup, replacing default setup so that `.github/codeql/codeql-config.yml` can narrow
+# the queries reported for this repository.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Rust is analyzed without a build (`build-mode: none`); CodeQL uses rust-analyzer, so
+          # the 400-crate workspace is never compiled here.
+          - language: rust
+            build-mode: none
+          # The only workflow scripts are release.yml and verify-pacman.yml.
+          - language: actions
+            build-mode: none
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: '/language:${{ matrix.language }}'
