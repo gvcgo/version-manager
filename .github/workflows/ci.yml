@@ -10,6 +10,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  # Superseded runs on the same ref are cancelled: merging several PRs in a row otherwise
+  # leaves one full check+test (or analysis) queue per commit.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
