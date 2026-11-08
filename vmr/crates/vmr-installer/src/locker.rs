@@ -7,6 +7,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use vmr_core::names::is_valid_name;
+
 pub const LOCKER_FILE_NAME: &str = ".vmr.lock";
 
 #[derive(Debug, Clone, Default)]
@@ -58,6 +60,10 @@ impl VersionLocker {
             self.versions
                 .insert(sdk.trim().to_string(), ver.trim().to_string());
         }
+        // The lock file is read from any directory the user `cd`s into, so its names are untrusted:
+        // keep only entries that are safe as path components (see `vmr_core::names`).
+        self.versions
+            .retain(|sdk, ver| is_valid_name(sdk) && is_valid_name(ver));
         // node alias compatibility (mirrors Go).
         for (k, v) in self.versions.clone() {
             if k == "nodejs" || k == "node.js" {
@@ -98,5 +104,17 @@ mod tests {
         let mut v2 = VersionLocker::default();
         v2.parse("nodejs@18.1.0");
         assert_eq!(v2.versions.get("node").map(|s| s.as_str()), Some("18.1.0"));
+    }
+
+    #[test]
+    fn parse_drops_names_that_are_not_path_components() {
+        let mut v = VersionLocker::default();
+        v.parse(r#"{"../../projects/app":"1","node":"20.11.0","ok":"1/../x"}"#);
+        assert_eq!(v.versions.len(), 1);
+        assert_eq!(v.versions.get("node").map(|s| s.as_str()), Some("20.11.0"));
+
+        let mut v2 = VersionLocker::default();
+        v2.parse("../../projects/app@1");
+        assert!(v2.versions.is_empty());
     }
 }

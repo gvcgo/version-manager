@@ -132,10 +132,14 @@ impl Plugin {
         if self.plugin_name.is_empty() {
             return Err("plugin name not defined".to_string());
         }
+        // Both names are path components under ~/.vmr/versions (`<sdk>_versions/<plugin>-<version>`),
+        // and the plugin file is third-party content.
+        vmr_core::names::check_name("plugin name", &self.plugin_name)?;
         self.sdk_name = self.global_str(SDK_NAME).unwrap_or_default();
         if self.sdk_name.is_empty() {
             return Err("SDK name not defined".to_string());
         }
+        vmr_core::names::check_name("SDK name", &self.sdk_name)?;
         self.homepage = self.global_str(HOMEPAGE).unwrap_or_default();
         if self.homepage.is_empty() {
             return Err("homepage not defined".to_string());

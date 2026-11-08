@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use clap::{CommandFactory, Parser, Subcommand};
 
 use vmr_core::envs;
+use vmr_core::names::{check_name, is_valid_name};
 use vmr_core::paths;
 use vmr_installer::{common, finder, installer as ins};
 use vmr_lua::types::{Item, installer_kind};
@@ -368,7 +369,19 @@ pub(crate) struct SdkVersions {
 }
 
 /// Installed versions of one SDK: plugin metadata when available, else the disk layout.
+///
+/// An invalid name yields an empty result instead of a disk access: callers include `.vmr.lock`
+/// entries and MCP arguments, and `sdk_version_dir` would otherwise create a directory outside
+/// the versions root.
 pub(crate) fn sdk_versions(sdk: &str) -> SdkVersions {
+    if !is_valid_name(sdk) {
+        return SdkVersions {
+            sdk: sdk.to_string(),
+            label: sdk.to_string(),
+            versions: Vec::new(),
+            current: None,
+        };
+    }
     if let Some(plugin) = find_plugin_for(sdk) {
         let info = finder::find_all(&plugin.sdk_name, &plugin.plugin_name);
         return SdkVersions {
@@ -388,6 +401,7 @@ pub(crate) fn sdk_versions(sdk: &str) -> SdkVersions {
 }
 
 fn local(sdk: &str) -> Result<(), String> {
+    check_name("sdk name", sdk)?;
     let info = sdk_versions(sdk);
     if info.versions.is_empty() {
         let root = common::sdk_version_dir(&info.sdk);
@@ -419,6 +433,7 @@ fn local(sdk: &str) -> Result<(), String> {
 /// `local -c <sdk>`: only the version in use, printed alone (script-friendly); prints
 /// nothing when the SDK is not installed or has no current version.
 fn local_current(sdk: &str) -> Result<(), String> {
+    check_name("sdk name", sdk)?;
     if let Some(cur) = sdk_versions(sdk).current {
         println!("{cur}");
     }
@@ -560,6 +575,9 @@ fn build_install_request(
             return Err("usage: vmr use <sdk>@<version>".to_string());
         }
     };
+    // sdk/version/plugin names become path components under ~/.vmr/versions.
+    check_name("sdk name", &sdk)?;
+    check_name("version", &version)?;
 
     let mut plugin = find_plugin_for(&sdk);
     if plugin.is_none() && !pixi {
@@ -577,6 +595,8 @@ fn build_install_request(
     } else {
         version
     };
+    // `latest` resolves against remote version metadata, so this is not covered above.
+    check_name("version", &version)?;
 
     let item = if pixi {
         Item {
@@ -697,6 +717,8 @@ fn parse_freeze_file(data: &str) -> Result<Vec<FreezeEntry>, String> {
                 idx + 1
             ));
         }
+        check_name("sdk name", sdk).map_err(|e| format!("line {}: {e}", idx + 1))?;
+        check_name("version", version).map_err(|e| format!("line {}: {e}", idx + 1))?;
         let pixi = match parts.next() {
             None => false,
             Some("pixi") => true,
@@ -847,6 +869,9 @@ pub(crate) fn uninstall_spec(spec: &str) -> Result<String, String> {
             return Err("usage: vmr uninstall <sdk>@<version>|all".to_string());
         }
     };
+    // `all` schedules a `remove_dir_all` on the version root, so the name decides what is deleted.
+    check_name("sdk name", &sdk)?;
+    check_name("version", &version)?;
 
     let mut plugin = find_plugin_for(&sdk);
 
@@ -1004,6 +1029,15 @@ mod tests {
         assert!(parse_freeze_file("go@1.0 conda\n").is_err());
         assert!(parse_freeze_file("go@1.0 pixi extra\n").is_err());
         assert!(parse_freeze_file("\n# only comments\n").is_err());
+    }
+
+    #[test]
+    fn rejects_names_that_are_not_path_components() {
+        // Freeze files ship inside repositories, so an entry decides which path gets written or
+        // removed; `..` and separators must not reach `sdk_version_dir`/`install_dir`.
+        assert!(parse_freeze_file("../../projects/app@1\n").is_err());
+        assert!(parse_freeze_file("go@1/../../x\n").is_err());
+        assert!(parse_freeze_file("go@1 pixi\n").is_ok());
     }
 
     #[test]
