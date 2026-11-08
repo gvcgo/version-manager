@@ -12,10 +12,12 @@ on:
   workflow_dispatch:
 
 concurrency:
-  # Superseded analyses on the same ref are cancelled: merging several PRs in a row otherwise
-  # leaves one full analysis queue per commit.
+  # Do not cancel an analysis that is already running: a cancelled `analyze` still uploads an empty
+  # SARIF, and GitHub then reports "Code scanning configuration error" on the default branch (seen
+  # after merging #262 and #263 back to back). With `cancel-in-progress: false` a burst of pushes
+  # still leaves one running plus at most one pending run per ref.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
