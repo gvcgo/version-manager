@@ -365,3 +365,7 @@ Download the new package and overwrite the old binary; the versions and config u
 - Questions and suggestions: [Issues](https://github.com/gvcgo/version-manager/issues)
 - Downloads: [Releases](https://github.com/gvcgo/version-manager/releases)
 - Implementation and development notes: [vmr/readme.md](vmr/readme.md)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=gvcgo/version-manager&type=Date)](https://star-history.com/#gvcgo/version-manager&Date)

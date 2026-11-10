@@ -365,3 +365,7 @@ GitHub 匿名请求每小时 60 次。配置 `GithubToken` 或环境变量 `VMR_
 - 问题与建议：[Issues](https://github.com/gvcgo/version-manager/issues)
 - 版本下载：[Releases](https://github.com/gvcgo/version-manager/releases)
 - 实现与开发说明见 [vmr/readme.md](vmr/readme.md)
+
+## Star 走势
+
+[![Star History Chart](https://api.star-history.com/svg?repos=gvcgo/version-manager&type=Date)](https://star-history.com/#gvcgo/version-manager&Date)
