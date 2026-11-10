@@ -2,10 +2,10 @@
 
 | file | purpose |
 |---|---|
-| `logo.png` | 1200×702 README banner: cream card with the illustration |
+| `logo.png` | 1200×702 README banner: sky-blue card with the illustration and grass |
 | `mark.png` | 512×512 avatar / favicon |
-| `cat-vines.png` | 1200×1030 transparent cut-out of the illustration, for compositing on any background |
+| `cat-vines.png` | 1200×957 transparent cut-out of the illustration, for compositing on any background |
 
 - Illustration: supplied by the project owner (cat sitting on "vmr" grown from vines).
-- Background removed by flood-fill keying of the flat white backdrop (interior whites kept),
-  then the art is placed on the cream card (`#FBF5EA`) and palette-optimised to 256 colours.
+- `logo.png` and `mark.png` use a sky-blue background and a grassy ground raised around the cat and vines.
+- Original images are backed up in `backup/`.
