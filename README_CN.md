@@ -187,6 +187,12 @@ Invoke-Expression (& vmr init powershell)
 
 未执行 `vmr init` 也能用命令，只是每次切换版本后需要新开终端。
 
+### 从 0.7.x 升级到 0.8.x
+
+- 删除 `$HOME/.vmr/vmr.sh` 或 PowerShell `$PROFILE` 中由旧版 vmr 写入的非 SDK 相关环境变量和函数，保留 SDK 相关配置。
+- 删除 `~/.zshrc`、`~/.bashrc` 等 shell 配置文件中的旧版 vmr 相关代码，改为添加上面对应 shell 的 `vmr init` 初始化命令。PowerShell 用户也应在 `$PROFILE` 中使用上面的初始化命令。
+- 重新打开终端，使新的 shell 配置生效。
+
 ## 快速上手
 
 ```bash
