@@ -187,6 +187,12 @@ This single line does three things:
 
 The commands work without `vmr init` too, but each version switch then requires a new terminal.
 
+### Upgrading from 0.7.x to 0.8.x
+
+- Remove non-SDK environment variables and functions written by the old version of vmr from `$HOME/.vmr/vmr.sh` or the PowerShell `$PROFILE`; keep SDK-related configuration.
+- Remove old vmr-related code from shell configuration files such as `~/.zshrc` and `~/.bashrc`, and add the appropriate `vmr init` command shown above instead. PowerShell users should also use the initialization command above in `$PROFILE`.
+- Reopen the terminal to apply the new shell configuration.
+
 ## Quick start
 
 ```bash
