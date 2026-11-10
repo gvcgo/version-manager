@@ -15,4 +15,5 @@ pub mod download;
 pub mod finder;
 pub mod installer;
 pub mod locker;
+pub mod pixi_env;
 pub mod post;

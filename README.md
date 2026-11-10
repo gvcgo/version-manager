@@ -275,6 +275,11 @@ vmr search -p lua        # query conda-forge
 vmr use -p lua@5.4.6     # install
 ```
 
+Like plugin installs, `vmr use -p` adds the prefix's executable directories to `PATH`
+(`bin` on Linux/macOS; `Scripts`, `Library/bin`, … on Windows), so `lua` is available
+immediately with the `vmr init` shell integration. Variables set by a package's
+`etc/conda/activate.d` scripts are not imported.
+
 The default channel is `https://conda.anaconda.org/conda-forge`; use the environment variable to point at a mirror:
 
 ```bash
