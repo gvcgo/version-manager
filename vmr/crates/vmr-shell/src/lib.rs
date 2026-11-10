@@ -144,6 +144,16 @@ pub fn convert_to_mingw(path: &str) -> String {
     format!("/{}", parts.join("/"))
 }
 
+/// Switches the Windows user `PATH` to the shim directory: removes every legacy
+/// versions-directory entry (absolute or `%VMR_VERSIONS%\...`) plus its git-bash mirror,
+/// then prepends `dir`. Idempotent; called on every global `vmr use`.
+#[cfg(windows)]
+pub fn use_shim_path(dir: &str) {
+    win_reg::remove_version_entries();
+    win_patch::clear_version_exports();
+    win_reg::set_path(dir);
+}
+
 /// Legacy `~` form of a home path, used to clean up lines written by older versions.
 #[cfg(not(windows))]
 fn tilde_path(p: &str, home_dir: &str) -> String {

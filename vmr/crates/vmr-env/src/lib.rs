@@ -3,7 +3,9 @@
 //! - `collect`: takes `ic.BinaryDirs.{linux|darwin|windows}` per platform (the version
 //!   directory itself when empty) plus `ic.AdditionalEnvs`; keeps only **existing**
 //!   paths (mirrors Go `CollectEnvs`).
-//! - `set_globally` / `unset_globally`: write via vmr-shell to the shell environment file.
+//! - `set_globally` / `unset_globally`: write via vmr-shell to the shell environment file;
+//!   on Windows the `PATH` side is a single shim directory (`shims`), while other variables
+//!   still go to `HKCU\Environment`.
 //! - `add_temporarily`: injects the SDK bin into the current process PATH when
 //!   `VMR_ADD_TO_PATH_TEMPORARILY=1` (used by session/lock-mode subshells).
 //! - `remove_global_sdk_path`: removes the current SDK symlink path from the shell
@@ -14,6 +16,9 @@
 use vmr_core::envs;
 use vmr_lua::types::{AdditionalEnv, InstallerConfig, dir_items_for};
 use vmr_shell::Shell;
+
+#[cfg(windows)]
+pub mod shims;
 
 /// Collection result: PATH directories (absolute paths) and additional environment variables.
 #[derive(Debug, Clone, Default)]
@@ -142,25 +147,47 @@ pub fn prepend_process_path(dirs: &[String]) {
     unsafe { std::env::set_var("PATH", new) };
 }
 
-/// Writes the shell environment file globally (mirrors Go `SetEnvGlobally`:
-/// set_path per bin directory, set_env per additional env).
-pub fn set_globally(shell: &Shell, bundle: &EnvBundle) {
-    // `Shell::set_path` prepends one directory per call (one `export PATH=...` line on Unix,
-    // one registry prepend on Windows). Iterate in reverse so the final PATH order matches
-    // the declared order, mirroring rattler_shell, which prepends the whole list at once.
-    // Conda prefixes have a single Unix entry, so this only matters on Windows.
-    for dir in bundle.path_dirs.iter().rev() {
-        shell.set_path(dir);
+/// Writes the environment globally (mirrors Go `SetEnvGlobally`: `set_path` per bin
+/// directory, `set_env` per additional env).
+///
+/// Windows keeps a single shim directory on `PATH` and writes one command shim per
+/// executable of the SDK ([`shims::sync`]); the registry value therefore stays constant no
+/// matter how many SDKs or pixi packages are installed. Other platforms prepend one
+/// `export PATH=...` line per directory.
+pub fn set_globally(shell: &Shell, sdk: &str, bundle: &EnvBundle) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        shims::sync(sdk, bundle)?;
+        let dir = shims::shim_dir();
+        vmr_shell::use_shim_path(&dir.to_string_lossy());
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = sdk;
+        // Iterate in reverse so the final PATH order matches the declared order.
+        for dir in bundle.path_dirs.iter().rev() {
+            shell.set_path(dir);
+        }
     }
     for (k, v) in &bundle.env_vars {
         shell.set_env(k, v);
     }
+    Ok(())
 }
 
 /// Unsets globally (when uninstalling the current version / an SDK).
-pub fn unset_globally(shell: &Shell, bundle: &EnvBundle) {
-    for dir in &bundle.path_dirs {
-        shell.unset_path(dir);
+pub fn unset_globally(shell: &Shell, sdk: &str, bundle: &EnvBundle) {
+    #[cfg(windows)]
+    {
+        let _ = bundle;
+        shims::remove(sdk);
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = sdk;
+        for dir in &bundle.path_dirs {
+            shell.unset_path(dir);
+        }
     }
     for (k, _) in &bundle.env_vars {
         shell.unset_env(k);
