@@ -54,7 +54,10 @@ pub fn collect(ic: &InstallerConfig, install_dir: &str, os: &str) -> EnvBundle {
     } else {
         for dir_path in dirs {
             let p = join_base(base, &dir_path);
-            if exists(std::path::Path::new(&p)) {
+            // A `PATH` entry must be a directory; `exists` alone would also accept a file
+            // that happens to have the same name. Existence is checked here, before any
+            // shell file is written, so a missing conda directory is never recorded.
+            if std::path::Path::new(&p).is_dir() {
                 out.path_dirs.push(p);
             }
         }
@@ -142,7 +145,11 @@ pub fn prepend_process_path(dirs: &[String]) {
 /// Writes the shell environment file globally (mirrors Go `SetEnvGlobally`:
 /// set_path per bin directory, set_env per additional env).
 pub fn set_globally(shell: &Shell, bundle: &EnvBundle) {
-    for dir in &bundle.path_dirs {
+    // `Shell::set_path` prepends one directory per call (one `export PATH=...` line on Unix,
+    // one registry prepend on Windows). Iterate in reverse so the final PATH order matches
+    // the declared order, mirroring rattler_shell, which prepends the whole list at once.
+    // Conda prefixes have a single Unix entry, so this only matters on Windows.
+    for dir in bundle.path_dirs.iter().rev() {
         shell.set_path(dir);
     }
     for (k, v) in &bundle.env_vars {

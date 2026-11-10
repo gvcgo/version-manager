@@ -10,7 +10,7 @@ use clap::{CommandFactory, Parser, Subcommand};
 use vmr_core::envs;
 use vmr_core::names::{check_name, is_valid_name};
 use vmr_core::paths;
-use vmr_installer::{common, finder, installer as ins};
+use vmr_installer::{common, finder, installer as ins, pixi_env};
 use vmr_lua::types::{Item, installer_kind};
 use vmr_lua::{Plugin, Plugins};
 
@@ -613,9 +613,16 @@ fn build_install_request(
             .ok_or_else(|| format!("version not found: {sdk}@{version}"))?
     };
 
-    let ic = match plugin.as_mut() {
-        Some(p) => p.get_installer_config()?,
-        None => vmr_lua::types::InstallerConfig::default(),
+    // A pixi/conda install always uses the conda prefix layout. Do not reuse the plugin's
+    // `InstallerConfig`: it describes the upstream archive (e.g. Go's `GOROOT` layout), not
+    // the conda prefix, even when a plugin with the same SDK name exists.
+    let ic = if pixi {
+        pixi_env::installer_config()
+    } else {
+        match plugin.as_mut() {
+            Some(p) => p.get_installer_config()?,
+            None => vmr_lua::types::InstallerConfig::default(),
+        }
     };
     let (sdk_name, plugin_name) = match &plugin {
         Some(p) => (p.sdk_name.clone(), p.plugin_name.clone()),
@@ -634,9 +641,6 @@ fn build_install_request(
         } else {
             ins::InvokeMode::Globally
         },
-        // Packages that VMR does not describe in a plugin have no env metadata, so the user
-        // must add the install directory to PATH manually.
-        no_envs: pixi,
     })
 }
 
@@ -672,19 +676,12 @@ fn cmd_use(spec: Option<&str>, session: bool, to_lock: bool, pixi: bool) -> Resu
     let summary = summarize(&req, pixi, dir_has_entries(&req.install_dir()));
     match ins::install(&req)? {
         ins::Action::Done => {
-            if summary.pixi {
-                println!(
-                    "pixi sdk installed; add to PATH manually: {}",
-                    summary.path.display()
-                );
-            } else {
-                println!(
-                    "{} {} is now active ({})",
-                    summary.plugin_name,
-                    summary.version,
-                    summary.path.display()
-                );
-            }
+            println!(
+                "{} {} is now active ({})",
+                summary.plugin_name,
+                summary.version,
+                summary.path.display()
+            );
             Ok(())
         }
         ins::Action::RunSession => std::process::exit(vmr_pty::run_terminal()),
@@ -889,13 +886,21 @@ pub(crate) fn uninstall_spec(spec: &str) -> Result<String, String> {
         Some(p) => p.get_version_result(&version)?.unwrap_or_default(),
         None => Item::default(),
     };
-    let ic = match plugin.as_mut() {
-        Some(p) => p.get_installer_config()?,
-        None => vmr_lua::types::InstallerConfig::default(),
-    };
     let (sdk_name, plugin_name) = match &plugin {
         Some(p) => (p.sdk_name.clone(), p.plugin_name.clone()),
         None => (sdk.clone(), sdk.clone()),
+    };
+    // Unset the entries that `vmr use` actually wrote. A pixi marker means the conda layout,
+    // even when a plugin with the same SDK name exists (`vmr use -p go@...`); a no-plugin
+    // install has no archive layout to fall back to, so also use the pixi layout.
+    let install = common::install_dir(&sdk_name, &plugin_name, &version);
+    let ic = if pixi_env::is_pixi_prefix(&install) || plugin.is_none() {
+        pixi_env::installer_config()
+    } else {
+        plugin
+            .as_mut()
+            .expect("plugin checked above")
+            .get_installer_config()?
     };
     let req = ins::InstallRequest {
         sdk_name,
@@ -904,7 +909,6 @@ pub(crate) fn uninstall_spec(spec: &str) -> Result<String, String> {
         version: item,
         ic,
         mode: ins::InvokeMode::Globally,
-        no_envs: false,
     };
     ins::uninstall(&req)?;
     Ok(format!("{plugin_name} {version} uninstalled."))

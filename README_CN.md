@@ -275,6 +275,10 @@ vmr search -p lua        # 从 conda-forge 查询
 vmr use -p lua@5.4.6     # 安装
 ```
 
+和插件安装一样，`vmr use -p` 会把前缀的可执行目录加入 `PATH`（Linux/macOS 是 `bin`；
+Windows 是 `Scripts`、`Library/bin` 等），配合 `vmr init` 立即在当前终端生效。包自带的
+`etc/conda/activate.d` 脚本设置的变量不会导入。
+
 默认频道是 `https://conda.anaconda.org/conda-forge`，可用环境变量换成镜像：
 
 ```bash

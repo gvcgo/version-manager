@@ -18,6 +18,7 @@ use vmr_utils::symlink::create_sym_link;
 use crate::common::{install_dir, sdk_version_dir, symbol_link_path};
 use crate::download::download_to_cache;
 use crate::locker::VersionLocker;
+use crate::pixi_env;
 use crate::post::run_post_install;
 
 pub const ADD_TO_PATH_TEMPORARILY_ENV: &str = "VMR_ADD_TO_PATH_TEMPORARILY";
@@ -46,7 +47,6 @@ pub struct InstallRequest {
     pub version: Item,
     pub ic: InstallerConfig,
     pub mode: InvokeMode,
-    pub no_envs: bool,
 }
 
 impl InstallRequest {
@@ -171,16 +171,10 @@ impl InstallRequest {
 
     /// OS name of the current platform.
     fn collect_bundle(&self, base: &Path) -> vmr_env::EnvBundle {
-        if self.no_envs {
-            return vmr_env::EnvBundle::default();
-        }
         vmr_env::collect(&self.ic, base.to_str().unwrap_or(""), &current_os())
     }
 
     fn set_env_globally(&self) {
-        if self.no_envs {
-            return;
-        }
         let shell = vmr_shell::Shell::detect();
         // Make sure the shell actually sources `~/.vmr/vmr.sh` (or vmr.fish). This is also
         // required here so direct `vmr use` calls set up the shell integration on their own.
@@ -190,17 +184,11 @@ impl InstallRequest {
     }
 
     fn unset_env_bundle(&self, bundle: &vmr_env::EnvBundle) {
-        if self.no_envs {
-            return;
-        }
         let shell = vmr_shell::Shell::detect();
         vmr_env::unset_globally(&shell, bundle);
     }
 
     fn add_envs_temporarily(&self) {
-        if self.no_envs {
-            return;
-        }
         let install = self.install_dir();
         let bundle = self.collect_bundle(&install);
         vmr_env::add_temporarily(&bundle);
@@ -252,6 +240,16 @@ pub fn install(req: &InstallRequest) -> Result<Action, String> {
         ensure_command("cs").map_err(|_| "coursier is not installed".to_string())?;
     }
     let newly = req.ensure_installed()?;
+    // conda/conda-forge packages are always installed through the pixi/rattler backend.
+    // Record the backend before any env work: `conda-meta/` alone is not a marker because a
+    // plugin-installed Miniconda prefix also has one. Marking an already-installed prefix
+    // here also upgrades prefixes created before the marker existed.
+    if matches!(
+        req.version.installer.as_str(),
+        installer_kind::CONDA | installer_kind::CONDA_FORGE
+    ) {
+        pixi_env::mark_prefix(&req.install_dir())?;
+    }
     match req.mode {
         InvokeMode::Globally => {
             if !newly {
@@ -310,13 +308,19 @@ pub fn uninstall(req: &InstallRequest) -> Result<(), String> {
 /// Uninstalls every version of an SDK and removes its global env entries.
 pub fn uninstall_all(sdk_name: &str, plugin_name: &str) {
     let sym = symbol_link_path(sdk_name);
-    let bundle = {
+    // Collect the bundle before deleting: `vmr_env::collect` drops directories that no
+    // longer exist, and an empty bundle cannot remove the recorded `vmr.sh` lines. The
+    // current version symlink is the installed prefix, so the same marker/plugin decision
+    // as `vmr use` applies here.
+    let plugin_ic = {
         let mut plugins = vmr_lua::Plugins::new();
         plugins
             .get_by_plugin_name(plugin_name)
             .and_then(|mut p| p.get_installer_config().ok())
-            .map(|ic| vmr_env::collect(&ic, sym.to_str().unwrap_or(""), &current_os()))
     };
+    let bundle = sym
+        .is_dir()
+        .then(|| pixi_env::collect_bundle(&sym, plugin_ic.as_ref()));
     let root = paths::versions_dir();
     remove_path(&root, &sdk_version_dir(sdk_name));
     remove_path(&root, &sym);
@@ -415,31 +419,25 @@ pub fn hook_for_cd_command() -> Result<Action, String> {
     unsafe { std::env::set_var(ADD_TO_PATH_TEMPORARILY_ENV, "1") };
     for (sdk, version) in &locker.versions {
         remove_sdk_path_from_process(sdk);
-        // Reuse plugin data to load ic (SDKName == plugin_name is common). A lock file may
-        // reference an SDK that is not installed (or whose plugin was removed); skip it
-        // instead of breaking the shell hook.
+        // Resolve the installed prefix first, then the layout. A lock entry can come from:
+        // - a pixi install (usually no plugin): `<sdk>_versions/<sdk>-<version>`, marker set;
+        // - a plugin install: `<sdk>_versions/<plugin>-<version>`, plugin `InstallerConfig`;
+        // - an SDK that is not installed (or whose plugin was removed): skip.
         let mut plugins = vmr_lua::Plugins::new();
-        let Some(mut plugin) = plugins
+        let (prefix, plugin_ic) = match plugins
             .get_by_sdk_name(sdk)
             .or_else(|| plugins.get_by_plugin_name(sdk))
-        else {
+        {
+            Some(mut plugin) => {
+                let prefix = install_dir(&plugin.sdk_name, &plugin.plugin_name, version);
+                (prefix, plugin.get_installer_config().ok())
+            }
+            None => (install_dir(sdk, sdk, version), None),
+        };
+        if !prefix.is_dir() {
             continue;
-        };
-        let item = plugin.get_version(version).unwrap_or_default();
-        let Ok(ic) = plugin.get_installer_config() else {
-            continue;
-        };
-        let req = InstallRequest {
-            sdk_name: plugin.sdk_name.clone(),
-            plugin_name: plugin.plugin_name.clone(),
-            version_name: version.clone(),
-            version: item,
-            ic,
-            mode: InvokeMode::Sessionly,
-            no_envs: false,
-        };
-        let install = req.install_dir();
-        let bundle = req.collect_bundle(&install);
+        }
+        let bundle = pixi_env::collect_bundle(&prefix, plugin_ic.as_ref());
         vmr_env::add_temporarily(&bundle);
     }
     Ok(Action::RunSession)
