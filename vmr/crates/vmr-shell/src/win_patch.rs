@@ -1,10 +1,11 @@
 //! Windows mingw/git-bash compatibility layer (mirrors Go `internal/shell/win_patch.go`).
 //!
-//! Registry `PATH` entries under the versions directory are stored as
-//! `%VMR_VERSIONS%\...` (the variable is registered in `HKCU\Environment`) and mirrored into
-//! `%USERPROFILE%\.bashrc` as `export PATH="${PATH}:<mingw path>"` lines, because git-bash
-//! does not expand `%VMR_VERSIONS%`. The same profile also gets the cd hook, since Windows
-//! uses the registry instead of `~/.vmr/vmr.sh`.
+//! Windows has no `~/.vmr/vmr.sh`: the global environment lives in `HKCU\Environment`. This
+//! module keeps the git-bash profile (`%USERPROFILE%\.bashrc`) in sync with it: the cd hook
+//! is (re)written there, and legacy per-SDK `export PATH="${PATH}:<mingw path>"` lines are
+//! removed. Those lines were written by older builds (whose registry entries used the
+//! `%VMR_VERSIONS%\...` form); the shim directory (`~/.vmr/bin`) replaced them, so nothing is
+//! mirrored any more.
 
 use std::fs;
 use std::path::PathBuf;
@@ -41,17 +42,6 @@ fn write_bashrc(content: &str) {
     let _ = fs::write(bashrc_path(), content);
 }
 
-/// Appends `line` unless it is already present.
-fn add_export_line(old: &str, line: &str) -> String {
-    if old.contains(line) {
-        old.to_string()
-    } else if old.is_empty() {
-        line.to_string()
-    } else {
-        format!("{old}\n{line}")
-    }
-}
-
 /// The mingw `export PATH` line for a versions-related path, whatever form it is in
 /// (absolute, `%VMR_VERSIONS%`, or already mingw). `None` for unrelated paths.
 fn export_line_for(path_env: &str) -> Option<String> {
@@ -75,14 +65,6 @@ fn export_line_for(path_env: &str) -> Option<String> {
     }
 }
 
-/// Adds the mingw `export PATH` line for a versions-related path (Go `AddPathEnv`).
-fn add_path_env(path_env: &str, old: &str) -> String {
-    match export_line_for(path_env) {
-        Some(line) => add_export_line(old, &line),
-        None => old.to_string(),
-    }
-}
-
 /// Removes `line` (and exact duplicates) from the rc text, preserving the final newline.
 fn remove_export_line(old: &str, line: &str) -> String {
     let mut out = old
@@ -94,20 +76,6 @@ fn remove_export_line(old: &str, line: &str) -> String {
         out.push('\n');
     }
     out
-}
-
-fn handle_existing_paths() {
-    let mut content = read_bashrc();
-    let path = std::env::var("PATH").unwrap_or_default();
-    for entry in path.split(';') {
-        content = add_path_env(entry, &content);
-    }
-    write_bashrc(&content);
-}
-
-fn add_one_path_env(path_env: &str) {
-    let content = read_bashrc();
-    write_bashrc(&add_path_env(path_env, &content));
 }
 
 fn remove_one_path_env(path_env: &str) {
@@ -165,15 +133,46 @@ pub(crate) fn expand_versions(path: &str) -> String {
     }
 }
 
-/// Prepares a path for `SetPath`: registers `VMR_VERSIONS`, mirrors versions paths into
-/// `~/.bashrc`, and returns the `%VMR_VERSIONS%\...` value to store in the registry
-/// (Go `TidyWindowsPathEnv`).
+/// Prepares a path for `SetPath`: registers `VMR_VERSIONS`, keeps the git-bash cd hook in
+/// place, and returns the `%VMR_VERSIONS%\...` value for the registry.
+///
+/// Per-SDK PATH entries are no longer mirrored into `~/.bashrc`: the shim directory is the
+/// only vmr PATH entry, and the old append-only `export PATH="${PATH}:..."` lines both
+/// duplicated entries on every source and are cleaned up by [`clear_version_exports`].
 pub fn tidy_path(path: &str) -> String {
     register_versions_env();
-    handle_existing_paths();
-    add_one_path_env(path);
     patch_cd_hook();
     registry_form(path)
+}
+
+/// Drops every legacy `export PATH` line that points into the versions directory. Older
+/// vmr builds appended one such line per SDK binary directory.
+pub(crate) fn clear_version_exports() {
+    let content = read_bashrc();
+    if content.is_empty() {
+        return;
+    }
+    let versions = versions_dir();
+    let mingw_versions = convert_to_mingw(&versions);
+    let out: Vec<&str> = content
+        .lines()
+        .filter(|line| {
+            let line = line.trim();
+            if !line.starts_with("export PATH=") {
+                return true;
+            }
+            !(line.contains(&versions)
+                || line.contains(&mingw_versions)
+                || line.contains(VMR_VERSIONS_PREFIX))
+        })
+        .collect();
+    let mut joined = out.join("\n");
+    if content.ends_with('\n') && !joined.is_empty() {
+        joined.push('\n');
+    }
+    if joined != content {
+        write_bashrc(&joined);
+    }
 }
 
 /// Prepares a path for `UnsetPath`: remove its mingw `export PATH` line instead of adding

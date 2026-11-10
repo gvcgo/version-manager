@@ -174,18 +174,18 @@ impl InstallRequest {
         vmr_env::collect(&self.ic, base.to_str().unwrap_or(""), &current_os())
     }
 
-    fn set_env_globally(&self) {
+    fn set_env_globally(&self) -> Result<(), String> {
         let shell = vmr_shell::Shell::detect();
         // Make sure the shell actually sources `~/.vmr/vmr.sh` (or vmr.fish). This is also
         // required here so direct `vmr use` calls set up the shell integration on their own.
         shell.write_vm_env_to_shell();
         let bundle = self.collect_bundle(&self.symbol_path());
-        vmr_env::set_globally(&shell, &bundle);
+        vmr_env::set_globally(&shell, &self.sdk_name, &bundle)
     }
 
     fn unset_env_bundle(&self, bundle: &vmr_env::EnvBundle) {
         let shell = vmr_shell::Shell::detect();
-        vmr_env::unset_globally(&shell, bundle);
+        vmr_env::unset_globally(&shell, &self.sdk_name, bundle);
     }
 
     fn add_envs_temporarily(&self) {
@@ -265,7 +265,7 @@ pub fn install(req: &InstallRequest) -> Result<Action, String> {
                 create_sym_link(req.install_dir().to_str().unwrap(), sym.to_str().unwrap())
                     .map_err(|e| format!("create symlink failed: {e}"))?;
             }
-            req.set_env_globally();
+            req.set_env_globally()?;
             req.add_envs_temporarily();
             Ok(Action::Done)
         }
@@ -326,7 +326,7 @@ pub fn uninstall_all(sdk_name: &str, plugin_name: &str) {
     remove_path(&root, &sym);
     if let Some(bundle) = bundle {
         let shell = vmr_shell::Shell::detect();
-        vmr_env::unset_globally(&shell, &bundle);
+        vmr_env::unset_globally(&shell, sdk_name, &bundle);
     }
 }
 

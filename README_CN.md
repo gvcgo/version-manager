@@ -187,6 +187,12 @@ Invoke-Expression (& vmr init powershell)
 
 未执行 `vmr init` 也能用命令，只是每次切换版本后需要新开终端。
 
+Windows 下全局环境不走 `vmr.sh`：非 PATH 变量（如 `GOROOT`）写入注册表 `HKCU\Environment`；
+`PATH` 中**只有一条** `%USERPROFILE%\.vmr\bin`（shim 目录）。`vmr use` 会在该目录为当前 SDK
+的每个可执行文件生成 shim（`vmr.exe` 的硬链接，`.cmd`/`.bat` 则生成包装脚本），shim 只在启动
+子进程时注入对应前缀的 `PATH`。因此安装任意数量的 SDK 或 conda-forge 包都不会把 `PATH` 撑到
+Windows 的 32767 字符上限。
+
 ### 从 0.7.x 升级到 0.8.x
 
 - 删除 `$HOME/.vmr/vmr.sh` 或 PowerShell `$PROFILE` 中由旧版 vmr 写入的非 SDK 相关环境变量和函数，保留 SDK 相关配置。
@@ -275,9 +281,9 @@ vmr search -p lua        # 从 conda-forge 查询
 vmr use -p lua@5.4.6     # 安装
 ```
 
-和插件安装一样，`vmr use -p` 会把前缀的可执行目录加入 `PATH`（Linux/macOS 是 `bin`；
-Windows 是 `Scripts`、`Library/bin` 等），配合 `vmr init` 立即在当前终端生效。包自带的
-`etc/conda/activate.d` 脚本设置的变量不会导入。
+和插件安装一样，`vmr use -p` 会暴露前缀的可执行文件（Linux/macOS 把 `bin` 加入 `PATH`；
+Windows 为每个可执行文件生成 shim，不往注册表 `PATH` 里逐条追加），配合 `vmr init` 立即在
+当前终端生效。包自带的 `etc/conda/activate.d` 脚本设置的变量不会导入。
 
 默认频道是 `https://conda.anaconda.org/conda-forge`，可用环境变量换成镜像：
 
@@ -325,6 +331,8 @@ GitHub API 在三个来源都为空时以匿名身份请求，每小时 60 次�
 ├── conf.toml            # 配置
 ├── vmr.sh / vmr.fish    # 动态环境变量（PATH、GOROOT 等）
 ├── env_keys.txt         # 刷新前需要清掉的非 PATH 变量
+├── bin/                 # Windows shim 目录（PATH 唯一入口）
+├── shims.json           # Windows shim → 真实可执行文件的映射
 ├── plugins/             # SDK 版本插件（首次使用自动下载）
 ├── cache/               # 版本列表与安装包缓存
 └── versions/
@@ -335,7 +343,9 @@ GitHub API 在三个来源都为空时以匿名身份请求，每小时 60 次�
 
 想放到别的磁盘，设置 `VMR_SDK_INSTALLATION_DIR` 即可。
 
-Windows 上，全局环境变量写入注册表 `HKCU\Environment` 并广播变更，所以 `vmr init powershell` 之外不需要额外修改系统设置。
+Windows 上，全局环境变量写入注册表 `HKCU\Environment` 并广播变更；`PATH` 只保留
+`%USERPROFILE%\.vmr\bin` 一条，SDK 命令由 `bin/` 下的 shim 提供，所以 `vmr init powershell`
+之外不需要额外修改系统设置。
 
 ## 卸载 vmr
 
@@ -345,7 +355,8 @@ rm -rf ~/.vmr             # 再删除配置、缓存与剩余版本
 # 最后把 shell 配置里那行 eval "$(vmr init ...)" 删掉
 ```
 
-Windows 删除 `%USERPROFILE%\.vmr` 目录，并从 `PATH` 中移除 `vmr.exe` 所在目录。
+Windows 删除 `%USERPROFILE%\.vmr` 目录，并从 `PATH` 中移除 `vmr.exe` 所在目录和
+`%USERPROFILE%\.vmr\bin`（shim 目录）。
 
 ## 常见问题
 
