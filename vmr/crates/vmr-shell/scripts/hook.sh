@@ -35,6 +35,6 @@ _vmr_cd_hook() {
 }
 
 if [ -z "${VMR_CD_INIT}" ]; then
-    VMR_CD_INIT="vmr_cd_init"
+    export VMR_CD_INIT="vmr_cd_init"
     cdhook "$(pwd)"
 fi

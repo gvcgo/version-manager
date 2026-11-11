@@ -803,7 +803,7 @@ mod tests {
         assert!(s.contains("cdhook() {"), "{s}");
         assert!(s.contains("alias cd='cdhook'"), "{s}");
         assert!(!s.contains("alias|grep cdhook"), "{s}");
-        assert!(s.contains("VMR_CD_INIT"), "{s}");
+        assert!(s.contains("export VMR_CD_INIT"), "{s}");
         assert!(s.contains("VMR_CD_CACHE"), "{s}");
         assert!(s.contains("cd_hook.cache"), "{s}");
         assert!(s.contains("vmr cdhook"), "{s}");
@@ -824,6 +824,7 @@ mod tests {
         assert!(fish.contains("if not set -q VM_DISABLE"), "{fish}");
         assert!(fish.contains("source \"$HOME/.vmr/vmr.fish\""), "{fish}");
         assert!(fish.contains("_vmr_cdhook"), "{fish}");
+        assert!(fish.contains("set -gx VMR_CD_INIT"), "{fish}");
         assert!(fish.contains("VMR_CD_CACHE"), "{fish}");
         assert!(fish.contains("cd_hook.cache"), "{fish}");
         assert!(fish.contains("function svmr"), "{fish}");
@@ -899,6 +900,9 @@ cdhook "@NESTED@"
 cdhook "@PROJECT@"
 cdhook "@ROOT@"
 cdhook "@PROJECT@"
+# `vmr doctor` runs as a child process, so the marker must be exported.
+[ -n "${VMR_CD_INIT}" ] || { echo "VMR_CD_INIT is not set" >&2; exit 1; }
+sh -c '[ -n "$VMR_CD_INIT" ]' || { echo "VMR_CD_INIT is not exported" >&2; exit 1; }
 "#;
         let script = TEMPLATE
             .replace("@CALLS@", &calls.to_string_lossy())

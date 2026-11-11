@@ -26,6 +26,6 @@ function _vmr_cdhook --on-variable="PWD" --description "version manager cd hook"
 end
 
 if not set -q VMR_CD_INIT
-    set -g VMR_CD_INIT "vmr_cd_init"
+    set -gx VMR_CD_INIT "vmr_cd_init"
     _vmr_cd_hook
 end
