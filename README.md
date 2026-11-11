@@ -187,6 +187,13 @@ This single line does three things:
 
 The commands work without `vmr init` too, but each version switch then requires a new terminal.
 
+On Windows, global environment variables other than `PATH` (e.g. `GOROOT`) go to the registry
+(`HKCU\Environment`), while `PATH` holds **one** entry: `%USERPROFILE%\.vmr\bin`. `vmr use`
+creates a shim for every executable of the active SDK (a hardlink to `vmr.exe`, or a generated
+`.cmd` wrapper for script targets); the shim injects that prefix's `PATH` for the child process
+only. Any number of SDKs or conda-forge packages therefore cannot push `PATH` towards the
+32,767-character Windows limit.
+
 ### Upgrading from 0.7.x to 0.8.x
 
 - Remove non-SDK environment variables and functions written by the old version of vmr from `$HOME/.vmr/vmr.sh` or the PowerShell `$PROFILE`; keep SDK-related configuration.
@@ -276,10 +283,10 @@ vmr search -p lua        # query conda-forge
 vmr use -p lua@5.4.6     # install
 ```
 
-Like plugin installs, `vmr use -p` adds the prefix's executable directories to `PATH`
-(`bin` on Linux/macOS; `Scripts`, `Library/bin`, … on Windows), so `lua` is available
-immediately with the `vmr init` shell integration. Variables set by a package's
-`etc/conda/activate.d` scripts are not imported.
+Like plugin installs, `vmr use -p` exposes the prefix's executables (`bin` is added to `PATH`
+on Linux/macOS; on Windows a shim is generated per executable instead of appending registry
+`PATH` entries), so `lua` is available immediately with the `vmr init` shell integration.
+Variables set by a package's `etc/conda/activate.d` scripts are not imported.
 
 The default channel is `https://conda.anaconda.org/conda-forge`; use the environment variable to point at a mirror:
 
@@ -327,6 +334,8 @@ When all three GitHub token sources are empty, the GitHub API is queried anonymo
 ├── conf.toml            # configuration
 ├── vmr.sh / vmr.fish    # dynamic environment variables (PATH, GOROOT, etc.)
 ├── env_keys.txt         # non-PATH variables to clear before refreshing
+├── bin/                 # Windows shim directory (the only PATH entry)
+├── shims.json           # Windows shim → real executable mapping
 ├── plugins/             # SDK version plugins (downloaded automatically on first use)
 ├── cache/               # version lists and installer package cache
 └── versions/
@@ -337,7 +346,9 @@ When all three GitHub token sources are empty, the GitHub API is queried anonymo
 
 To put this on another disk, just set `VMR_SDK_INSTALLATION_DIR`.
 
-On Windows, global environment variables are written to the registry under `HKCU\Environment` and changes are broadcast, so no system settings need editing beyond `vmr init powershell`.
+On Windows, global environment variables are written to the registry under `HKCU\Environment`
+and changes are broadcast; `PATH` keeps a single entry, `%USERPROFILE%\.vmr\bin`, whose shims
+provide the SDK commands, so no system settings need editing beyond `vmr init powershell`.
 
 ## Uninstalling vmr
 
@@ -347,7 +358,8 @@ rm -rf ~/.vmr             # then delete config, cache and remaining versions
 # finally remove the eval "$(vmr init ...)" line from your shell config
 ```
 
-On Windows, delete the `%USERPROFILE%\.vmr` directory and remove the directory containing `vmr.exe` from `PATH`.
+On Windows, delete the `%USERPROFILE%\.vmr` directory and remove both the directory containing
+`vmr.exe` and `%USERPROFILE%\.vmr\bin` (the shim directory) from `PATH`.
 
 ## FAQ
 

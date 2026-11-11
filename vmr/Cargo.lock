@@ -4658,6 +4658,8 @@ dependencies = [
 name = "vmr-env"
 version = "0.8.1"
 dependencies = [
+ "serde",
+ "serde_json",
  "vmr-core",
  "vmr-lua",
  "vmr-shell",

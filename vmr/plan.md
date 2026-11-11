@@ -162,15 +162,15 @@ vmr-utils ← vmr-core ← vmr-net ← vmr-lua ← vmr-installer ← vmr-cli
 ### 3.7 vmr-env —— 独立环境变量模块（要求 6）
 
 - `collect`：按平台取 `ic.BinaryDirs.{windows|linux|darwin}`（空则版本目录本身）+ `ic.AdditionalEnvs`，仅收集存在的路径。
-- `set_global`：经 vmr-shell 写 shell 配置 / Windows 注册表（`HKCU\Environment` + `WM_SETTINGCHANGE` 广播）。
-- `unset_global`：从 shell 配置移除。
+- `set_global`：经 vmr-shell 写 shell 配置 / Windows 注册表（`HKCU\Environment` + `WM_SETTINGCHANGE` 广播）。Windows 只写一条 shim 目录（`~/.vmr/bin`）到 `PATH`，非 PATH 变量照旧写注册表；每个 SDK 的可执行文件在 shim 目录生成硬链接（`.cmd`/`.bat` 生成包装脚本），映射存 `~/.vmr/shims.json`（`vmr-env::shims`）。这样 PATH 长度与 SDK / pixi 包数量解耦，不会逼近 32767 字符上限。
+- `unset_global`：从 shell 配置移除 / Windows 删除该 SDK 的 shim 与注册表变量。
 - `set_temporary`：`VMR_ADD_TO_PATH_TEMPORARILY=1` 时注入当前进程 PATH（会话/锁模式用）。
 - `remove_global_sdk_path`：从 PATH 摘除当前 SDK 符号链接路径。
 
 ### 3.8 vmr-shell —— shell hook 自动切换（要求 7）
 
 - `sheller` trait：`set_env/unset_env/set_path/unset_path/conf_path`。
-- bash（`~/.bashrc` + `~/.vmr/vmr.sh`）、zsh（`~/.zshrc` + cd hook `vmr cdhook` + `VMR_CD_INIT` 首启）、fish（`config.fish` + `vmr.fish` + `--on-variable=PWD` hook）、powershell（`profile.ps1` + `vmr init powershell` 内联的 `cdhook`/`Set-Alias cd`/`VMR_CD_INIT`；环境变量按 Go 方式写注册表 `HKCU\Environment`（`Path` 用 `REG_EXPAND_SZ`，前插/删除条目）并广播 `WM_SETTINGCHANGE`，不再使用 `vmr.sh`）、git-bash/mingw（注册表 `PATH` 中 versions 目录写成 `%VMR_VERSIONS%\<...>`，并把对应 mingw 路径 `export PATH="${PATH}:<path>"` 与 cd hook 追加到 `%USERPROFILE%\.bashrc`，`VMR_VERSIONS` 也写入注册表；见 `win_patch.rs`）。`vmr.sh`/`vmr.fish` 只承载 `vmr use` 动态写入的环境行。
+- bash（`~/.bashrc` + `~/.vmr/vmr.sh`）、zsh（`~/.zshrc` + cd hook `vmr cdhook` + `VMR_CD_INIT` 首启）、fish（`config.fish` + `vmr.fish` + `--on-variable=PWD` hook）、powershell（`profile.ps1` + `vmr init powershell` 内联的 `cdhook`/`Set-Alias cd`/`VMR_CD_INIT`；环境变量按 Go 方式写注册表 `HKCU\Environment`（`Path` 用 `REG_EXPAND_SZ`，前插/删除条目）并广播 `WM_SETTINGCHANGE`，不再使用 `vmr.sh`）、git-bash/mingw（历史版本把 versions 目录写成 `%VMR_VERSIONS%\<...>` 并把 `export PATH="${PATH}:<path>"` 镜像到 `%USERPROFILE%\.bashrc`；现改为只写 shim 目录，`win_patch.rs` 负责清理旧行并维护 cd hook）。`vmr.sh`/`vmr.fish` 只承载 `vmr use` 动态写入的环境行。
 - **cd hook 自动切换**：进入含 `.vmr.lock` 的目录时自动执行 `vmr cdhook`（按 lock 内容切换 SDK 版本）；lock 中尚未安装的版本会先提示用户确认，确认后安装（仅安装，不做全局切换），拒绝或非交互 stdin 则跳过安装；`VM_DISABLE` 守卫（会话内禁用注入）；`vmr cdhook` 是独立子命令（原 `vmr use -E` 已移除）。
 - cd hook（`export PATH`、`cdhook` 函数 + `alias cd`、`VMR_CD_INIT` 首启的 `cdhook "$(pwd)"`）由 `vmr init` 内联输出，不再写进 `vmr.sh`；`vmr.sh` 只保留动态环境行，`vmr use` 会清理旧文件里的 `# cd hook start/end` 段（迁移）。
 - shell 集成只写一行 `eval "$(vmr init <shell>)"`（zoxide 风格；fish 为 `vmr init fish | source`，PowerShell 为 `Invoke-Expression (& vmr init powershell | Out-String)`）；`vmr init` 输出的脚本负责 `VM_DISABLE` 守卫、source `vmr.sh`/`vmr.fish`、内联 cd hook 与 `svmr` 刷新命令。旧的 `# vm_envs` / `# vmr source alias` 块在 `vmr use` 时自动迁移移除。

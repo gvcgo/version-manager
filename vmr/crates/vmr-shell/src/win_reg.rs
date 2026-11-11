@@ -16,6 +16,10 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
 
 const ENV_KEY: &str = "Environment";
 const PATH_VALUE: &str = "Path";
+/// Windows documents 32,767 characters for a user environment variable. Refuse to write when
+/// the expanded `PATH` is already close to it: an oversized value is truncated when the
+/// environment block is built and the tail entries silently disappear.
+const MAX_PATH_LEN: usize = 30_000;
 
 fn env_key() -> Option<RegKey> {
     RegKey::predef(HKEY_CURRENT_USER)
@@ -94,6 +98,14 @@ pub fn set_path(path: &str) {
     if old.split(';').any(|p| path_eq(p, &path)) {
         return;
     }
+    if expanded_len(&old) + path.len() + 1 > MAX_PATH_LEN {
+        eprintln!(
+            "vmr: not adding \"{path}\" to PATH: the expanded value is already {} characters \
+             (Windows limit is 32767). Remove unused PATH entries first.",
+            expanded_len(&old)
+        );
+        return;
+    }
     let new = if old.is_empty() {
         path.to_string()
     } else {
@@ -102,6 +114,42 @@ pub fn set_path(path: &str) {
     if write_expand(&k, &new).is_ok() {
         broadcast();
     }
+}
+
+/// Removes every `PATH` entry that lives under the versions directory (legacy per-SDK
+/// entries, absolute or `%VMR_VERSIONS%\...`). Those are migrated to the shim directory.
+pub fn remove_version_entries() {
+    let Some(k) = env_key() else { return };
+    let old: String = k.get_value(PATH_VALUE).unwrap_or_default();
+    let keep: Vec<&str> = old.split(';').filter(|p| !is_versions_entry(p)).collect();
+    let new = keep.join(";");
+    if new != old && write_expand(&k, &new).is_ok() {
+        broadcast();
+    }
+}
+
+fn is_versions_entry(entry: &str) -> bool {
+    let versions = vmr_core::paths::versions_dir()
+        .to_string_lossy()
+        .into_owned();
+    let canon = |p: &str| {
+        crate::win_patch::expand_versions(p)
+            .replace('/', "\\")
+            .trim_end_matches('\\')
+            .to_lowercase()
+    };
+    let entry = canon(entry);
+    let versions = canon(&versions);
+    !versions.is_empty() && (entry == versions || entry.starts_with(&format!("{versions}\\")))
+}
+
+/// Length of the value Windows builds after expanding `%VMR_VERSIONS%`.
+fn expanded_len(value: &str) -> usize {
+    value
+        .split(';')
+        .map(|p| crate::win_patch::expand_versions(p).len())
+        .sum::<usize>()
+        + value.split(';').count()
 }
 
 pub fn unset_path(path: &str) {

@@ -144,6 +144,13 @@ fn help() {
 }
 
 fn main() {
+    // Windows shim dispatch: `vmr.exe` is hardlinked into `~/.vmr/bin` under each SDK
+    // command name, so the invoked name selects the mapped executable (no clap parsing).
+    #[cfg(windows)]
+    if let Some(code) = vmr_env::shims::dispatch() {
+        std::process::exit(code);
+    }
+
     // Rust ignores SIGPIPE by default, turning `vmr search ... | head` into a panic. Restore
     // the conventional Unix behavior so a closed pipe terminates the process quietly.
     #[cfg(unix)]

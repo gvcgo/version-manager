@@ -25,8 +25,11 @@ therefore no longer required on the host.
   restores them on exit.
 - Global environment injection: on Unix-like platforms it writes `~/.vmr/vmr.sh` / `vmr.fish`
   (dynamic environment lines only); on Windows it writes the `HKCU\Environment` registry key and
-  broadcasts the change. Shell configuration needs only one line, `eval "$(vmr init zsh)"`
-  (fish: `vmr init fish | source`).
+  broadcasts the change. Windows `PATH` keeps a single entry (`~/.vmr/bin`): each active SDK
+  command is a shim (a hardlink to `vmr.exe`, or a generated `.cmd` wrapper) that injects the
+  prefix's `PATH` into the child, so the registry value stays constant regardless of how many
+  SDKs or pixi packages are installed. Shell configuration needs only one line,
+  `eval "$(vmr init zsh)"` (fish: `vmr init fish | source`).
 - Automatic refresh (bash/zsh/fish): that line also defines a `vmr` wrapper, so a successful
   `vmr use` or `vmr uninstall` reloads the environment into the current shell instead of
   requiring a new terminal. The refresh removes vmr-managed `PATH` entries and re-applies the
@@ -171,6 +174,8 @@ timeout; clients should confirm write operations with the user before invoking t
 ├── conf.toml                 # Configuration (PascalCase keys)
 ├── vmr.sh | vmr.fish         # Dynamic env lines (PATH/GOROOT); the cd hook is emitted by vmr init
 ├── env_keys.txt              # non-PATH variables cleared before an env refresh
+├── bin/                      # Windows shims (the only vmr PATH entry)
+├── shims.json                # Windows shim → real executable mapping
 ├── plugins/*.lua             # SDK plugins
 ├── cache/
 │   ├── <plugin>/<version>/   # Legacy plugin download cache
