@@ -4627,7 +4627,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "vmr-cli"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "chrono",
  "clap",
@@ -4647,7 +4647,7 @@ dependencies = [
 
 [[package]]
 name = "vmr-core"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "dirs",
  "serde",
@@ -4656,7 +4656,7 @@ dependencies = [
 
 [[package]]
 name = "vmr-env"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -4667,7 +4667,7 @@ dependencies = [
 
 [[package]]
 name = "vmr-installer"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "serde_json",
  "vmr-core",
@@ -4681,7 +4681,7 @@ dependencies = [
 
 [[package]]
 name = "vmr-lua"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "indicatif",
  "mlua",
@@ -4698,7 +4698,7 @@ dependencies = [
 
 [[package]]
 name = "vmr-net"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "indicatif",
  "md-5 0.10.6",
@@ -4712,7 +4712,7 @@ dependencies = [
 
 [[package]]
 name = "vmr-pixi"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "astral-reqwest-middleware",
  "indicatif",
@@ -4734,14 +4734,14 @@ dependencies = [
 
 [[package]]
 name = "vmr-pty"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "windows-sys 0.59.0",
 ]
 
 [[package]]
 name = "vmr-shell"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "vmr-core",
  "windows-sys 0.59.0",
@@ -4750,7 +4750,7 @@ dependencies = [
 
 [[package]]
 name = "vmr-utils"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "bzip2 0.5.2",
  "flate2",
