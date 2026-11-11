@@ -1,5 +1,6 @@
 //! vmr CLI (clap; commands/aliases mirror the Go `cmd/vmr` table; no TUI).
 
+mod doctor;
 mod mcp;
 mod table;
 
@@ -121,6 +122,19 @@ enum Cmd {
         #[arg(help = "output file (default: vmr_<YYYYMMDD>.txt)")]
         file: Option<String>,
     },
+    /// Diagnose the vmr installation, shell integration, environment and PATH.
+    Doctor {
+        #[arg(long, help = "machine-readable JSON output")]
+        json: bool,
+        #[arg(long, help = "only show warnings and errors")]
+        quiet: bool,
+        #[arg(long, help = "exit 1 when warnings are found")]
+        strict: bool,
+        #[arg(long = "no-emoji", help = "plain-text status labels")]
+        no_emoji: bool,
+        #[arg(long, help = "shell to check (bash, zsh, fish or powershell)")]
+        shell: Option<String>,
+    },
     /// Run the Model Context Protocol server on stdio.
     Mcp,
     /// Uninstall `sdk@version` or `sdk@all`.
@@ -158,19 +172,28 @@ fn main() {
         libc::signal(libc::SIGPIPE, libc::SIG_DFL);
     }
 
-    // conf → env write-back (env is the runtime authority, mirroring Go's side-effect initialization).
-    let _ = vmr_core::conf::VMRConf::new();
+    // Parse before the conf → env write-back: `vmr doctor` needs the raw shell environment,
+    // and `VMRConf::new` overwrites it with non-empty conf.toml values.
     let cli = Cli::parse();
+    doctor::capture_raw_env();
+    // `doctor` must not create `~/.vmr` or rewrite the process environment: read conf.toml
+    // without the write-back that `VMRConf::new` performs for every mutating command.
+    let conf = if matches!(&cli.cmd, Some(Cmd::Doctor { .. })) {
+        let path = paths::work_dir_path().join("conf.toml");
+        vmr_core::conf::read_conf_file(&path).unwrap_or_default()
+    } else {
+        vmr_core::conf::VMRConf::new()
+    };
     let Some(cmd) = cli.cmd else {
         help();
         return;
     };
-    if let Err(e) = run(cmd) {
+    if let Err(e) = run(cmd, conf) {
         err_exit(e);
     }
 }
 
-fn run(cmd: Cmd) -> Result<(), String> {
+fn run(cmd: Cmd, conf: vmr_core::conf::VMRConf) -> Result<(), String> {
     match cmd {
         Cmd::Version => {
             println!("{}", version_str());
@@ -242,6 +265,23 @@ fn run(cmd: Cmd) -> Result<(), String> {
             None => cmd_use(spec.as_deref(), session, to_lock, pixi),
         },
         Cmd::Freeze { file } => cmd_freeze(file.as_deref()),
+        Cmd::Doctor {
+            json,
+            quiet,
+            strict,
+            no_emoji,
+            shell,
+        } => doctor::run(
+            doctor::Options {
+                json,
+                quiet,
+                strict,
+                no_emoji,
+                shell,
+            },
+            conf,
+            version_str(),
+        ),
         Cmd::Mcp => mcp::serve(),
         Cmd::Uninstall { spec } => cmd_uninstall(spec.as_deref()),
     }

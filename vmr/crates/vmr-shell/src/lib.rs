@@ -290,6 +290,12 @@ pub fn init_script(kind: Kind) -> String {
     Shell::new(kind).init_script()
 }
 
+/// Reads a value from the Windows user environment (`HKCU\Environment`).
+#[cfg(windows)]
+pub fn user_env(key: &str) -> Option<String> {
+    win_reg::get_env(key)
+}
+
 /// Quotes a value for a PowerShell single-quoted literal.
 fn ps_quote(value: &str) -> String {
     format!("'{}'", value.replace('\'', "''"))
@@ -361,9 +367,14 @@ impl Shell {
         }
     }
 
+    /// Home directory used for rc files and `$HOME`-relative paths.
+    pub fn home(&self) -> &str {
+        &self.home
+    }
+
     /// Path of the vmr shell environment file (`~/.vmr/vmr.sh|vmr.fish`).
     pub fn vm_env_conf_path(&self) -> PathBuf {
-        paths::work_dir().join(self.kind.env_file_name())
+        paths::work_dir_path().join(self.kind.env_file_name())
     }
 
     #[cfg(not(windows))]
@@ -373,7 +384,11 @@ impl Shell {
 
     #[cfg(not(windows))]
     fn write_env_file(&self, data: &str) {
-        let _ = fs::write(self.vm_env_conf_path(), data.trim_start_matches('\n'));
+        let path = self.vm_env_conf_path();
+        if let Some(parent) = path.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        let _ = fs::write(path, data.trim_start_matches('\n'));
     }
 
     pub fn pack_path(&self, path: &str) -> String {
@@ -662,6 +677,9 @@ impl Shell {
             let env_file = self.vm_env_conf_path();
             self.strip_hook_section(&env_file, &install);
             if !env_file.exists() {
+                if let Some(parent) = env_file.parent() {
+                    let _ = fs::create_dir_all(parent);
+                }
                 let _ = fs::write(&env_file, "");
             }
             ensure_init_line(&self.conf_path(), &self.init_line());

@@ -233,6 +233,7 @@ vmr uninstall go@all     # 卸载这个 SDK 的所有版本
 | `vmr cdhook` | `cd-hook` | cd 钩子内部调用：读取 `.vmr.lock`，提示安装缺失的锁定版本，并注入环境（钩子把项目缓存在 `VMR_CD_CACHE` 中，同一项目内不再重复查找） |
 | `vmr session` | `se` | 查询当前 shell 是否处于 vmr 会话中 |
 | `vmr nested` | `ns` | 允许 / 禁止嵌套会话 |
+| `vmr doctor` | | 只读诊断 shell 集成、环境变量、`PATH` 和版本链接（`--json`、`--quiet`、`--strict`） |
 | `vmr mcp` | | 以 stdio 方式提供 MCP 服务，供 AI 客户端调用 |
 
 ## 项目级版本锁定
