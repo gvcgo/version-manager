@@ -901,8 +901,11 @@ cdhook "@PROJECT@"
 
         // Initial check at `root` (1), project (2), deep is inside the cached project (skip),
         // nested has its own lock (3), project (4), root (5), project again (6).
-        let log = fs::read_to_string(&calls).unwrap_or_default();
-        assert_eq!(log.lines().count(), 6, "{log}");
+        let invocations = fs::read_to_string(&calls)
+            .unwrap_or_default()
+            .lines()
+            .count();
+        assert_eq!(invocations, 6, "expected 6 vmr cdhook invocations");
         let _ = fs::remove_dir_all(&root);
     }
 
