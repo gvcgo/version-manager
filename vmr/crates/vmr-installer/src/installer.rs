@@ -450,8 +450,7 @@ fn locked_entry(
 ///
 /// `vmr cdhook` uses this to offer installing the pinned versions before injecting the
 /// project environment. Entries keep their lock-file SDK name (which may be an alias).
-pub fn missing_locked_versions() -> Vec<(String, String)> {
-    let locker = VersionLocker::load_from(None);
+pub fn missing_locked_versions(locker: &VersionLocker) -> Vec<(String, String)> {
     if locker.versions.is_empty() {
         return Vec::new();
     }
@@ -468,8 +467,7 @@ pub fn missing_locked_versions() -> Vec<(String, String)> {
 }
 
 /// `vmr cdhook`: injects env per the lock and returns RunSession (mirrors Go HookForCdCommand).
-pub fn hook_for_cd_command() -> Result<Action, String> {
-    let locker = VersionLocker::load_from(None);
+pub fn hook_for_cd_command(locker: &VersionLocker) -> Result<Action, String> {
     if locker.versions.is_empty() {
         return Ok(Action::Done);
     }

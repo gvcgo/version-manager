@@ -28,6 +28,9 @@ mod win_reg;
 
 pub const VM_DISABLE_ENV_NAME: &str = "VM_DISABLE";
 pub const VM_CD_INIT_ENV_NAME: &str = "VMR_CD_INIT";
+/// Project directory cached by the cd hook; `vmr cdhook` writes it to
+/// [`paths::cd_cache_file`] and the hook reads it back into this variable.
+pub const VM_CD_CACHE_ENV_NAME: &str = "VMR_CD_CACHE";
 pub const MODE_PERM: u32 = 0o644;
 
 /// Supported shell types.
@@ -73,9 +76,17 @@ impl Kind {
     /// (bash/zsh and fish; PowerShell has no shell hook).
     fn hook_script(self, install_dir: &str, home_dir: &str) -> String {
         let inst = script_path(self, install_dir, home_dir);
+        let cache_file = paths::cd_cache_file();
+        let cache = script_path(self, &cache_file.to_string_lossy(), home_dir);
         match self {
-            Kind::Fish => fill(scripts::HOOK_FISH, &[("__VMR_INSTALL__", &inst)]),
-            Kind::PowerShell => scripts::HOOK_POWERSHELL.to_string(),
+            Kind::Fish => fill(
+                scripts::HOOK_FISH,
+                &[("__VMR_INSTALL__", &inst), ("__VMR_CD_CACHE__", &cache)],
+            ),
+            Kind::PowerShell => fill(
+                scripts::HOOK_POWERSHELL,
+                &[("__VMR_CD_CACHE__", &ps_quote(&cache_file.to_string_lossy()))],
+            ),
             _ => {
                 // Unix gets the install directory from `_vmr_refresh`; git-bash has no env
                 // file refresh, so it keeps the inline PATH line.
@@ -83,12 +94,12 @@ impl Kind {
                 {
                     format!(
                         "export PATH=\"{inst}\":\"${{PATH}}\"\n\n{}",
-                        scripts::HOOK_SH
+                        fill(scripts::HOOK_SH, &[("__VMR_CD_CACHE__", &cache)])
                     )
                 }
                 #[cfg(not(windows))]
                 {
-                    scripts::HOOK_SH.to_string()
+                    fill(scripts::HOOK_SH, &[("__VMR_CD_CACHE__", &cache)])
                 }
             }
         }
@@ -775,6 +786,9 @@ mod tests {
         assert!(s.contains("alias cd='cdhook'"), "{s}");
         assert!(!s.contains("alias|grep cdhook"), "{s}");
         assert!(s.contains("VMR_CD_INIT"), "{s}");
+        assert!(s.contains("VMR_CD_CACHE"), "{s}");
+        assert!(s.contains("cd_hook.cache"), "{s}");
+        assert!(s.contains("vmr cdhook"), "{s}");
         assert!(s.contains("alias svmr='export VM_DISABLE=\"\""), "{s}");
         #[cfg(not(windows))]
         {
@@ -792,6 +806,8 @@ mod tests {
         assert!(fish.contains("if not set -q VM_DISABLE"), "{fish}");
         assert!(fish.contains("source \"$HOME/.vmr/vmr.fish\""), "{fish}");
         assert!(fish.contains("_vmr_cdhook"), "{fish}");
+        assert!(fish.contains("VMR_CD_CACHE"), "{fish}");
+        assert!(fish.contains("cd_hook.cache"), "{fish}");
         assert!(fish.contains("function svmr"), "{fish}");
         #[cfg(not(windows))]
         {
@@ -806,6 +822,8 @@ mod tests {
         assert!(ps.contains("function cdhook"), "{ps}");
         assert!(ps.contains("Set-Alias -Name cd"), "{ps}");
         assert!(ps.contains("VMR_CD_INIT"), "{ps}");
+        assert!(ps.contains("VMR_CD_CACHE"), "{ps}");
+        assert!(ps.contains("cd_hook.cache"), "{ps}");
         assert!(ps.contains("function global:svmr"), "{ps}");
         assert!(ps.contains("function global:vmrsource"), "{ps}");
         assert!(ps.contains("function global:vmr "), "{ps}");
@@ -815,6 +833,80 @@ mod tests {
             "{ps}"
         );
         assert!(!ps.contains("vmr.sh"), "{ps}");
+    }
+
+    /// Runs the generated bash hook against a stub `vmr` and checks that the project lookup
+    /// is skipped until the shell leaves the cached project.
+    #[test]
+    #[cfg(unix)]
+    fn cd_hook_reuses_the_cached_project() {
+        use std::process::Command;
+
+        if Command::new("bash").arg("-c").arg(":").status().is_err() {
+            return; // no bash on this host; nothing to exercise
+        }
+        let root = std::env::temp_dir().join(format!("vmr-cd-hook-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let project = root.join("project");
+        let nested = project.join("nested");
+        let deep = nested.join("deep");
+        fs::create_dir_all(&deep).unwrap();
+        fs::write(project.join(".vmr.lock"), r#"{"go":"1.22.1"}"#).unwrap();
+        fs::write(nested.join(".vmr.lock"), r#"{"go":"1.21.0"}"#).unwrap();
+
+        let cache = root.join("cd_hook.cache");
+        let calls = root.join("calls");
+        let hook = scripts::HOOK_SH.replace("__VMR_CD_CACHE__", &cache.to_string_lossy());
+
+        // The stub records every call and mirrors `vmr cdhook` by caching the nearest lock
+        // directory above the working directory.
+        const TEMPLATE: &str = r#"
+VMR_CD_INIT=
+VMR_CD_CACHE=
+vmr() {
+    printf 'call\n' >> "@CALLS@"
+    local d="$PWD" found=
+    while :; do
+        if [ -f "$d/.vmr.lock" ]; then found="$d"; break; fi
+        [ "$d" = "/" ] && break
+        d="${d%/*}"
+        [ -z "$d" ] && d=/
+    done
+    printf '%s\n' "$found" > "@CACHE@"
+}
+@HOOK@
+cdhook "@PROJECT@"
+cdhook "@DEEP@"
+cdhook "@NESTED@"
+cdhook "@PROJECT@"
+cdhook "@ROOT@"
+cdhook "@PROJECT@"
+"#;
+        let script = TEMPLATE
+            .replace("@CALLS@", &calls.to_string_lossy())
+            .replace("@CACHE@", &cache.to_string_lossy())
+            .replace("@HOOK@", &hook)
+            .replace("@PROJECT@", &project.to_string_lossy())
+            .replace("@DEEP@", &deep.to_string_lossy())
+            .replace("@NESTED@", &nested.to_string_lossy())
+            .replace("@ROOT@", &root.to_string_lossy());
+
+        let status = Command::new("bash")
+            .arg("-c")
+            .arg(&script)
+            .current_dir(&root)
+            .status()
+            .expect("bash starts");
+        assert!(status.success());
+
+        // Initial check at `root` (1), project (2), deep is inside the cached project (skip),
+        // nested has its own lock (3), project (4), root (5), project again (6).
+        let invocations = fs::read_to_string(&calls)
+            .unwrap_or_default()
+            .lines()
+            .count();
+        assert_eq!(invocations, 6, "expected 6 vmr cdhook invocations");
+        let _ = fs::remove_dir_all(&root);
     }
 
     #[test]

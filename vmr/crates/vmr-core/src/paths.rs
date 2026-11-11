@@ -53,6 +53,15 @@ pub fn temp_dir() -> PathBuf {
     ensure_dir(&work_dir().join("temp"))
 }
 
+/// Shell cd-hook cache: the `.vmr.lock` directory applied by the last `vmr cdhook` run.
+///
+/// A child process cannot export variables to the parent shell, so `vmr cdhook` writes the
+/// resolved project here and the generated hook reads it back into `VMR_CD_CACHE`. The path
+/// is rendered into the hook by `vmr init`, so it must not move.
+pub fn cd_cache_file() -> PathBuf {
+    work_dir().join("cd_hook.cache")
+}
+
 /// Plugin directory: `~/.vmr/plugins`.
 pub fn plugin_dir() -> PathBuf {
     ensure_dir(&work_dir().join("plugins"))

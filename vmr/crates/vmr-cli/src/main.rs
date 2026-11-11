@@ -10,7 +10,7 @@ use clap::{CommandFactory, Parser, Subcommand};
 use vmr_core::envs;
 use vmr_core::names::{check_name, is_valid_name};
 use vmr_core::paths;
-use vmr_installer::{common, finder, installer as ins, pixi_env};
+use vmr_installer::{common, finder, installer as ins, locker, pixi_env};
 use vmr_lua::types::{Item, installer_kind};
 use vmr_lua::{Plugin, Plugins};
 
@@ -548,8 +548,12 @@ fn local_all() {
 /// and, when not already in a session, enter a child shell (mirrors Go `HookForCdCommand` +
 /// `RunTerminal`). Called by the shell cd hook.
 fn cmd_cd_hook() -> Result<(), String> {
-    install_missing_locked_versions()?;
-    let action = ins::hook_for_cd_command()?;
+    // Resolve the lock once: the shell hook caches the project directory written here and
+    // stays silent until the shell leaves it, so this search runs only on a project switch.
+    let locker = locker::VersionLocker::load_from(None);
+    locker.write_cd_cache();
+    install_missing_locked_versions(&locker)?;
+    let action = ins::hook_for_cd_command(&locker)?;
     if let ins::Action::RunSession = action {
         std::process::exit(vmr_pty::run_terminal());
     }
@@ -561,8 +565,8 @@ fn cmd_cd_hook() -> Result<(), String> {
 /// Declining, or a non-interactive stdin, skips the install; the hook then injects only the
 /// versions that are installed. Confirmed installs stay inactive (no symlink/global env);
 /// the hook exposes them to the session through temporary env entries.
-fn install_missing_locked_versions() -> Result<(), String> {
-    let missing = ins::missing_locked_versions();
+fn install_missing_locked_versions(locker: &locker::VersionLocker) -> Result<(), String> {
+    let missing = ins::missing_locked_versions(locker);
     if missing.is_empty() {
         return Ok(());
     }
