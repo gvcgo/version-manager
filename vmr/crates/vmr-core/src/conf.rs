@@ -117,6 +117,46 @@ impl VMRConf {
     }
 }
 
+/// Top-level conf.toml keys understood by [`VMRConf`] (PascalCase, matching serde).
+const CONF_KEYS: [&str; 9] = [
+    "ProxyUri",
+    "ReverseProxy",
+    "SDKIntallationDir",
+    "VersionHostUrl",
+    "ThreadNum",
+    "AllowNestedSessions",
+    "GithubToken",
+    "CacheRetentionTime",
+    "DisableCache",
+];
+
+/// Reads and parses `conf.toml` without writing anything back to the environment.
+///
+/// `VMRConf::new` silently falls back to defaults on a parse error, so diagnostics need a
+/// separate entry point that reports the error.
+pub fn read_conf_file(path: &std::path::Path) -> Result<VMRConf, String> {
+    let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    toml::from_str(&content).map_err(|e| e.to_string())
+}
+
+/// Top-level keys in `conf.toml` that [`VMRConf`] does not define (serde ignores them).
+pub fn unknown_conf_keys(path: &std::path::Path) -> Result<Vec<String>, String> {
+    let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    let value: toml::Value = toml::from_str(&content).map_err(|e| e.to_string())?;
+    let mut out: Vec<String> = value
+        .as_table()
+        .map(|table| {
+            table
+                .keys()
+                .filter(|key| !CONF_KEYS.contains(&key.as_str()))
+                .cloned()
+                .collect()
+        })
+        .unwrap_or_default();
+    out.sort();
+    Ok(out)
+}
+
 /// Reads the GitHub token (Go `GetGithubToken`).
 pub fn get_github_token() -> String {
     VMRConf::new().github_token

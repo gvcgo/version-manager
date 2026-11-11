@@ -234,6 +234,7 @@ Writing a plugin: see the [Lua plugin API reference](vmr/docs/plugin-api.md) (ç®
 | `vmr cdhook` | `cd-hook` | Called internally by the cd hook: read `.vmr.lock`, offer to install missing pinned versions, and inject the environment (the hook caches the project in `VMR_CD_CACHE` and skips repeated lookups) |
 | `vmr session` | `se` | Query whether the current shell is inside a vmr session |
 | `vmr nested` | `ns` | Allow / disallow nested sessions |
+| `vmr doctor` | | Read-only diagnosis of shell integration, environment variables, `PATH` and version links (`--json`, `--quiet`, `--strict`) |
 | `vmr mcp` | | Serve MCP over stdio for AI clients |
 
 ## Project-level version pinning

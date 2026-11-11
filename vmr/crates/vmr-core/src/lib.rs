@@ -37,7 +37,12 @@ pub mod envs {
     pub const VM_DISABLE: &str = "VM_DISABLE";
     pub const ADD_TO_PATH_TEMPORARILY: &str = "VMR_ADD_TO_PATH_TEMPORARILY";
     pub const CD_INIT: &str = "VMR_CD_INIT";
+    pub const CD_CACHE: &str = "VMR_CD_CACHE";
     pub const VERSIONS: &str = "VMR_VERSIONS";
+    pub const PIXI_CHANNEL: &str = "VMR_PIXI_CHANNEL";
+    pub const CONDA_CHANNEL: &str = "VMR_CONDA_CHANNEL";
+    pub const COURSIER_PATH: &str = "VMR_COURSIER_PATH";
+    pub const MCP_SERVER: &str = "VMR_MCP_SERVER";
     pub const GVC_DEFAULT_PROXY: &str = "GVC_DEFAULT_PROXY";
     pub const VCOLLECTOR_PROXY: &str = "VCOLLECTOR_PROXY";
     /// GitHub API token, preferred over `GITHUB_TOKEN` and under `conf.toml`'s `GithubToken`.

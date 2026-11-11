@@ -105,6 +105,7 @@ package the existing `target\release\vmr.exe`.
 | `uninstall <sdk>@<version>` | `uni`/`r` | Uninstall; `@all` removes every version of the SDK |
 | `nested` | `ns` | Allow/forbid nested sessions |
 | `session` | `se` | Query whether the shell is in a vmr session |
+| `doctor` | | Read-only diagnosis of shell integration, environment variables, `PATH` and version links; `--json`, `--quiet`, `--strict`, `--shell <name>`, `--no-emoji` |
 
 ### Examples
 
@@ -134,6 +135,24 @@ comments, and each remaining line is `sdk@version`; SDKs with no Lua plugin that
 pixi backend get a `pixi` suffix. The active version of each SDK is placed last, so a sequential
 `vmr use -f` leaves the same versions active as when the file was exported. `-f` cannot be
 combined with `<sdk>@<version>`, `-s`, `-l`, or `-p`.
+
+### Doctor
+
+`vmr doctor` checks the parts vmr itself owns: the shell integration line, `~/.vmr/vmr.sh`
+(or `vmr.fish`), `env_keys.txt`, the cd-hook cache, `conf.toml`/environment precedence, every
+active version link, and the `PATH` entries of the active SDKs. It never creates directories,
+loads Lua plugins or makes network requests.
+
+Findings are grouped by layer; each one states the evidence and, when possible, a fix command.
+The exit code is `1` when at least one check fails (`--strict` also fails on warnings), otherwise
+`0`. `--quiet` hides `OK` lines, `--no-emoji` forces `[OK]/[WARN]/[FAIL]/[SKIP]` labels, and
+`--json` prints a stable `{"schema":1,...}` document for scripts and CI.
+
+```bash
+vmr doctor
+vmr doctor --shell zsh --quiet
+vmr doctor --json --strict
+```
 
 ## MCP
 

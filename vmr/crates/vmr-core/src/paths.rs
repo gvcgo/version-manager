@@ -19,9 +19,14 @@ fn ensure_dir(p: &PathBuf) -> PathBuf {
     p.clone()
 }
 
+/// `~/.vmr`, the vmr installation directory (no side effects).
+pub fn work_dir_path() -> PathBuf {
+    home_dir().join(VMR_WORK_DIR_NAME)
+}
+
 /// `~/.vmr`, the vmr installation directory.
 pub fn work_dir() -> PathBuf {
-    ensure_dir(&home_dir().join(VMR_WORK_DIR_NAME))
+    ensure_dir(&work_dir_path())
 }
 
 /// `~/.vmr/conf.toml`。
@@ -29,28 +34,45 @@ pub fn conf_file_path() -> PathBuf {
     work_dir().join("conf.toml")
 }
 
+/// Version installation directory (no side effects): with `VMR_SDK_INSTALLATION_DIR` set,
+/// `versions` under it; otherwise `~/.vmr/versions`.
+pub fn versions_dir_path() -> PathBuf {
+    let base = match env::var(envs::SDK_INSTALLATION_DIR) {
+        Ok(d) if !d.is_empty() => PathBuf::from(d),
+        _ => work_dir_path(),
+    };
+    base.join("versions")
+}
+
 /// Version installation directory: with `VMR_SDK_INSTALLATION_DIR` set, `versions` under it;
 /// otherwise `~/.vmr/versions`.
 pub fn versions_dir() -> PathBuf {
-    let base = match env::var(envs::SDK_INSTALLATION_DIR) {
-        Ok(d) if !d.is_empty() => PathBuf::from(d),
-        _ => work_dir(),
-    };
-    ensure_dir(&base.join("versions"))
+    ensure_dir(&versions_dir_path())
+}
+
+/// Cache directory (no side effects): `cache` under versions' parent directory (follows the
+/// override).
+pub fn cache_dir_path() -> PathBuf {
+    let base = versions_dir_path()
+        .parent()
+        .map(PathBuf::from)
+        .unwrap_or_else(work_dir_path);
+    base.join("cache")
 }
 
 /// Cache directory: `cache` under versions' parent directory (follows the override).
 pub fn cache_dir() -> PathBuf {
-    let base = versions_dir()
-        .parent()
-        .map(PathBuf::from)
-        .unwrap_or_else(work_dir);
-    ensure_dir(&base.join("cache"))
+    ensure_dir(&cache_dir_path())
+}
+
+/// Temporary extraction directory (no side effects): always `~/.vmr/temp`.
+pub fn temp_dir_path() -> PathBuf {
+    work_dir_path().join("temp")
 }
 
 /// Temporary extraction directory: always `~/.vmr/temp`.
 pub fn temp_dir() -> PathBuf {
-    ensure_dir(&work_dir().join("temp"))
+    ensure_dir(&temp_dir_path())
 }
 
 /// Shell cd-hook cache: the `.vmr.lock` directory applied by the last `vmr cdhook` run.
