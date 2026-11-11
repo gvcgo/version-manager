@@ -171,7 +171,7 @@ vmr-utils ← vmr-core ← vmr-net ← vmr-lua ← vmr-installer ← vmr-cli
 
 - `sheller` trait：`set_env/unset_env/set_path/unset_path/conf_path`。
 - bash（`~/.bashrc` + `~/.vmr/vmr.sh`）、zsh（`~/.zshrc` + cd hook `vmr cdhook` + `VMR_CD_INIT` 首启）、fish（`config.fish` + `vmr.fish` + `--on-variable=PWD` hook）、powershell（`profile.ps1` + `vmr init powershell` 内联的 `cdhook`/`Set-Alias cd`/`VMR_CD_INIT`；环境变量按 Go 方式写注册表 `HKCU\Environment`（`Path` 用 `REG_EXPAND_SZ`，前插/删除条目）并广播 `WM_SETTINGCHANGE`，不再使用 `vmr.sh`）、git-bash/mingw（注册表 `PATH` 中 versions 目录写成 `%VMR_VERSIONS%\<...>`，并把对应 mingw 路径 `export PATH="${PATH}:<path>"` 与 cd hook 追加到 `%USERPROFILE%\.bashrc`，`VMR_VERSIONS` 也写入注册表；见 `win_patch.rs`）。`vmr.sh`/`vmr.fish` 只承载 `vmr use` 动态写入的环境行。
-- **cd hook 自动切换**：进入含 `.vmr.lock` 的目录时自动执行 `vmr cdhook`（按 lock 内容切换 SDK 版本）；`VM_DISABLE` 守卫（会话内禁用注入）；`vmr cdhook` 是独立子命令（原 `vmr use -E` 已移除）。
+- **cd hook 自动切换**：进入含 `.vmr.lock` 的目录时自动执行 `vmr cdhook`（按 lock 内容切换 SDK 版本）；lock 中尚未安装的版本会先提示用户确认，确认后安装（仅安装，不做全局切换），拒绝或非交互 stdin 则跳过安装；`VM_DISABLE` 守卫（会话内禁用注入）；`vmr cdhook` 是独立子命令（原 `vmr use -E` 已移除）。
 - cd hook（`export PATH`、`cdhook` 函数 + `alias cd`、`VMR_CD_INIT` 首启的 `cdhook "$(pwd)"`）由 `vmr init` 内联输出，不再写进 `vmr.sh`；`vmr.sh` 只保留动态环境行，`vmr use` 会清理旧文件里的 `# cd hook start/end` 段（迁移）。
 - shell 集成只写一行 `eval "$(vmr init <shell>)"`（zoxide 风格；fish 为 `vmr init fish | source`，PowerShell 为 `Invoke-Expression (& vmr init powershell | Out-String)`）；`vmr init` 输出的脚本负责 `VM_DISABLE` 守卫、source `vmr.sh`/`vmr.fish`、内联 cd hook 与 `svmr` 刷新命令。旧的 `# vm_envs` / `# vmr source alias` 块在 `vmr use` 时自动迁移移除。
 - completions：由 `vmr init <shell>` 内联输出 clap 生成的补全脚本；zsh 的 `compdef` 延迟到首个 `precmd`（自动初始化缺失的 `compinit`），避免 init 与 compinit 顺序不同导致补全丢失；不再写 `~/.vmr/vmr_completions.*` 或单独安装。

@@ -91,7 +91,7 @@ package the existing `target\release\vmr.exe`.
 | `use <sdk>@<version>` | `u`/`h` | Install and switch (global by default) |
 | `use -s/--session ...` | | Apply to the current new session only |
 | `use -l/--lock ...` | | Write the project `.vmr.lock` and enter a new session |
-| `cdhook` | | cd hook: read `.vmr.lock` and inject the environment (called by the shell hook) |
+| `cdhook` | | cd hook: read `.vmr.lock`, offer to install missing pinned versions, and inject the environment (called by the shell hook) |
 | `use -p ...` | | Install any package through the pixi backend (also `--pixi`/`--conda`) |
 | `use -f/--file <file>` | | Install in bulk from a freeze file (one `sdk@version` per line, optional `pixi` suffix) |
 | `freeze [file]` | `fz` | Export installed SDKs/versions to `vmr_<YYYYMMDD>.txt` (written to the current directory by default) |
