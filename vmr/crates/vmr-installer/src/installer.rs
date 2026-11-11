@@ -233,8 +233,9 @@ pub fn remove_sdk_path_from_process(sdk_name: &str) {
     unsafe { std::env::set_var("PATH", parts.join(&sep.to_string())) };
 }
 
-/// Main entry: install + mode handling.
-pub fn install(req: &InstallRequest) -> Result<Action, String> {
+/// Downloads/extracts the version when missing and records the pixi backend; returns whether
+/// it was newly installed. No symlink, global env or session side effects.
+fn install_version(req: &InstallRequest) -> Result<bool, String> {
     if req.version.installer == installer_kind::COURSIER {
         // Prerequisite: the coursier binary must exist (Go behavior intentionally kept).
         ensure_command("cs").map_err(|_| "coursier is not installed".to_string())?;
@@ -250,6 +251,18 @@ pub fn install(req: &InstallRequest) -> Result<Action, String> {
     ) {
         pixi_env::mark_prefix(&req.install_dir())?;
     }
+    Ok(newly)
+}
+
+/// Installs the version when missing without activating it (no symlink, global env or
+/// session). Used by the `cd` hook to satisfy `.vmr.lock` entries.
+pub fn install_only(req: &InstallRequest) -> Result<(), String> {
+    install_version(req).map(|_| ())
+}
+
+/// Main entry: install + mode handling.
+pub fn install(req: &InstallRequest) -> Result<Action, String> {
+    let newly = install_version(req)?;
     match req.mode {
         InvokeMode::Globally => {
             if !newly {
@@ -410,6 +423,50 @@ fn remove_path_raw(path: &Path) {
     }
 }
 
+/// Resolves a `.vmr.lock` entry to its install prefix and optional plugin `InstallerConfig`.
+///
+/// A lock entry can come from:
+/// - a pixi install (usually no plugin): `<sdk>_versions/<sdk>-<version>`, marker set;
+/// - a plugin install: `<sdk>_versions/<plugin>-<version>`, plugin `InstallerConfig`.
+fn locked_entry(
+    plugins: &mut vmr_lua::Plugins,
+    sdk: &str,
+    version: &str,
+) -> (PathBuf, Option<InstallerConfig>) {
+    match plugins
+        .get_by_sdk_name(sdk)
+        .or_else(|| plugins.get_by_plugin_name(sdk))
+    {
+        Some(mut plugin) => {
+            let prefix = install_dir(&plugin.sdk_name, &plugin.plugin_name, version);
+            let ic = plugin.get_installer_config().ok();
+            (prefix, ic)
+        }
+        None => (install_dir(sdk, sdk, version), None),
+    }
+}
+
+/// `.vmr.lock` entries whose install directory is absent, sorted by SDK name.
+///
+/// `vmr cdhook` uses this to offer installing the pinned versions before injecting the
+/// project environment. Entries keep their lock-file SDK name (which may be an alias).
+pub fn missing_locked_versions() -> Vec<(String, String)> {
+    let locker = VersionLocker::load_from(None);
+    if locker.versions.is_empty() {
+        return Vec::new();
+    }
+    let mut plugins = vmr_lua::Plugins::new();
+    let mut missing = Vec::new();
+    for (sdk, version) in &locker.versions {
+        let (prefix, _) = locked_entry(&mut plugins, sdk, version);
+        if !prefix.is_dir() {
+            missing.push((sdk.clone(), version.clone()));
+        }
+    }
+    missing.sort();
+    missing
+}
+
 /// `vmr cdhook`: injects env per the lock and returns RunSession (mirrors Go HookForCdCommand).
 pub fn hook_for_cd_command() -> Result<Action, String> {
     let locker = VersionLocker::load_from(None);
@@ -417,23 +474,10 @@ pub fn hook_for_cd_command() -> Result<Action, String> {
         return Ok(Action::Done);
     }
     unsafe { std::env::set_var(ADD_TO_PATH_TEMPORARILY_ENV, "1") };
+    let mut plugins = vmr_lua::Plugins::new();
     for (sdk, version) in &locker.versions {
         remove_sdk_path_from_process(sdk);
-        // Resolve the installed prefix first, then the layout. A lock entry can come from:
-        // - a pixi install (usually no plugin): `<sdk>_versions/<sdk>-<version>`, marker set;
-        // - a plugin install: `<sdk>_versions/<plugin>-<version>`, plugin `InstallerConfig`;
-        // - an SDK that is not installed (or whose plugin was removed): skip.
-        let mut plugins = vmr_lua::Plugins::new();
-        let (prefix, plugin_ic) = match plugins
-            .get_by_sdk_name(sdk)
-            .or_else(|| plugins.get_by_plugin_name(sdk))
-        {
-            Some(mut plugin) => {
-                let prefix = install_dir(&plugin.sdk_name, &plugin.plugin_name, version);
-                (prefix, plugin.get_installer_config().ok())
-            }
-            None => (install_dir(sdk, sdk, version), None),
-        };
+        let (prefix, plugin_ic) = locked_entry(&mut plugins, sdk, version);
         if !prefix.is_dir() {
             continue;
         }

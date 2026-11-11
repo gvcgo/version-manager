@@ -44,7 +44,8 @@ enum Cmd {
         )]
         dir: Option<String>,
     },
-    /// cd hook: inject env from the nearest `.vmr.lock` and enter a session shell.
+    /// cd hook: install missing `.vmr.lock` versions (with confirmation), inject env, and
+    /// enter a session shell.
     #[command(name = "cdhook", alias = "cd-hook", alias = "CdHook")]
     CdHook,
     /// Toggle whether nested sessions are allowed.
@@ -543,14 +544,83 @@ fn local_all() {
     }
 }
 
-/// `vmr cdhook`: inject env from the lock file and, when not already in a session, enter a
-/// child shell (mirrors Go `HookForCdCommand` + `RunTerminal`). Called by the shell cd hook.
+/// `vmr cdhook`: install `.vmr.lock` versions that are missing, then inject env from the lock
+/// and, when not already in a session, enter a child shell (mirrors Go `HookForCdCommand` +
+/// `RunTerminal`). Called by the shell cd hook.
 fn cmd_cd_hook() -> Result<(), String> {
+    install_missing_locked_versions()?;
     let action = ins::hook_for_cd_command()?;
     if let ins::Action::RunSession = action {
         std::process::exit(vmr_pty::run_terminal());
     }
     Ok(())
+}
+
+/// Offers to install versions pinned by `.vmr.lock` that are not on disk.
+///
+/// Declining, or a non-interactive stdin, skips the install; the hook then injects only the
+/// versions that are installed. Confirmed installs stay inactive (no symlink/global env);
+/// the hook exposes them to the session through temporary env entries.
+fn install_missing_locked_versions() -> Result<(), String> {
+    let missing = ins::missing_locked_versions();
+    if missing.is_empty() {
+        return Ok(());
+    }
+    if !confirm_install_locked(&missing) {
+        eprintln!("skipped installing locked version(s) from .vmr.lock.");
+        return Ok(());
+    }
+    let mut failed = Vec::new();
+    for (sdk, version) in &missing {
+        let spec = format!("{sdk}@{version}");
+        // A lock entry without a Lua plugin is a pixi/conda install, matching the layout
+        // fallback in `hook_for_cd_command`.
+        let pixi = find_plugin_for(sdk).is_none();
+        let result =
+            build_install_request(&spec, true, false, pixi).and_then(|req| ins::install_only(&req));
+        match result {
+            Ok(()) => println!("{sdk} {version} installed."),
+            Err(e) => {
+                eprintln!("failed to install {spec}: {e}");
+                failed.push(spec);
+            }
+        }
+    }
+    if failed.is_empty() {
+        Ok(())
+    } else {
+        Err(format!(
+            "{} of {} locked version(s) failed: {}",
+            failed.len(),
+            missing.len(),
+            failed.join(", ")
+        ))
+    }
+}
+
+/// Shows the missing lock entries and asks whether to install them. Anything but `y`/`yes`
+/// (including EOF) declines. A non-terminal stdin is never prompted.
+fn confirm_install_locked(missing: &[(String, String)]) -> bool {
+    use std::io::{IsTerminal, Write};
+
+    eprintln!(".vmr.lock pins version(s) that are not installed:");
+    for (sdk, version) in missing {
+        eprintln!("  {sdk} {version}");
+    }
+    if !std::io::stdin().is_terminal() {
+        eprintln!("stdin is not a terminal; not installing them.");
+        return false;
+    }
+
+    eprint!("Install now? [y/N] ");
+    let _ = std::io::stderr().flush();
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap_or(0) > 0 && is_yes(&input)
+}
+
+/// Accepts `y`/`yes` in any case, ignoring surrounding whitespace.
+fn is_yes(input: &str) -> bool {
+    matches!(input.trim().to_ascii_lowercase().as_str(), "y" | "yes")
 }
 
 /// Outcome of a global install/switch, shared by the CLI and MCP.
@@ -1020,6 +1090,18 @@ fn completion_script(kind: vmr_shell::Kind) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn accepts_only_yes_confirmations() {
+        assert!(is_yes("y\n"));
+        assert!(is_yes("YES"));
+        assert!(is_yes("  Yes \r\n"));
+        assert!(!is_yes(""));
+        assert!(!is_yes("\n"));
+        assert!(!is_yes("n\n"));
+        assert!(!is_yes("no\n"));
+        assert!(!is_yes("yeah\n"));
+    }
 
     #[test]
     fn parses_freeze_file_entries_and_comments() {

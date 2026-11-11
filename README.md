@@ -231,7 +231,7 @@ Writing a plugin: see the [Lua plugin API reference](vmr/docs/plugin-api.md) (ç®
 | `vmr local [sdk]` | `l` | List installed versions; `-c` shows only the current version |
 | `vmr freeze [file]` | `fz` | Export the list of installed versions |
 | `vmr uninstall <sdk>@<version>` | `uni` / `r` | Uninstall; `@all` removes every version |
-| `vmr cdhook` | `cd-hook` | Called internally by the cd hook: read `.vmr.lock` and inject the environment |
+| `vmr cdhook` | `cd-hook` | Called internally by the cd hook: read `.vmr.lock`, offer to install missing pinned versions, and inject the environment |
 | `vmr session` | `se` | Query whether the current shell is inside a vmr session |
 | `vmr nested` | `ns` | Allow / disallow nested sessions |
 | `vmr mcp` | | Serve MCP over stdio for AI clients |
@@ -249,6 +249,7 @@ This will:
 
 - write `.vmr.lock` in the project root (recording the SDKs and versions this project needs);
 - because shell integration is active, `cdhook` switches to the pinned version every time you `cd` into this directory afterwards;
+- if a pinned version is not installed yet, `cdhook` lists it and asks before installing it (declining skips the install);
 - restore the previous version via the shell hook when you leave the directory.
 
 Committing `.vmr.lock` to the repository is recommended â€” team members get the pinned versions simply by `cd`ing in.
