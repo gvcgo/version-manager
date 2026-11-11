@@ -87,7 +87,15 @@ fn remove_one_path_env(path_env: &str) {
 }
 
 fn mingw_cd_hook(install: &str) -> String {
-    crate::fill(scripts::HOOK_GITBASH, &[("__VMR_INSTALL__", install)])
+    let cache = crate::script_path(
+        crate::Kind::Bash,
+        &paths::cd_cache_file().to_string_lossy(),
+        &crate::dirs_home(),
+    );
+    crate::fill(
+        scripts::HOOK_GITBASH,
+        &[("__VMR_INSTALL__", install), ("__VMR_CD_CACHE__", &cache)],
+    )
 }
 
 fn patch_cd_hook() {

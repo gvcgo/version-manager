@@ -230,7 +230,7 @@ vmr uninstall go@all     # 卸载这个 SDK 的所有版本
 | `vmr local [sdk]` | `l` | 已装版本列表；`-c` 只显示当前版本 |
 | `vmr freeze [file]` | `fz` | 导出已装版本清单 |
 | `vmr uninstall <sdk>@<version>` | `uni` / `r` | 卸载，`@all` 卸载全部版本 |
-| `vmr cdhook` | `cd-hook` | cd 钩子内部调用：读取 `.vmr.lock`，提示安装缺失的锁定版本，并注入环境 |
+| `vmr cdhook` | `cd-hook` | cd 钩子内部调用：读取 `.vmr.lock`，提示安装缺失的锁定版本，并注入环境（钩子把项目缓存在 `VMR_CD_CACHE` 中，同一项目内不再重复查找） |
 | `vmr session` | `se` | 查询当前 shell 是否处于 vmr 会话中 |
 | `vmr nested` | `ns` | 允许 / 禁止嵌套会话 |
 | `vmr mcp` | | 以 stdio 方式提供 MCP 服务，供 AI 客户端调用 |
@@ -248,6 +248,7 @@ vmr use -l node@20.11.0
 
 - 在项目根目录写入 `.vmr.lock`（记录本项目需要的 SDK 与版本）；
 - 因为执行了 shell 集成，之后每次 `cd` 进这个目录，`cdhook` 会自动切到锁定版本；
+- `.vmr.lock` 每个项目只查找一次：钩子把解析出的项目目录缓存在 `VMR_CD_CACHE` 中，项目内部切换目录不再重复查找（切换到其他目录时会重新查找）；
 - 如果锁定版本尚未安装，`cdhook` 会列出并询问是否安装；拒绝则跳过安装；
 - 离开目录后由 shell 钩子还原。
 

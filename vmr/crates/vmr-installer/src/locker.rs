@@ -8,12 +8,15 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use vmr_core::names::is_valid_name;
+use vmr_core::paths;
 
 pub const LOCKER_FILE_NAME: &str = ".vmr.lock";
 
 #[derive(Debug, Clone, Default)]
 pub struct VersionLocker {
     pub versions: HashMap<String, String>,
+    /// Lock file the entries were loaded from (`None` when no `.vmr.lock` was found).
+    file: Option<PathBuf>,
 }
 
 impl VersionLocker {
@@ -40,11 +43,27 @@ impl VersionLocker {
         let Some(p) = Self::find_locker_file(dir) else {
             return v;
         };
+        v.file = Some(p.clone());
         let Ok(data) = fs::read_to_string(&p) else {
             return v;
         };
         v.parse(&data);
         v
+    }
+
+    /// Directory that owns the loaded lock file (the project root), if one was found.
+    pub fn lock_dir(&self) -> Option<&Path> {
+        self.file.as_deref().and_then(Path::parent)
+    }
+
+    /// Records the applied project for the shell cd hook.
+    ///
+    /// A child process cannot export variables to the parent shell, so `vmr cdhook` writes
+    /// the resolved lock directory to [`paths::cd_cache_file`]; the generated hook reads it
+    /// back into `VMR_CD_CACHE` and skips further lookups while the shell stays inside that
+    /// project.
+    pub fn write_cd_cache(&self) {
+        let _ = fs::write(paths::cd_cache_file(), cd_cache_content(self.lock_dir()));
     }
 
     pub fn parse(&mut self, content: &str) {
@@ -91,6 +110,15 @@ impl VersionLocker {
     }
 }
 
+/// Cd-hook cache contents: the lock directory plus a newline, or an empty line when the
+/// lookup found no lock above the working directory.
+pub fn cd_cache_content(lock_dir: Option<&Path>) -> String {
+    match lock_dir {
+        Some(dir) => format!("{}\n", dir.to_string_lossy()),
+        None => "\n".to_string(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -116,5 +144,27 @@ mod tests {
         let mut v2 = VersionLocker::default();
         v2.parse("../../projects/app@1");
         assert!(v2.versions.is_empty());
+    }
+
+    #[test]
+    fn cd_cache_content_records_the_lock_directory() {
+        assert_eq!(cd_cache_content(None), "\n");
+        assert_eq!(
+            cd_cache_content(Some(Path::new("/work/app"))),
+            "/work/app\n"
+        );
+    }
+
+    #[test]
+    fn load_from_remembers_the_lock_directory() {
+        let dir = std::env::temp_dir().join(format!("vmr-locker-test-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(dir.join("sub")).unwrap();
+        fs::write(dir.join(LOCKER_FILE_NAME), r#"{"go":"1.22.1"}"#).unwrap();
+
+        let v = VersionLocker::load_from(Some(&dir.join("sub")));
+        assert_eq!(v.lock_dir(), Some(dir.as_path()));
+        assert_eq!(v.versions.get("go").map(String::as_str), Some("1.22.1"));
+        let _ = fs::remove_dir_all(&dir);
     }
 }
