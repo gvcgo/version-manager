@@ -252,7 +252,7 @@ impl Ctx {
             conf,
             kind,
             home: shell.home().to_string(),
-            conf_path: work_dir.join("conf.toml"),
+            conf_path: paths::conf_file_path().unwrap_or_else(paths::conf_file_default_path),
             versions_dir: root.join("versions"),
             rc_path: shell.conf_path(),
             env_file: shell.vm_env_conf_path(),

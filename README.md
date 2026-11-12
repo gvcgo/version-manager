@@ -299,7 +299,9 @@ vmr search -p lua
 
 ## Configuration
 
-The config file lives at `~/.vmr/conf.toml`, with PascalCase keys:
+The config file lives at `~/.vmr/conf.toml`. If that file does not exist, vmr reads
+`~/.config/vmr/conf.toml` instead; `vmr` never merges the two, and writes go back to whichever
+file it read (when neither exists, `~/.vmr/conf.toml` is created). Keys are PascalCase:
 
 | Key | Description |
 |---|---|

@@ -297,7 +297,8 @@ vmr search -p lua
 
 ## 配置
 
-配置文件在 `~/.vmr/conf.toml`，键名为 PascalCase：
+配置文件在 `~/.vmr/conf.toml`；该文件不存在时改读 `~/.config/vmr/conf.toml`。两份不会合并，
+写回落到实际读到的那份（两份都不存在时创建 `~/.vmr/conf.toml`）。键名为 PascalCase：
 
 | 键 | 说明 |
 |---|---|

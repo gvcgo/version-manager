@@ -29,9 +29,35 @@ pub fn work_dir() -> PathBuf {
     ensure_dir(&work_dir_path())
 }
 
-/// `~/.vmr/conf.toml`。
-pub fn conf_file_path() -> PathBuf {
-    work_dir().join("conf.toml")
+/// Primary config file: `~/.vmr/conf.toml` (no side effects).
+pub fn conf_file_default_path() -> PathBuf {
+    work_dir_path().join("conf.toml")
+}
+
+/// XDG-style config file: `~/.config/vmr/conf.toml`, read only as a fallback.
+///
+/// Deliberately home-relative on every platform so the same path works on Linux, macOS and
+/// Windows; `XDG_CONFIG_HOME` is not consulted.
+pub fn xdg_conf_file_path() -> PathBuf {
+    home_dir().join(".config").join("vmr").join("conf.toml")
+}
+
+/// Config file to read: `~/.vmr/conf.toml` when it exists, else the XDG fallback.
+///
+/// `None` when neither exists. No side effects: nothing is created.
+pub fn conf_file_path() -> Option<PathBuf> {
+    let primary = conf_file_default_path();
+    if primary.is_file() {
+        return Some(primary);
+    }
+    let fallback = xdg_conf_file_path();
+    fallback.is_file().then_some(fallback)
+}
+
+/// Config file to write: the one [`conf_file_path`] resolved, else the primary location
+/// (created on demand).
+pub fn conf_file_write_path() -> PathBuf {
+    conf_file_path().unwrap_or_else(|| work_dir().join("conf.toml"))
 }
 
 /// Version installation directory (no side effects): with `VMR_SDK_INSTALLATION_DIR` set,
