@@ -237,7 +237,8 @@ actually queries the pixi channel described above.
 
 ## Configuration and environment variables
 
-`~/.vmr/conf.toml`:
+`~/.vmr/conf.toml`, or `~/.config/vmr/conf.toml` when the former does not exist (the two are
+not merged; writes go to the file that was read):
 
 ```toml
 ProxyUri = ""

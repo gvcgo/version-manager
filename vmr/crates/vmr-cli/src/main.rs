@@ -179,7 +179,7 @@ fn main() {
     // `doctor` must not create `~/.vmr` or rewrite the process environment: read conf.toml
     // without the write-back that `VMRConf::new` performs for every mutating command.
     let conf = if matches!(&cli.cmd, Some(Cmd::Doctor { .. })) {
-        let path = paths::work_dir_path().join("conf.toml");
+        let path = paths::conf_file_path().unwrap_or_else(paths::conf_file_default_path);
         vmr_core::conf::read_conf_file(&path).unwrap_or_default()
     } else {
         vmr_core::conf::VMRConf::new()

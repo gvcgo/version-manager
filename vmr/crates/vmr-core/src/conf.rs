@@ -57,20 +57,27 @@ impl VMRConf {
     }
 
     /// Reloads from disk; a missing file or a parse failure keeps the current values
-    /// (mirrors Go ignoring the error).
+    /// (mirrors Go ignoring the error). Reads `~/.vmr/conf.toml`, falling back to the XDG
+    /// location when the primary file does not exist.
     pub fn reload(&mut self) {
-        if let Ok(content) = fs::read_to_string(paths::conf_file_path()) {
-            if let Ok(v) = toml::from_str::<VMRConf>(&content) {
-                *self = v;
-            }
+        if let Some(path) = paths::conf_file_path()
+            && let Ok(content) = fs::read_to_string(path)
+            && let Ok(v) = toml::from_str::<VMRConf>(&content)
+        {
+            *self = v;
         }
     }
 
-    /// Writes conf.toml back to disk.
+    /// Writes conf.toml back to disk: to the file [`reload`](Self::reload) would read, else
+    /// `~/.vmr/conf.toml`.
     pub fn save(&self) -> std::io::Result<()> {
         let content = toml::to_string(self)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
-        fs::write(paths::conf_file_path(), content)
+        let path = paths::conf_file_write_path();
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(path, content)
     }
 
     // The setters below mirror Go semantics: reload the file first, then modify and save

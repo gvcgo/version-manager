@@ -269,7 +269,7 @@ local json = vmrInitGJson(resp)
 
 #### `vmrGetProxy() → scheme, host, port`
 
-返回 `~/.vmr/conf.toml` 中 `proxy_uri` 的代理组成。配置为空或非法时返回 `""`、`""`、`"0"`；
+返回 `conf.toml`（`~/.vmr/conf.toml`，不存在时用 `~/.config/vmr/conf.toml`）中 `ProxyUri` 的代理组成。配置为空或非法时返回 `""`、`""`、`"0"`；
 URI 没有端口时端口为空字符串。
 
 ### 7.2 HTML 选择
@@ -380,7 +380,8 @@ end)
 
 #### `vmrGetGithubToken() → string`
 
-返回配置的 GitHub token：优先 `~/.vmr/conf.toml` 的 `GithubToken`，其次 `VMR_GITHUB_TOKEN`，
+返回配置的 GitHub token：优先 `conf.toml`（`~/.vmr/conf.toml`，不存在时用
+`~/.config/vmr/conf.toml`）的 `GithubToken`，其次 `VMR_GITHUB_TOKEN`，
 再次 `GITHUB_TOKEN`；都没有则返回 `""`（匿名，每小时 60 次请求）。
 
 #### `vmrGetGithubRelease(repo, tag_filter, version_parser, file_filter, arch_parser, os_parser, installer_getter) → VersionList`

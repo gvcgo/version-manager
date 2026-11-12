@@ -279,7 +279,8 @@ local json = vmrInitGJson(resp)
 
 #### `vmrGetProxy() → scheme, host, port`
 
-Returns the proxy parts from `~/.vmr/conf.toml` (`proxy_uri`). When it is empty or invalid:
+Returns the proxy parts from `conf.toml` (`~/.vmr/conf.toml`, else `~/.config/vmr/conf.toml`;
+key `ProxyUri`). When it is empty or invalid:
 `""`, `""`, `"0"`; a URI without a port yields an empty port string.
 
 ### 7.2 HTML selection
@@ -392,7 +393,8 @@ Append every item of `source` to `destination` and return `destination`.
 
 #### `vmrGetGithubToken() → string`
 
-Returns the configured GitHub token: `GithubToken` from `~/.vmr/conf.toml`, else
+Returns the configured GitHub token: `GithubToken` from `conf.toml` (`~/.vmr/conf.toml`, else
+`~/.config/vmr/conf.toml`), else
 `VMR_GITHUB_TOKEN`, else `GITHUB_TOKEN`, else `""` (anonymous, 60 requests/hour).
 
 #### `vmrGetGithubRelease(repo, tag_filter, version_parser, file_filter, arch_parser, os_parser, installer_getter) → VersionList`
