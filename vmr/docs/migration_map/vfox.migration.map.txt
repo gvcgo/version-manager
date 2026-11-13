@@ -1,0 +1,98 @@
+# SDK name mapping for `vmr migrate --vfox MAP_FILE`.
+#
+# Format: `<vfox name> <vmr sdk>` — one entry per line.
+#   - a line with only a name, or `-` as the target, skips that vfox entry
+#   - `#` starts a comment; later lines win
+# Unlisted names are skipped and reported. This file replaces the built-in
+# mapping, so keep every entry you need.
+#
+# Known name aliases:
+nodejs node
+golang go
+postgres postgresql
+java jdk
+dotnet-core dotnet
+
+# vmr plugin names (82 entries):
+agg agg
+asciinema acast
+bazel bazel
+bun bun
+clang clang
+clojure clojure
+cmake cmake
+codon codon
+coursier coursier
+crystal crystal
+cygwin cygwin
+deno deno
+dlang dlang
+dotnet dotnet
+elixir elixir
+erlang erlang
+fd fd
+ffmpeg ffmpeg
+flutter flutter
+fzf fzf
+garnet garnet
+gcc gcc
+git-win git-win
+github-cli github-cli
+gleam gleam
+go go
+goplus goplus
+gradle gradle
+groovy groovy
+gsudo gsudo
+gxx gxx
+jdk jdk
+julia julia
+kotlin kotlin
+kubectl kubectl
+lazydocker lazydocker
+lazygit lazygit
+lfortran lfortran
+llvm-mingw llvm-mingw
+lua lua
+maven maven
+miniconda miniconda
+mongodb mongodb
+moonbit moonbit
+msys2 msys2
+mysql mysql
+neovim neovim
+nim nim
+ninja ninja
+node node
+odin odin
+perl perl
+php php
+postgresql postgresql
+protoc protoc
+pypy pypy
+python python
+r r
+redka redka
+ripgrep ripgrep
+ruby ruby
+rust rust
+rustup rustup
+scala scala
+sdkmanager sdkmanager
+served served
+thrift-compiler thrift-compiler
+tinymist tinymist
+tree-sitter tree-sitter
+typst-lsp typst-lsp
+typst-preview typst-preview
+typst typst
+upx upx
+v-analyzer v-analyzer
+v v
+vhs vhs
+vscode vscode
+wasmedge wasmedge
+wasmer wasmer
+wasmtime wasmtime
+zig zig
+zls zls

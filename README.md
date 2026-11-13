@@ -230,6 +230,7 @@ Writing a plugin: see the [Lua plugin API reference](vmr/docs/plugin-api.md) (�
 | `vmr use -f <file>` | | Bulk install from a manifest |
 | `vmr local [sdk]` | `l` | List installed versions; `-c` shows only the current version |
 | `vmr freeze [file]` | `fz` | Export the list of installed versions |
+| `vmr migrate [MAP] --asdf` / `--vfox` / `--system` | | Write `migration_from_*.txt` freeze files; installs nothing. `MAP` is an optional `<source> <vmr-sdk>` mapping file (samples in `vmr/docs/migration_map/`) |
 | `vmr uninstall <sdk>@<version>` | `uni` / `r` | Uninstall; `@all` removes every version |
 | `vmr cdhook` | `cd-hook` | Called internally by the cd hook: read `.vmr.lock`, offer to install missing pinned versions, and inject the environment (the hook caches the project in `VMR_CD_CACHE` and skips repeated lookups) |
 | `vmr session` | `se` | Query whether the current shell is inside a vmr session |
@@ -275,6 +276,33 @@ vmr use -f vmr_20260101.txt   # bulk install on the new machine
 ```
 
 The manifest is plain text, one `sdk@version` per line, with `#` starting a comment. Each SDK's current version is written last, so after a bulk install the active versions match those at export time.
+
+## Migrating from asdf, vfox or the system
+
+```bash
+vmr migrate --asdf             # read ~/.asdf and write migration_from_asdf.txt
+vmr migrate --vfox             # read ~/.vfox (or ~/.version-fox) and write migration_from_vfox.txt
+vmr migrate --system           # probe common SDK commands on PATH -> migration_from_system.txt
+vmr use -f migration_from_asdf.txt
+```
+
+All variants are read-only: they install nothing, never write under the other manager's
+directories, and only emit a freeze file. asdf state comes from `$ASDF_DATA_DIR` (default
+`~/.asdf`); vfox state from `$VFOX_HOME` or the user directory, honoring `storage.sdkPath`;
+`--system` runs the version flags of common commands (`node`, `go`, `python`, `bun`, `deno`,
+`rust`, `clang`, `gcc`, `ruby`, `java`, ...) and takes the first executable per command,
+skipping binaries owned by vmr, asdf, vfox, nvm, fnm, volta, pyenv, rbenv, sdkman, mise or conda.
+`ref:` builds, interrupted installs and version directories without a runtime payload are
+skipped. Well-known plugin names are mapped (`nodejs` → `node`, `golang` → `go`,
+`postgres` → `postgresql`, `java` → `jdk`, `dotnet-core` → `dotnet`), and plugins that have no
+vmr equivalent are reported instead of guessed. The globally active version is written last per
+SDK so the replay finishes on it. Project-level version files are not converted yet.
+
+An optional positional `MAP` file overrides the built-in name mapping (and the `--system`
+command → SDK defaults). It is authoritative: unlisted names are skipped and reported. One
+`<source name> <vmr sdk>` per line; a bare name or `-` as the target skips that source. Samples
+generated from the plugin bundle are in
+[vmr/docs/migration_map](vmr/docs/migration_map/).
 
 ## Installing any conda-forge package
 

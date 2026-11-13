@@ -229,6 +229,7 @@ vmr uninstall go@all     # 卸载这个 SDK 的所有版本
 | `vmr use -f <file>` | | 按清单批量安装 |
 | `vmr local [sdk]` | `l` | 已装版本列表；`-c` 只显示当前版本 |
 | `vmr freeze [file]` | `fz` | 导出已装版本清单 |
+| `vmr migrate [MAP] --asdf` / `--vfox` / `--system` | | 从 asdf / vfox / 系统命令收集版本，生成 `migration_from_*.txt` 清单；不执行任何安装。`MAP` 为可选的 `<来源名> <vmr-sdk>` 映射文件（样本见 `docs/migration_map/`） |
 | `vmr uninstall <sdk>@<version>` | `uni` / `r` | 卸载，`@all` 卸载全部版本 |
 | `vmr cdhook` | `cd-hook` | cd 钩子内部调用：读取 `.vmr.lock`，提示安装缺失的锁定版本，并注入环境（钩子把项目缓存在 `VMR_CD_CACHE` 中，同一项目内不再重复查找） |
 | `vmr session` | `se` | 查询当前 shell 是否处于 vmr 会话中 |
@@ -274,6 +275,30 @@ vmr use -f vmr_20260101.txt   # 在新机器上批量装回
 ```
 
 清单是纯文本，一行一个 `sdk@version`，`#` 开头为注释。每个 SDK 的当前版本写在最后，所以批量装完后生效版本与导出时一致。
+
+## 从 asdf / vfox / 系统迁移
+
+```bash
+vmr migrate --asdf             # 读取 ~/.asdf，生成 migration_from_asdf.txt
+vmr migrate --vfox             # 读取 ~/.vfox（或 ~/.version-fox），生成 migration_from_vfox.txt
+vmr migrate --system           # 扫描 PATH 上的常见 SDK 命令，生成 migration_from_system.txt
+vmr use -f migration_from_asdf.txt
+```
+
+三种迁移都完全只读：不安装任何东西，不写对方的目录，只生成清单。asdf 的状态来自
+`$ASDF_DATA_DIR`（默认 `~/.asdf`）；vfox 来自 `$VFOX_HOME` 或用户目录，并遵循
+`storage.sdkPath`；`--system` 运行常见命令（`node`、`go`、`python`、`bun`、`deno`、`rust`、
+`clang`、`gcc`、`ruby`、`java` 等）的版本参数，每个命令只取 PATH 上的第一个可执行文件，并跳过
+位于 vmr、asdf、vfox、nvm、fnm、volta、pyenv、rbenv、sdkman、mise、conda 目录下的程序。
+`ref:` 构建、未完成的安装、没有运行时负载的版本目录都会被跳过。常见插件名会做映射
+（`nodejs` → `node`、`golang` → `go`、`postgres` → `postgresql`、`java` → `jdk`、
+`dotnet-core` → `dotnet`）；vmr 没有对应插件的 SDK 只在报告中列出，不会猜测。全局解析出的
+版本写在每个 SDK 的最后，回放后停在它上面。项目级版本文件暂不转换。
+
+可选的位置参数 `MAP` 用来指定名称映射文件，一旦传入就以它为准：未列出的名称会被跳过并报告。
+每行一个 `<来源名> <vmr sdk>`；只写名称或以 `-` 作为目标表示跳过该来源。根据当前插件包生成的样本见
+[`docs/migration_map/`](docs/migration_map/)：`asdf.migration.map.txt`、`vfox.migration.map.txt`、
+`system.migration.map.txt`（`--system` 使用命令名 → SDK 的映射）。
 
 ## 安装任意 conda-forge 包
 

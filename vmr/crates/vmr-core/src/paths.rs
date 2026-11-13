@@ -10,7 +10,8 @@ use std::path::PathBuf;
 use crate::VMR_WORK_DIR_NAME;
 use crate::envs;
 
-fn home_dir() -> PathBuf {
+/// User home directory; `.` when it cannot be resolved.
+pub fn home_dir() -> PathBuf {
     dirs::home_dir().unwrap_or_else(|| PathBuf::from("."))
 }
 
