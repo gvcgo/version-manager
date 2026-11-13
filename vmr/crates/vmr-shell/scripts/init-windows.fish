@@ -1,3 +1,4 @@
+__VMR_SESSION_HOOK__
 if not set -q VM_DISABLE
     if test -f "__VMR_ENV_FILE__"
         . "__VMR_ENV_FILE__"

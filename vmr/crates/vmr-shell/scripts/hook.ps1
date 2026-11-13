@@ -16,6 +16,18 @@ function _vmr_cd_hook {
     vmr cdhook
     $raw = Get-Content -Raw -LiteralPath __VMR_CD_CACHE__ -ErrorAction SilentlyContinue
     if ($null -eq $raw) { $env:VMR_CD_CACHE = '' } else { $env:VMR_CD_CACHE = $raw.Trim() }
+    # A `.vmr.lock` session that ended because `cd` left its project records the destination;
+    # move this shell there before looking up the new directory (it may have its own lock).
+    if (Test-Path -LiteralPath __VMR_SESSION_EXIT__) {
+        $dir = Get-Content -Raw -LiteralPath __VMR_SESSION_EXIT__ -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath __VMR_SESSION_EXIT__ -Force -ErrorAction SilentlyContinue
+        if ($dir) { $dir = $dir.Trim() }
+        if ($dir -and $dir -ne $PWD.Path -and (Test-Path -LiteralPath $dir)) {
+            chdir $dir
+            _vmr_cd_hook
+            return
+        }
+    }
 }
 
 function cdhook {

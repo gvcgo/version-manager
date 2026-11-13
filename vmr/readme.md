@@ -23,7 +23,9 @@ therefore no longer required on the host.
   the shell's cd hook; the hook caches the resolved project in `VMR_CD_CACHE` and skips the
   lookup until the shell leaves it.
 - Session mode: `vmr use -s` injects environment variables into a child shell temporarily and
-  restores them on exit.
+  restores them on exit. The child shell entered for a `.vmr.lock` project also ends when `cd`
+  leaves the project; its destination is handed to the outer cd hook so the parent shell moves
+  there instead of staying at the project root.
 - Global environment injection: on Unix-like platforms it writes `~/.vmr/vmr.sh` / `vmr.fish`
   (dynamic environment lines only); on Windows it writes the `HKCU\Environment` registry key and
   broadcasts the change. Windows `PATH` keeps a single entry (`~/.vmr/bin`): each active SDK
@@ -95,7 +97,7 @@ package the existing `target\release\vmr.exe`.
 | `use <sdk>@<version>` | `u`/`h` | Install and switch (global by default) |
 | `use -s/--session ...` | | Apply to the current new session only |
 | `use -l/--lock ...` | | Write the project `.vmr.lock` and enter a new session |
-| `cdhook` | | cd hook: read `.vmr.lock`, offer to install missing pinned versions, and inject the environment (called by the shell hook; the hook caches the project in `VMR_CD_CACHE` and skips repeated lookups) |
+| `cdhook` | | cd hook: read `.vmr.lock`, offer to install missing pinned versions, and inject the environment (called by the shell hook; the hook caches the project in `VMR_CD_CACHE` and skips repeated lookups; the child session exits when `cd` leaves the project) |
 | `use -p ...` | | Install any package through the pixi backend (also `--pixi`/`--conda`) |
 | `use -f/--file <file>` | | Install in bulk from a freeze file (one `sdk@version` per line, optional `pixi` suffix) |
 | `freeze [file]` | `fz` | Export installed SDKs/versions to `vmr_<YYYYMMDD>.txt` (written to the current directory by default) |
@@ -265,6 +267,8 @@ Common environment variables:
 | `VMR_PIXI_CHANNEL` | pixi package channel |
 | `VMR_GITHUB_TOKEN` | GitHub API token (falls back to `GITHUB_TOKEN`) |
 | `VM_DISABLE` | Session-mode guard (set by vmr) |
+| `VMR_SESSION_PROJECT` | Project root of the `.vmr.lock` session (set by vmr; the session exits when `cd` leaves it) |
+| `VMR_SESSION_ACTIVE` | Set by the `.vmr.lock` session shell so its subshells do not install a second session hook |
 
 `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` are handled directly by reqwest.
 

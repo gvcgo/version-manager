@@ -19,6 +19,18 @@ function _vmr_cd_hook
         vmr cdhook
     end
     set -gx VMR_CD_CACHE (cat "__VMR_CD_CACHE__" 2>/dev/null)
+    # A `.vmr.lock` session that ended because `cd` left its project records the destination;
+    # move this shell there before looking up the new directory (it may have its own lock).
+    if test -f "__VMR_SESSION_EXIT__"
+        set -l dir (cat "__VMR_SESSION_EXIT__" 2>/dev/null)
+        command rm -f "__VMR_SESSION_EXIT__"
+        if test -n "$dir"; and test "$dir" != "$PWD"
+            if cd -- "$dir"
+                _vmr_cd_hook
+                return
+            end
+        end
+    end
 end
 
 function _vmr_cdhook --on-variable="PWD" --description "version manager cd hook"

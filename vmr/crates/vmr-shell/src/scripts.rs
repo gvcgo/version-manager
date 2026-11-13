@@ -10,6 +10,15 @@ pub(crate) const HOOK_SH: &str = include_str!("../scripts/hook.sh");
 /// fish cd hook (`--on-variable=PWD`).
 pub(crate) const HOOK_FISH: &str = include_str!("../scripts/hook.fish");
 
+/// bash/zsh `.vmr.lock` session hook: leave the child shell when `cd` leaves the project.
+pub(crate) const SESSION_HOOK_SH: &str = include_str!("../scripts/hook-session.sh");
+
+/// fish `.vmr.lock` session hook (`--on-variable=PWD`).
+pub(crate) const SESSION_HOOK_FISH: &str = include_str!("../scripts/hook-session.fish");
+
+/// PowerShell `.vmr.lock` session hook.
+pub(crate) const SESSION_HOOK_POWERSHELL: &str = include_str!("../scripts/hook-session.ps1");
+
 /// PowerShell cd hook (`cdhook` + `Set-Alias cd`, first-start `VMR_CD_INIT`).
 pub(crate) const HOOK_POWERSHELL: &str = include_str!("../scripts/hook.ps1");
 

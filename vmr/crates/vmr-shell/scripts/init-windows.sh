@@ -1,3 +1,4 @@
+__VMR_SESSION_HOOK__
 if [ -z "$VM_DISABLE" ]; then
     [ -f "__VMR_ENV_FILE__" ] && . "__VMR_ENV_FILE__"
 __VMR_HOOK__

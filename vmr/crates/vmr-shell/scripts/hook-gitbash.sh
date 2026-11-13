@@ -35,6 +35,17 @@ if [ -z "$VM_DISABLE" ]; then
             IFS= read -r VMR_CD_CACHE < "__VMR_CD_CACHE__"
         fi
         export VMR_CD_CACHE
+        # A `.vmr.lock` session that ended because `cd` left its project records the
+        # destination; move this shell there before looking up the new directory.
+        if [ -f "__VMR_SESSION_EXIT__" ]; then
+            local _dir
+            IFS= read -r _dir < "__VMR_SESSION_EXIT__"
+            rm -f "__VMR_SESSION_EXIT__"
+            if [ -n "${_dir}" ] && [ "${_dir}" != "${PWD}" ] && builtin cd -- "${_dir}" 2>/dev/null; then
+                _vmr_cd_hook
+                return $?
+            fi
+        fi
         return "${_status}"
     }
 
@@ -43,4 +54,5 @@ if [ -z "$VM_DISABLE" ]; then
         cdhook "$(pwd)"
     fi
 fi
+__VMR_SESSION_HOOK__
 # cd hook end
