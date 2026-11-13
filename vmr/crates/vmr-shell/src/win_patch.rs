@@ -92,9 +92,20 @@ fn mingw_cd_hook(install: &str) -> String {
         &paths::cd_cache_file().to_string_lossy(),
         &crate::dirs_home(),
     );
+    let exit = crate::script_path(
+        crate::Kind::Bash,
+        &paths::session_exit_file().to_string_lossy(),
+        &crate::dirs_home(),
+    );
+    let session = crate::fill(scripts::SESSION_HOOK_SH, &[("__VMR_SESSION_EXIT__", &exit)]);
     crate::fill(
         scripts::HOOK_GITBASH,
-        &[("__VMR_INSTALL__", install), ("__VMR_CD_CACHE__", &cache)],
+        &[
+            ("__VMR_INSTALL__", install),
+            ("__VMR_CD_CACHE__", &cache),
+            ("__VMR_SESSION_EXIT__", &exit),
+            ("__VMR_SESSION_HOOK__", &session),
+        ],
     )
 }
 

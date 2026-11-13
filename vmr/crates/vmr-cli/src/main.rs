@@ -592,12 +592,28 @@ fn cmd_cd_hook() -> Result<(), String> {
     // stays silent until the shell leaves it, so this search runs only on a project switch.
     let locker = locker::VersionLocker::load_from(None);
     locker.write_cd_cache();
+    // The outer hook follows this file after every `vmr cdhook`; drop anything left by a
+    // session whose parent never consumed it (killed shell) or by an earlier interrupted run.
+    let _ = std::fs::remove_file(paths::session_exit_file());
     install_missing_locked_versions(&locker)?;
     let action = ins::hook_for_cd_command(&locker)?;
     if let ins::Action::RunSession = action {
-        std::process::exit(vmr_pty::run_terminal());
+        run_lock_session(locker.lock_dir());
     }
     Ok(())
+}
+
+/// Enters the `.vmr.lock` child shell, recording the project root so the session hook can
+/// leave the shell when `cd` goes outside it.
+fn run_lock_session(project: Option<&Path>) -> ! {
+    match project {
+        Some(dir) => unsafe { std::env::set_var(envs::SESSION_PROJECT, dir) },
+        None => unsafe { std::env::remove_var(envs::SESSION_PROJECT) },
+    }
+    // The shell that installs the session hook exports this marker; start every hook session
+    // without it so inherited subshells do not suppress it.
+    unsafe { std::env::remove_var(envs::SESSION_ACTIVE) };
+    std::process::exit(vmr_pty::run_terminal())
 }
 
 /// Offers to install versions pinned by `.vmr.lock` that are not on disk.
@@ -805,7 +821,14 @@ fn cmd_use(spec: Option<&str>, session: bool, to_lock: bool, pixi: bool) -> Resu
             );
             Ok(())
         }
-        ins::Action::RunSession => std::process::exit(vmr_pty::run_terminal()),
+        ins::Action::RunSession => {
+            // `use -s`/`use -l` are not cd-hook project sessions; never inherit markers.
+            unsafe {
+                std::env::remove_var(envs::SESSION_PROJECT);
+                std::env::remove_var(envs::SESSION_ACTIVE);
+            }
+            std::process::exit(vmr_pty::run_terminal())
+        }
     }
 }
 

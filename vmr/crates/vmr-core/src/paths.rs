@@ -110,6 +110,16 @@ pub fn cd_cache_file() -> PathBuf {
     work_dir().join("cd_hook.cache")
 }
 
+/// Destination recorded by a `.vmr.lock` session when its shell `cd`s out of the project.
+///
+/// The child shell exits immediately and cannot move the parent, so it writes the target
+/// directory here; the outer cd hook reads it back after `vmr cdhook` returns and `cd`s
+/// there before looking up the new directory. The path is rendered into the hook by
+/// `vmr init`, so it must not move.
+pub fn session_exit_file() -> PathBuf {
+    work_dir().join("session_exit")
+}
+
 /// Plugin directory: `~/.vmr/plugins`.
 pub fn plugin_dir() -> PathBuf {
     ensure_dir(&work_dir().join("plugins"))

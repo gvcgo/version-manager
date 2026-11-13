@@ -38,6 +38,12 @@ pub mod envs {
     pub const ADD_TO_PATH_TEMPORARILY: &str = "VMR_ADD_TO_PATH_TEMPORARILY";
     pub const CD_INIT: &str = "VMR_CD_INIT";
     pub const CD_CACHE: &str = "VMR_CD_CACHE";
+    /// Project root of the active `.vmr.lock` child shell (set by `vmr cdhook`); the
+    /// session hook leaves that shell when `cd` goes outside the directory.
+    pub const SESSION_PROJECT: &str = "VMR_SESSION_PROJECT";
+    /// Set by the `.vmr.lock` session shell after it installs its hook, so subshells started
+    /// from it do not install a second hook (they cannot end the outer session anyway).
+    pub const SESSION_ACTIVE: &str = "VMR_SESSION_ACTIVE";
     pub const VERSIONS: &str = "VMR_VERSIONS";
     pub const PIXI_CHANNEL: &str = "VMR_PIXI_CHANNEL";
     pub const CONDA_CHANNEL: &str = "VMR_CONDA_CHANNEL";

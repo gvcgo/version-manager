@@ -1,3 +1,4 @@
+__VMR_SESSION_HOOK__
 if [ -z "$VM_DISABLE" ]; then
 __VMR_REFRESH__
 __VMR_WRAPPER__

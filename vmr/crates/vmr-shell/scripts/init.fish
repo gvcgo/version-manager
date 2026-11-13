@@ -1,3 +1,4 @@
+__VMR_SESSION_HOOK__
 if not set -q VM_DISABLE
 __VMR_REFRESH__
 __VMR_WRAPPER__

@@ -7,6 +7,8 @@
 //! - `PackPath`/`PackEnv` line injection / prefix-based removal (Set/Unset).
 //!
 //! Session contract: skip injection when `VM_DISABLE=111`; the cd hook calls `vmr cdhook` for automatic switching.
+//! A `.vmr.lock` child shell additionally gets a session hook that exits when `cd` leaves the
+//! project and records the destination for the outer hook (see [`paths::session_exit_file`]).
 //! A child process cannot change its parent's environment, so the integration defined by
 //! `vmr init` includes a `vmr` wrapper: after a successful `vmr use` / `vmr uninstall` it
 //! reloads the env file into the current shell. On bash/zsh it first drops vmr-managed PATH
@@ -78,14 +80,25 @@ impl Kind {
         let inst = script_path(self, install_dir, home_dir);
         let cache_file = paths::cd_cache_file();
         let cache = script_path(self, &cache_file.to_string_lossy(), home_dir);
+        let exit = self.session_exit_path(home_dir);
         match self {
             Kind::Fish => fill(
                 scripts::HOOK_FISH,
-                &[("__VMR_INSTALL__", &inst), ("__VMR_CD_CACHE__", &cache)],
+                &[
+                    ("__VMR_INSTALL__", &inst),
+                    ("__VMR_CD_CACHE__", &cache),
+                    ("__VMR_SESSION_EXIT__", &exit),
+                ],
             ),
             Kind::PowerShell => fill(
                 scripts::HOOK_POWERSHELL,
-                &[("__VMR_CD_CACHE__", &ps_quote(&cache_file.to_string_lossy()))],
+                &[
+                    ("__VMR_CD_CACHE__", &ps_quote(&cache_file.to_string_lossy())),
+                    (
+                        "__VMR_SESSION_EXIT__",
+                        &ps_quote(&paths::session_exit_file().to_string_lossy()),
+                    ),
+                ],
             ),
             _ => {
                 // Unix gets the install directory from `_vmr_refresh`; git-bash has no env
@@ -94,15 +107,51 @@ impl Kind {
                 {
                     format!(
                         "export PATH=\"{inst}\":\"${{PATH}}\"\n\n{}",
-                        fill(scripts::HOOK_SH, &[("__VMR_CD_CACHE__", &cache)])
+                        fill(
+                            scripts::HOOK_SH,
+                            &[
+                                ("__VMR_CD_CACHE__", &cache),
+                                ("__VMR_SESSION_EXIT__", &exit),
+                            ]
+                        )
                     )
                 }
                 #[cfg(not(windows))]
                 {
-                    fill(scripts::HOOK_SH, &[("__VMR_CD_CACHE__", &cache)])
+                    fill(
+                        scripts::HOOK_SH,
+                        &[
+                            ("__VMR_CD_CACHE__", &cache),
+                            ("__VMR_SESSION_EXIT__", &exit),
+                        ],
+                    )
                 }
             }
         }
+    }
+
+    /// Path of the session exit file as written in the generated script.
+    fn session_exit_path(self, home_dir: &str) -> String {
+        script_path(
+            self,
+            &paths::session_exit_file().to_string_lossy(),
+            home_dir,
+        )
+    }
+
+    /// `.vmr.lock` session hook: leaves the child shell when `cd` goes outside the project
+    /// recorded in `VMR_SESSION_PROJECT` and writes the destination for the outer hook.
+    fn session_hook_script(self, home_dir: &str) -> String {
+        let exit = match self {
+            Kind::PowerShell => ps_quote(&paths::session_exit_file().to_string_lossy()),
+            _ => self.session_exit_path(home_dir),
+        };
+        let template = match self {
+            Kind::Fish => scripts::SESSION_HOOK_FISH,
+            Kind::PowerShell => scripts::SESSION_HOOK_POWERSHELL,
+            _ => scripts::SESSION_HOOK_SH,
+        };
+        fill(template, &[("__VMR_SESSION_EXIT__", &exit)])
     }
 }
 
@@ -538,6 +587,7 @@ impl Shell {
         let conf = script_path(self.kind, &self.conf_path().to_string_lossy(), &self.home);
         let install = paths::work_dir().to_string_lossy().into_owned();
         let hook = indent_block(&self.kind.hook_script(&install, &self.home), "    ");
+        let session_hook = self.kind.session_hook_script(&self.home);
         #[cfg(not(windows))]
         let keys_file = script_path(
             self.kind,
@@ -569,6 +619,7 @@ impl Shell {
                         &[
                             ("__VMR_ENV_FILE__", &env_file),
                             ("__VMR_HOOK__", &hook),
+                            ("__VMR_SESSION_HOOK__", &session_hook),
                             ("__VMR_CONF__", &conf),
                         ],
                     )
@@ -592,6 +643,7 @@ impl Shell {
                             ("__VMR_REFRESH__", &refresh),
                             ("__VMR_WRAPPER__", &wrapper),
                             ("__VMR_HOOK__", &hook),
+                            ("__VMR_SESSION_HOOK__", &session_hook),
                             ("__VMR_CONF__", &conf),
                         ],
                     )
@@ -599,7 +651,11 @@ impl Shell {
             }
             Kind::PowerShell => fill(
                 scripts::INIT_POWERSHELL,
-                &[("__VMR_HOOK__", &hook), ("__VMR_REFRESH__", &ps_refresh)],
+                &[
+                    ("__VMR_SESSION_HOOK__", &session_hook),
+                    ("__VMR_HOOK__", &hook),
+                    ("__VMR_REFRESH__", &ps_refresh),
+                ],
             ),
             _ => {
                 #[cfg(windows)]
@@ -609,6 +665,7 @@ impl Shell {
                         &[
                             ("__VMR_ENV_FILE__", &env_file),
                             ("__VMR_HOOK__", &hook),
+                            ("__VMR_SESSION_HOOK__", &session_hook),
                             ("__VMR_CONF__", &conf),
                         ],
                     )
@@ -632,6 +689,7 @@ impl Shell {
                             ("__VMR_REFRESH__", &refresh),
                             ("__VMR_WRAPPER__", &wrapper),
                             ("__VMR_HOOK__", &hook),
+                            ("__VMR_SESSION_HOOK__", &session_hook),
                             ("__VMR_CONF__", &conf),
                         ],
                     )
@@ -807,6 +865,10 @@ mod tests {
         assert!(s.contains("VMR_CD_CACHE"), "{s}");
         assert!(s.contains("cd_hook.cache"), "{s}");
         assert!(s.contains("vmr cdhook"), "{s}");
+        assert!(s.contains("VMR_SESSION_PROJECT"), "{s}");
+        assert!(s.contains("VMR_SESSION_ACTIVE"), "{s}");
+        assert!(s.contains("session_exit"), "{s}");
+        assert!(!s.contains("__VMR_"), "{s}");
         assert!(s.contains("alias svmr='export VM_DISABLE=\"\""), "{s}");
         #[cfg(not(windows))]
         {
@@ -827,6 +889,9 @@ mod tests {
         assert!(fish.contains("set -gx VMR_CD_INIT"), "{fish}");
         assert!(fish.contains("VMR_CD_CACHE"), "{fish}");
         assert!(fish.contains("cd_hook.cache"), "{fish}");
+        assert!(fish.contains("VMR_SESSION_PROJECT"), "{fish}");
+        assert!(fish.contains("session_exit"), "{fish}");
+        assert!(!fish.contains("__VMR_"), "{fish}");
         assert!(fish.contains("function svmr"), "{fish}");
         #[cfg(not(windows))]
         {
@@ -843,6 +908,9 @@ mod tests {
         assert!(ps.contains("VMR_CD_INIT"), "{ps}");
         assert!(ps.contains("VMR_CD_CACHE"), "{ps}");
         assert!(ps.contains("cd_hook.cache"), "{ps}");
+        assert!(ps.contains("VMR_SESSION_PROJECT"), "{ps}");
+        assert!(ps.contains("session_exit"), "{ps}");
+        assert!(!ps.contains("__VMR_"), "{ps}");
         assert!(ps.contains("function global:svmr"), "{ps}");
         assert!(ps.contains("function global:vmrsource"), "{ps}");
         assert!(ps.contains("function global:vmr "), "{ps}");
@@ -874,8 +942,11 @@ mod tests {
         fs::write(nested.join(".vmr.lock"), r#"{"go":"1.21.0"}"#).unwrap();
 
         let cache = root.join("cd_hook.cache");
+        let exit = root.join("session_exit");
         let calls = root.join("calls");
-        let hook = scripts::HOOK_SH.replace("__VMR_CD_CACHE__", &cache.to_string_lossy());
+        let hook = scripts::HOOK_SH
+            .replace("__VMR_CD_CACHE__", &cache.to_string_lossy())
+            .replace("__VMR_SESSION_EXIT__", &exit.to_string_lossy());
 
         // The stub records every call and mirrors `vmr cdhook` by caching the nearest lock
         // directory above the working directory.
@@ -928,6 +999,142 @@ sh -c '[ -n "$VMR_CD_INIT" ]' || { echo "VMR_CD_INIT is not exported" >&2; exit 
             .lines()
             .count();
         assert_eq!(invocations, 6, "expected 6 vmr cdhook invocations");
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    /// The session hook must keep the child shell alive inside the project and end it when
+    /// `cd` leaves, recording the destination for the outer hook.
+    #[test]
+    #[cfg(unix)]
+    fn lock_session_hook_leaves_the_project() {
+        use std::process::Command;
+
+        if Command::new("bash").arg("-c").arg(":").status().is_err() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("vmr-session-leave-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(root.join("project/sub")).unwrap();
+        fs::create_dir_all(root.join("outside")).unwrap();
+        fs::write(root.join("project/.vmr.lock"), r#"{"go":"1.22.1"}"#).unwrap();
+        let root = fs::canonicalize(&root).unwrap();
+        let project = root.join("project");
+        let sub = project.join("sub");
+        let outside = root.join("outside");
+        let exit = root.join("session_exit");
+        let hook =
+            scripts::SESSION_HOOK_SH.replace("__VMR_SESSION_EXIT__", &exit.to_string_lossy());
+        let script = format!(
+            "VM_DISABLE=111\nVMR_SESSION_PROJECT='{project}'\n{hook}\n\
+             cdhook '{sub}'\nprintf 'inside\\n'\n\
+             cdhook '{outside}'\nprintf 'after\\n'\n",
+            project = project.display(),
+            sub = sub.display(),
+            outside = outside.display(),
+        );
+        let out = Command::new("bash")
+            .arg("-c")
+            .arg(&script)
+            .current_dir(&root)
+            .output()
+            .expect("bash starts");
+        assert!(
+            out.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        // The shell exited at the second cd, before reaching the trailing printf.
+        assert_eq!(String::from_utf8_lossy(&out.stdout), "inside\n");
+        assert_eq!(
+            fs::read_to_string(&exit).unwrap().trim(),
+            outside.to_str().unwrap()
+        );
+
+        // A subshell inheriting VMR_SESSION_ACTIVE must not install a second hook: only the
+        // shell directly started by vmr can end the session.
+        fs::remove_file(&exit).unwrap();
+        let subshell = format!(
+            "shopt -s expand_aliases\nVM_DISABLE=111\nVMR_SESSION_PROJECT='{project}'\n\
+             VMR_SESSION_ACTIVE=1\n{hook}\neval \"cd -- '{outside}'\"\nprintf 'survived\\n'\n",
+            project = project.display(),
+            outside = outside.display(),
+        );
+        let out = Command::new("bash")
+            .arg("-c")
+            .arg(&subshell)
+            .current_dir(&root)
+            .output()
+            .expect("bash starts");
+        assert!(out.status.success());
+        assert_eq!(String::from_utf8_lossy(&out.stdout), "survived\n");
+        assert!(!exit.exists(), "a subshell must not write the exit file");
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    /// After a session ends, the outer hook must move to the recorded directory before the
+    /// next lookup, otherwise the user lands back at the project root.
+    #[test]
+    #[cfg(unix)]
+    fn cd_hook_follows_the_session_exit_destination() {
+        use std::process::Command;
+
+        if Command::new("bash").arg("-c").arg(":").status().is_err() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("vmr-session-follow-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(root.join("project")).unwrap();
+        fs::create_dir_all(root.join("outside")).unwrap();
+        let root = fs::canonicalize(&root).unwrap();
+        let project = root.join("project");
+        let outside = root.join("outside");
+        let cache = root.join("cd_hook.cache");
+        let exit = root.join("session_exit");
+        let calls = root.join("calls");
+        let hook = scripts::HOOK_SH
+            .replace("__VMR_CD_CACHE__", &cache.to_string_lossy())
+            .replace("__VMR_SESSION_EXIT__", &exit.to_string_lossy());
+        let script = format!(
+            r#"
+VMR_CD_INIT=1
+VMR_CD_CACHE=
+vmr() {{
+    printf '%s\n' "$PWD" >> '{calls}'
+    if [ "$PWD" = '{project}' ]; then printf '%s\n' '{outside}' > '{exit}'; fi
+    printf '\n' > '{cache}'
+}}
+{hook}
+cdhook '{project}'
+printf 'pwd=%s\n' "$PWD"
+"#,
+            calls = calls.display(),
+            project = project.display(),
+            outside = outside.display(),
+            exit = exit.display(),
+            cache = cache.display(),
+        );
+        let out = Command::new("bash")
+            .arg("-c")
+            .arg(&script)
+            .current_dir(&root)
+            .output()
+            .expect("bash starts");
+        assert!(
+            out.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        assert!(
+            String::from_utf8_lossy(&out.stdout).contains(&format!("pwd={}", outside.display())),
+            "{}",
+            String::from_utf8_lossy(&out.stdout)
+        );
+        let observed = fs::read_to_string(&calls).unwrap();
+        assert_eq!(
+            observed.lines().collect::<Vec<_>>(),
+            vec![project.to_str().unwrap(), outside.to_str().unwrap()]
+        );
+        assert!(!exit.exists(), "the exit file must be consumed");
         let _ = fs::remove_dir_all(&root);
     }
 
