@@ -19,7 +19,7 @@ pub(crate) const SESSION_HOOK_FISH: &str = include_str!("../scripts/hook-session
 /// PowerShell `.vmr.lock` session hook.
 pub(crate) const SESSION_HOOK_POWERSHELL: &str = include_str!("../scripts/hook-session.ps1");
 
-/// PowerShell cd hook (`cdhook` + `Set-Alias cd`, first-start `VMR_CD_INIT`).
+/// PowerShell cd hook (`cdhook` + `Set-Alias cd`, first-start `VMR_CDHOOK_ACTIVE`).
 pub(crate) const HOOK_POWERSHELL: &str = include_str!("../scripts/hook.ps1");
 
 /// git-bash cd hook with the marked block written into `%USERPROFILE%\.bashrc`.

@@ -28,11 +28,6 @@ mod win_patch;
 #[cfg(windows)]
 mod win_reg;
 
-pub const VM_DISABLE_ENV_NAME: &str = "VM_DISABLE";
-pub const VM_CD_INIT_ENV_NAME: &str = "VMR_CD_INIT";
-/// Project directory cached by the cd hook; `vmr cdhook` writes it to
-/// [`paths::cd_cache_file`] and the hook reads it back into this variable.
-pub const VM_CD_CACHE_ENV_NAME: &str = "VMR_CD_CACHE";
 pub const MODE_PERM: u32 = 0o644;
 
 /// Supported shell types.
@@ -78,7 +73,7 @@ impl Kind {
     /// (bash/zsh and fish; PowerShell has no shell hook).
     fn hook_script(self, install_dir: &str, home_dir: &str) -> String {
         let inst = script_path(self, install_dir, home_dir);
-        let cache_file = paths::cd_cache_file();
+        let cache_file = paths::lockfile_dir_file();
         let cache = script_path(self, &cache_file.to_string_lossy(), home_dir);
         let exit = self.session_exit_path(home_dir);
         match self {
@@ -86,14 +81,14 @@ impl Kind {
                 scripts::HOOK_FISH,
                 &[
                     ("__VMR_INSTALL__", &inst),
-                    ("__VMR_CD_CACHE__", &cache),
+                    ("__VMR_LOCKFILE_DIR__", &cache),
                     ("__VMR_SESSION_EXIT__", &exit),
                 ],
             ),
             Kind::PowerShell => fill(
                 scripts::HOOK_POWERSHELL,
                 &[
-                    ("__VMR_CD_CACHE__", &ps_quote(&cache_file.to_string_lossy())),
+                    ("__VMR_LOCKFILE_DIR__", &ps_quote(&cache_file.to_string_lossy())),
                     (
                         "__VMR_SESSION_EXIT__",
                         &ps_quote(&paths::session_exit_file().to_string_lossy()),
@@ -110,7 +105,7 @@ impl Kind {
                         fill(
                             scripts::HOOK_SH,
                             &[
-                                ("__VMR_CD_CACHE__", &cache),
+                                ("__VMR_LOCKFILE_DIR__", &cache),
                                 ("__VMR_SESSION_EXIT__", &exit),
                             ]
                         )
@@ -121,7 +116,7 @@ impl Kind {
                     fill(
                         scripts::HOOK_SH,
                         &[
-                            ("__VMR_CD_CACHE__", &cache),
+                            ("__VMR_LOCKFILE_DIR__", &cache),
                             ("__VMR_SESSION_EXIT__", &exit),
                         ],
                     )
@@ -861,9 +856,9 @@ mod tests {
         assert!(s.contains("cdhook() {"), "{s}");
         assert!(s.contains("alias cd='cdhook'"), "{s}");
         assert!(!s.contains("alias|grep cdhook"), "{s}");
-        assert!(s.contains("export VMR_CD_INIT"), "{s}");
-        assert!(s.contains("VMR_CD_CACHE"), "{s}");
-        assert!(s.contains("cd_hook.cache"), "{s}");
+        assert!(s.contains("export VMR_CDHOOK_ACTIVE"), "{s}");
+        assert!(s.contains("VMR_LOCKFILE_DIR"), "{s}");
+        assert!(s.contains("cd_hook.lockfile_dir"), "{s}");
         assert!(s.contains("vmr cdhook"), "{s}");
         assert!(s.contains("VMR_SESSION_PROJECT"), "{s}");
         assert!(s.contains("VMR_SESSION_ACTIVE"), "{s}");
@@ -886,9 +881,9 @@ mod tests {
         assert!(fish.contains("if not set -q VM_DISABLE"), "{fish}");
         assert!(fish.contains("source \"$HOME/.vmr/vmr.fish\""), "{fish}");
         assert!(fish.contains("_vmr_cdhook"), "{fish}");
-        assert!(fish.contains("set -gx VMR_CD_INIT"), "{fish}");
-        assert!(fish.contains("VMR_CD_CACHE"), "{fish}");
-        assert!(fish.contains("cd_hook.cache"), "{fish}");
+        assert!(fish.contains("set -gx VMR_CDHOOK_ACTIVE"), "{fish}");
+        assert!(fish.contains("VMR_LOCKFILE_DIR"), "{fish}");
+        assert!(fish.contains("cd_hook.lockfile_dir"), "{fish}");
         assert!(fish.contains("VMR_SESSION_PROJECT"), "{fish}");
         assert!(fish.contains("session_exit"), "{fish}");
         assert!(!fish.contains("__VMR_"), "{fish}");
@@ -905,9 +900,9 @@ mod tests {
         assert!(ps.contains("$env:VM_DISABLE"), "{ps}");
         assert!(ps.contains("function cdhook"), "{ps}");
         assert!(ps.contains("Set-Alias -Name cd"), "{ps}");
-        assert!(ps.contains("VMR_CD_INIT"), "{ps}");
-        assert!(ps.contains("VMR_CD_CACHE"), "{ps}");
-        assert!(ps.contains("cd_hook.cache"), "{ps}");
+        assert!(ps.contains("VMR_CDHOOK_ACTIVE"), "{ps}");
+        assert!(ps.contains("VMR_LOCKFILE_DIR"), "{ps}");
+        assert!(ps.contains("cd_hook.lockfile_dir"), "{ps}");
         assert!(ps.contains("VMR_SESSION_PROJECT"), "{ps}");
         assert!(ps.contains("session_exit"), "{ps}");
         assert!(!ps.contains("__VMR_"), "{ps}");
@@ -941,18 +936,18 @@ mod tests {
         fs::write(project.join(".vmr.lock"), r#"{"go":"1.22.1"}"#).unwrap();
         fs::write(nested.join(".vmr.lock"), r#"{"go":"1.21.0"}"#).unwrap();
 
-        let cache = root.join("cd_hook.cache");
+        let cache = root.join("cd_hook.lockfile_dir");
         let exit = root.join("session_exit");
         let calls = root.join("calls");
         let hook = scripts::HOOK_SH
-            .replace("__VMR_CD_CACHE__", &cache.to_string_lossy())
+            .replace("__VMR_LOCKFILE_DIR__", &cache.to_string_lossy())
             .replace("__VMR_SESSION_EXIT__", &exit.to_string_lossy());
 
         // The stub records every call and mirrors `vmr cdhook` by caching the nearest lock
         // directory above the working directory.
         const TEMPLATE: &str = r#"
-VMR_CD_INIT=
-VMR_CD_CACHE=
+VMR_CDHOOK_ACTIVE=
+VMR_LOCKFILE_DIR=
 vmr() {
     printf 'call\n' >> "@CALLS@"
     local d="$PWD" found=
@@ -972,8 +967,8 @@ cdhook "@PROJECT@"
 cdhook "@ROOT@"
 cdhook "@PROJECT@"
 # `vmr doctor` runs as a child process, so the marker must be exported.
-[ -n "${VMR_CD_INIT}" ] || { echo "VMR_CD_INIT is not set" >&2; exit 1; }
-sh -c '[ -n "$VMR_CD_INIT" ]' || { echo "VMR_CD_INIT is not exported" >&2; exit 1; }
+[ -n "${VMR_CDHOOK_ACTIVE}" ] || { echo "VMR_CDHOOK_ACTIVE is not set" >&2; exit 1; }
+sh -c '[ -n "$VMR_CDHOOK_ACTIVE" ]' || { echo "VMR_CDHOOK_ACTIVE is not exported" >&2; exit 1; }
 "#;
         let script = TEMPLATE
             .replace("@CALLS@", &calls.to_string_lossy())
@@ -1071,6 +1066,57 @@ sh -c '[ -n "$VMR_CD_INIT" ]' || { echo "VMR_CD_INIT is not exported" >&2; exit 
         let _ = fs::remove_dir_all(&root);
     }
 
+    /// A session shell starts in the project; `cd -` has to return to the directory the user
+    /// jumped from, which the hook seeds by stepping through it before installing itself.
+    #[test]
+    fn lock_session_hook_restores_the_previous_directory() {
+        use std::process::Command;
+
+        if Command::new("bash").arg("-c").arg(":").status().is_err() {
+            return;
+        }
+        let root =
+            std::env::temp_dir().join(format!("vmr-session-oldpwd-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(root.join("project")).unwrap();
+        fs::create_dir_all(root.join("outside")).unwrap();
+        fs::write(root.join("project/.vmr.lock"), r#"{"go":"1.22.1"}"#).unwrap();
+        let root = fs::canonicalize(&root).unwrap();
+        let project = root.join("project");
+        let outside = root.join("outside");
+        let exit = root.join("session_exit");
+        let hook =
+            scripts::SESSION_HOOK_SH.replace("__VMR_SESSION_EXIT__", &exit.to_string_lossy());
+        let script = format!(
+            "VM_DISABLE=111\nVMR_SESSION_PROJECT='{project}'\nVMR_SESSION_OLDPWD='{outside}'\n\
+             {hook}\ncdhook -\nprintf 'survived\\n'\n",
+            project = project.display(),
+            outside = outside.display(),
+        );
+        let out = Command::new("bash")
+            .arg("-c")
+            .arg(&script)
+            .current_dir(&project)
+            .output()
+            .expect("bash starts");
+        assert!(
+            out.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        // `cd -` printed the destination and left the project, so the session ended before
+        // the trailing printf ran.
+        assert_eq!(
+            String::from_utf8_lossy(&out.stdout).trim(),
+            outside.to_str().unwrap()
+        );
+        assert_eq!(
+            fs::read_to_string(&exit).unwrap().trim(),
+            outside.to_str().unwrap()
+        );
+        let _ = fs::remove_dir_all(&root);
+    }
+
     /// After a session ends, the outer hook must move to the recorded directory before the
     /// next lookup, otherwise the user lands back at the project root.
     #[test]
@@ -1088,16 +1134,16 @@ sh -c '[ -n "$VMR_CD_INIT" ]' || { echo "VMR_CD_INIT is not exported" >&2; exit 
         let root = fs::canonicalize(&root).unwrap();
         let project = root.join("project");
         let outside = root.join("outside");
-        let cache = root.join("cd_hook.cache");
+        let cache = root.join("cd_hook.lockfile_dir");
         let exit = root.join("session_exit");
         let calls = root.join("calls");
         let hook = scripts::HOOK_SH
-            .replace("__VMR_CD_CACHE__", &cache.to_string_lossy())
+            .replace("__VMR_LOCKFILE_DIR__", &cache.to_string_lossy())
             .replace("__VMR_SESSION_EXIT__", &exit.to_string_lossy());
         let script = format!(
             r#"
-VMR_CD_INIT=1
-VMR_CD_CACHE=
+VMR_CDHOOK_ACTIVE=1
+VMR_LOCKFILE_DIR=
 vmr() {{
     printf '%s\n' "$PWD" >> '{calls}'
     if [ "$PWD" = '{project}' ]; then printf '%s\n' '{outside}' > '{exit}'; fi

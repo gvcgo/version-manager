@@ -101,13 +101,13 @@ pub fn temp_dir() -> PathBuf {
     ensure_dir(&temp_dir_path())
 }
 
-/// Shell cd-hook cache: the `.vmr.lock` directory applied by the last `vmr cdhook` run.
+/// Shell cd-hook state: the `.vmr.lock` directory applied by the last `vmr cdhook` run.
 ///
 /// A child process cannot export variables to the parent shell, so `vmr cdhook` writes the
-/// resolved project here and the generated hook reads it back into `VMR_CD_CACHE`. The path
-/// is rendered into the hook by `vmr init`, so it must not move.
-pub fn cd_cache_file() -> PathBuf {
-    work_dir().join("cd_hook.cache")
+/// resolved project here and the generated hook reads it back into `VMR_LOCKFILE_DIR`. The
+/// path is rendered into the hook by `vmr init`, so it must not move.
+pub fn lockfile_dir_file() -> PathBuf {
+    work_dir().join("cd_hook.lockfile_dir")
 }
 
 /// Destination recorded by a `.vmr.lock` session when its shell `cd`s out of the project.

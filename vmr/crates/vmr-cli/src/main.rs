@@ -591,7 +591,7 @@ fn cmd_cd_hook() -> Result<(), String> {
     // Resolve the lock once: the shell hook caches the project directory written here and
     // stays silent until the shell leaves it, so this search runs only on a project switch.
     let locker = locker::VersionLocker::load_from(None);
-    locker.write_cd_cache();
+    locker.write_lockfile_dir();
     // The outer hook follows this file after every `vmr cdhook`; drop anything left by a
     // session whose parent never consumed it (killed shell) or by an earlier interrupted run.
     let _ = std::fs::remove_file(paths::session_exit_file());

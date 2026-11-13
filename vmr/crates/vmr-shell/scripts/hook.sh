@@ -8,29 +8,32 @@ cdhook() {
 alias cd='cdhook'
 
 # `vmr cdhook` walks up from the working directory for `.vmr.lock` and loads the Lua plugins
-# on every directory change. It records the applied project in the cache file below; this
-# hook keeps that value in `VMR_CD_CACHE` (a child process cannot export to this shell) and
-# skips the call while the shell stays inside the same project. Leaving the project, or
+# on every directory change. It records the applied lock directory in the file below; this
+# hook keeps that value in `VMR_LOCKFILE_DIR` (a child process cannot export to this shell)
+# and skips the call while the shell stays inside the same project. Leaving the project, or
 # entering a directory that has its own `.vmr.lock`, looks it up again.
 _vmr_cd_hook() {
-    local _cache="${VMR_CD_CACHE-}"
-    if [ -n "${_cache}" ] && [ -f "${_cache}/.vmr.lock" ]; then
+    VMR_CDHOOK_LAST_PWD=${PWD}
+    local _lockdir="${VMR_LOCKFILE_DIR-}"
+    if [ -n "${_lockdir}" ] && [ -f "${_lockdir}/.vmr.lock" ]; then
         case "${PWD}" in
-            "${_cache}") return 0 ;;
+            "${_lockdir}") return 0 ;;
         esac
         case "${PWD}/" in
-            "${_cache%/}/"*)
+            "${_lockdir%/}/"*)
                 [ -f "${PWD}/.vmr.lock" ] || return 0
                 ;;
         esac
     fi
-    vmr cdhook
+    # `cd -` in the session shell needs the directory the user jumped from; zsh overwrites
+    # OLDPWD with the starting directory when it starts, so hand it over explicitly.
+    VMR_SESSION_OLDPWD="${OLDPWD-}" vmr cdhook
     local _status=$?
-    VMR_CD_CACHE=
-    if [ -f "__VMR_CD_CACHE__" ]; then
-        IFS= read -r VMR_CD_CACHE < "__VMR_CD_CACHE__"
+    VMR_LOCKFILE_DIR=
+    if [ -f "__VMR_LOCKFILE_DIR__" ]; then
+        IFS= read -r VMR_LOCKFILE_DIR < "__VMR_LOCKFILE_DIR__"
     fi
-    export VMR_CD_CACHE
+    export VMR_LOCKFILE_DIR
     # A `.vmr.lock` session that ended because `cd` left its project records the destination;
     # move this shell there before looking up the new directory (it may have its own lock).
     if [ -f "__VMR_SESSION_EXIT__" ]; then
@@ -45,7 +48,35 @@ _vmr_cd_hook() {
     return "${_status}"
 }
 
-if [ -z "${VMR_CD_INIT}" ]; then
-    export VMR_CD_INIT="vmr_cd_init"
+# `z`/`zi`, `pushd`, `popd` and script-driven jumps change PWD without going through the `cd`
+# alias, so watch the directory itself; zsh's `chpwd` runs the hook before the rest of the
+# command line, while bash can only hook the prompt. Keep the alias in both: it is the only
+# way `cd proj && cmd` sees the new environment before `cmd` runs.
+_vmr_pwd_watch() {
+    local _st=$?
+    if [ "${PWD}" != "${VMR_CDHOOK_LAST_PWD-}" ]; then
+        VMR_CDHOOK_LAST_PWD=${PWD}
+        _vmr_cd_hook
+    fi
+    return "${_st}"
+}
+
+if [ -n "${ZSH_VERSION-}" ]; then
+    autoload -Uz add-zsh-hook
+    add-zsh-hook chpwd _vmr_pwd_watch
+else
+    case " ${PROMPT_COMMAND[*]-} " in
+        *" _vmr_pwd_watch "*) ;;
+        *)
+            case "$(declare -p PROMPT_COMMAND 2>/dev/null)" in
+                "declare -a PROMPT_COMMAND="*) PROMPT_COMMAND=(_vmr_pwd_watch "${PROMPT_COMMAND[@]}") ;;
+                *) PROMPT_COMMAND="_vmr_pwd_watch${PROMPT_COMMAND:+;${PROMPT_COMMAND}}" ;;
+            esac
+            ;;
+    esac
+fi
+
+if [ -z "${VMR_CDHOOK_ACTIVE}" ]; then
+    export VMR_CDHOOK_ACTIVE=1
     cdhook "$(pwd)"
 fi

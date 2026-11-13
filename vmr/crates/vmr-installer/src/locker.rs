@@ -59,11 +59,14 @@ impl VersionLocker {
     /// Records the applied project for the shell cd hook.
     ///
     /// A child process cannot export variables to the parent shell, so `vmr cdhook` writes
-    /// the resolved lock directory to [`paths::cd_cache_file`]; the generated hook reads it
-    /// back into `VMR_CD_CACHE` and skips further lookups while the shell stays inside that
-    /// project.
-    pub fn write_cd_cache(&self) {
-        let _ = fs::write(paths::cd_cache_file(), cd_cache_content(self.lock_dir()));
+    /// the resolved lock directory to [`paths::lockfile_dir_file`]; the generated hook reads
+    /// it back into `VMR_LOCKFILE_DIR` and skips further lookups while the shell stays inside
+    /// that project.
+    pub fn write_lockfile_dir(&self) {
+        // The pre-rename `cd_hook.cache` file has no reader left; drop it so old state cannot
+        // be mistaken for current.
+        let _ = fs::remove_file(paths::work_dir().join("cd_hook.cache"));
+        let _ = fs::write(paths::lockfile_dir_file(), lockfile_dir_content(self.lock_dir()));
     }
 
     pub fn parse(&mut self, content: &str) {
@@ -110,9 +113,9 @@ impl VersionLocker {
     }
 }
 
-/// Cd-hook cache contents: the lock directory plus a newline, or an empty line when the
+/// Cd-hook state contents: the lock directory plus a newline, or an empty line when the
 /// lookup found no lock above the working directory.
-pub fn cd_cache_content(lock_dir: Option<&Path>) -> String {
+pub fn lockfile_dir_content(lock_dir: Option<&Path>) -> String {
     match lock_dir {
         Some(dir) => format!("{}\n", dir.to_string_lossy()),
         None => "\n".to_string(),
@@ -147,10 +150,10 @@ mod tests {
     }
 
     #[test]
-    fn cd_cache_content_records_the_lock_directory() {
-        assert_eq!(cd_cache_content(None), "\n");
+    fn lockfile_dir_content_records_the_lock_directory() {
+        assert_eq!(lockfile_dir_content(None), "\n");
         assert_eq!(
-            cd_cache_content(Some(Path::new("/work/app"))),
+            lockfile_dir_content(Some(Path::new("/work/app"))),
             "/work/app\n"
         );
     }

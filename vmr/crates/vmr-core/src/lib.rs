@@ -36,8 +36,8 @@ pub mod envs {
     pub const ALLOW_NESTED_SESSIONS: &str = "VMR_ALLOW_NESTED_SESSIONS";
     pub const VM_DISABLE: &str = "VM_DISABLE";
     pub const ADD_TO_PATH_TEMPORARILY: &str = "VMR_ADD_TO_PATH_TEMPORARILY";
-    pub const CD_INIT: &str = "VMR_CD_INIT";
-    pub const CD_CACHE: &str = "VMR_CD_CACHE";
+    pub const CDHOOK_ACTIVE: &str = "VMR_CDHOOK_ACTIVE";
+    pub const LOCKFILE_DIR: &str = "VMR_LOCKFILE_DIR";
     /// Project root of the active `.vmr.lock` child shell (set by `vmr cdhook`); the
     /// session hook leaves that shell when `cd` goes outside the directory.
     pub const SESSION_PROJECT: &str = "VMR_SESSION_PROJECT";
