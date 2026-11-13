@@ -89,7 +89,7 @@ fn remove_one_path_env(path_env: &str) {
 fn mingw_cd_hook(install: &str) -> String {
     let cache = crate::script_path(
         crate::Kind::Bash,
-        &paths::cd_cache_file().to_string_lossy(),
+        &paths::lockfile_dir_file().to_string_lossy(),
         &crate::dirs_home(),
     );
     let exit = crate::script_path(
@@ -102,7 +102,7 @@ fn mingw_cd_hook(install: &str) -> String {
         scripts::HOOK_GITBASH,
         &[
             ("__VMR_INSTALL__", install),
-            ("__VMR_CD_CACHE__", &cache),
+            ("__VMR_LOCKFILE_DIR__", &cache),
             ("__VMR_SESSION_EXIT__", &exit),
             ("__VMR_SESSION_HOOK__", &session),
         ],

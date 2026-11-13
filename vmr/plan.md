@@ -170,10 +170,12 @@ vmr-utils ← vmr-core ← vmr-net ← vmr-lua ← vmr-installer ← vmr-cli
 ### 3.8 vmr-shell —— shell hook 自动切换（要求 7）
 
 - `sheller` trait：`set_env/unset_env/set_path/unset_path/conf_path`。
-- bash（`~/.bashrc` + `~/.vmr/vmr.sh`）、zsh（`~/.zshrc` + cd hook `vmr cdhook` + `VMR_CD_INIT` 首启）、fish（`config.fish` + `vmr.fish` + `--on-variable=PWD` hook）、powershell（`profile.ps1` + `vmr init powershell` 内联的 `cdhook`/`Set-Alias cd`/`VMR_CD_INIT`；环境变量按 Go 方式写注册表 `HKCU\Environment`（`Path` 用 `REG_EXPAND_SZ`，前插/删除条目）并广播 `WM_SETTINGCHANGE`，不再使用 `vmr.sh`）、git-bash/mingw（历史版本把 versions 目录写成 `%VMR_VERSIONS%\<...>` 并把 `export PATH="${PATH}:<path>"` 镜像到 `%USERPROFILE%\.bashrc`；现改为只写 shim 目录，`win_patch.rs` 负责清理旧行并维护 cd hook）。`vmr.sh`/`vmr.fish` 只承载 `vmr use` 动态写入的环境行。
+- bash（`~/.bashrc` + `~/.vmr/vmr.sh`）、zsh（`~/.zshrc` + cd hook `vmr cdhook` + `VMR_CDHOOK_ACTIVE` 首启）、fish（`config.fish` + `vmr.fish` + `--on-variable=PWD` hook）、powershell（`profile.ps1` + `vmr init powershell` 内联的 `cdhook`/`Set-Alias cd`/`VMR_CDHOOK_ACTIVE`；环境变量按 Go 方式写注册表 `HKCU\Environment`（`Path` 用 `REG_EXPAND_SZ`，前插/删除条目）并广播 `WM_SETTINGCHANGE`，不再使用 `vmr.sh`）、git-bash/mingw（历史版本把 versions 目录写成 `%VMR_VERSIONS%\<...>` 并把 `export PATH="${PATH}:<path>"` 镜像到 `%USERPROFILE%\.bashrc`；现改为只写 shim 目录，`win_patch.rs` 负责清理旧行并维护 cd hook）。`vmr.sh`/`vmr.fish` 只承载 `vmr use` 动态写入的环境行。
 - **cd hook 自动切换**：进入含 `.vmr.lock` 的目录时自动执行 `vmr cdhook`（按 lock 内容切换 SDK 版本）；lock 中尚未安装的版本会先提示用户确认，确认后安装（仅安装，不做全局切换），拒绝或非交互 stdin 则跳过安装；`VM_DISABLE` 守卫（会话内禁用注入）；`vmr cdhook` 是独立子命令（原 `vmr use -E` 已移除）。
+- **zoxide 等绕过 `cd` 的跳转**：`z`/`zi` 走 `\builtin cd`（PowerShell 为模块限定的 `Set-Location`），不经过 `alias cd`；hook 额外监听 PWD 变化（bash `PROMPT_COMMAND`、zsh `chpwd`、fish `--on-variable=PWD`、PowerShell `prompt`），用 `VMR_CDHOOK_LAST_PWD` 判重，fish 另用 `VMR_CDHOOK_BUSY` 防重入。`alias cd` 保留，负责同一命令行内的即时注入（`cd proj && cmd`）。
+- **`cd -` 回到跳转前目录**：外层 hook 把 `OLDPWD`（fish 为 `dirprev[-1]`）作为 `VMR_SESSION_OLDPWD` 传给 `vmr cdhook`；会话 hook 启动时按该目录“走一圈”再回来（bash/zsh 的 `cd -`、fish 的 `dirprev`、PowerShell 的上一位置），这样 `cd -` 能回到跳转前目录并按“离开项目”退出会话。
 - **离开项目即退出会话**：`vmr cdhook` 进入 `.vmr.lock` 子 shell 前记录项目根目录（`VMR_SESSION_PROJECT`）；子 shell 内的会话 hook 在 `cd` 到项目外时把目标目录写入 `~/.vmr/session_exit` 并 `exit`；外层 cd hook 在 `vmr cdhook` 返回后读取该文件，先 `cd` 到目标目录再重新查询（目标项目可能也有 `.vmr.lock`），避免用户被留在项目根目录。
-- cd hook（`export PATH`、`cdhook` 函数 + `alias cd`、`VMR_CD_INIT` 首启的 `cdhook "$(pwd)"`）由 `vmr init` 内联输出，不再写进 `vmr.sh`；`vmr.sh` 只保留动态环境行，`vmr use` 会清理旧文件里的 `# cd hook start/end` 段（迁移）。
+- cd hook（`export PATH`、`cdhook` 函数 + `alias cd`、`VMR_CDHOOK_ACTIVE` 首启的 `cdhook "$(pwd)"`）由 `vmr init` 内联输出，不再写进 `vmr.sh`；`vmr.sh` 只保留动态环境行，`vmr use` 会清理旧文件里的 `# cd hook start/end` 段（迁移）。
 - shell 集成只写一行 `eval "$(vmr init <shell>)"`（zoxide 风格；fish 为 `vmr init fish | source`，PowerShell 为 `Invoke-Expression (& vmr init powershell | Out-String)`）；`vmr init` 输出的脚本负责 `VM_DISABLE` 守卫、source `vmr.sh`/`vmr.fish`、内联 cd hook 与 `svmr` 刷新命令。旧的 `# vm_envs` / `# vmr source alias` 块在 `vmr use` 时自动迁移移除。
 - completions：由 `vmr init <shell>` 内联输出 clap 生成的补全脚本；zsh 的 `compdef` 延迟到首个 `precmd`（自动初始化缺失的 `compinit`），避免 init 与 compinit 顺序不同导致补全丢失；不再写 `~/.vmr/vmr_completions.*` 或单独安装。
 
@@ -209,7 +211,7 @@ clap 实现，保留原命令名/别名（脚本兼容）：
 
 1. 路径：`~/.vmr`、`~/.vmr/conf.toml`、`~/.vmr/versions`、`~/.vmr/cache`、`~/.vmr/temp`、`~/.vmr/plugins`；`VMR_SDK_INSTALLATION_DIR` 覆盖。
 2. 已装表达：`<versions>/<sdk>_versions/<sdk>-<version>` + `<versions>/<sdk>` 符号链接（win junction）。
-3. 环境变量名：`VMR_SDK_INSTALLATION_DIR`/`VMR_HOST`/`VMR_REVERSE_PROXY`/`VMR_LOCAL_PROXY`/`VMR_DOWNLOAD_THREADS`/`VMR_ALLOW_NESTED_SESSIONS`/`VM_DISABLE`/`VMR_ADD_TO_PATH_TEMPORARILY`/`VMR_CD_INIT`/`VMR_CD_CACHE`/`VMR_SESSION_PROJECT`/`VMR_SESSION_ACTIVE`/`VMR_VERSIONS`/`GVC_DEFAULT_PROXY`/`VCOLLECTOR_PROXY`（含 `Donwload` 拼写 quirk）。
+3. 环境变量名：`VMR_SDK_INSTALLATION_DIR`/`VMR_HOST`/`VMR_REVERSE_PROXY`/`VMR_LOCAL_PROXY`/`VMR_DOWNLOAD_THREADS`/`VMR_ALLOW_NESTED_SESSIONS`/`VM_DISABLE`/`VMR_ADD_TO_PATH_TEMPORARILY`/`VMR_CDHOOK_ACTIVE`/`VMR_LOCKFILE_DIR`/`VMR_SESSION_PROJECT`/`VMR_SESSION_ACTIVE`/`VMR_VERSIONS`/`GVC_DEFAULT_PROXY`/`VCOLLECTOR_PROXY`（含 `Donwload` 拼写 quirk）。
 4. `.vmr.lock` 项目锁（JSON 或 `name@version`），向上查找。
 5. Lua 插件目录与 50 个 `vmr*` 函数签名（现有 `gvcgo/vmr_plugins` 必须原样运行）。
 6. `conf.toml` 键名（PascalCase，待实测确认）+ 拼写 quirk（`SDKIntallationDir`）。

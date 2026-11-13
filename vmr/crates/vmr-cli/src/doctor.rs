@@ -221,7 +221,7 @@ struct Ctx {
     rc_path: PathBuf,
     env_file: PathBuf,
     env_keys: PathBuf,
-    cd_cache_file: PathBuf,
+    lockfile_dir_file: PathBuf,
     plugins_dir: PathBuf,
     shim_dir: PathBuf,
     session: bool,
@@ -257,7 +257,7 @@ impl Ctx {
             rc_path: shell.conf_path(),
             env_file: shell.vm_env_conf_path(),
             env_keys: work_dir.join("env_keys.txt"),
-            cd_cache_file: work_dir.join("cd_hook.cache"),
+            lockfile_dir_file: work_dir.join("cd_hook.lockfile_dir"),
             plugins_dir: work_dir.join("plugins"),
             shim_dir: work_dir.join("bin"),
             work_dir,
@@ -287,7 +287,7 @@ impl Ctx {
                 "vmr.sh"
             }),
             env_keys: work_dir.join("env_keys.txt"),
-            cd_cache_file: work_dir.join("cd_hook.cache"),
+            lockfile_dir_file: work_dir.join("cd_hook.lockfile_dir"),
             plugins_dir: work_dir.join("plugins"),
             shim_dir: work_dir.join("bin"),
             work_dir,
@@ -1277,7 +1277,7 @@ fn check_env_keys(ctx: &Ctx) -> Finding {
 }
 
 fn check_cd_hook(ctx: &Ctx) -> Finding {
-    let init_set = ctx.env.non_empty(envs::CD_INIT).is_some();
+    let init_set = ctx.env.non_empty(envs::CDHOOK_ACTIVE).is_some();
     let init_enabled = fs::read_to_string(&ctx.rc_path)
         .ok()
         .map(|data| {
@@ -1293,8 +1293,8 @@ fn check_cd_hook(ctx: &Ctx) -> Finding {
         );
     }
 
-    let cache_value = ctx.env.non_empty(envs::CD_CACHE).map(str::to_string);
-    let file_value = fs::read_to_string(&ctx.cd_cache_file)
+    let cache_value = ctx.env.non_empty(envs::LOCKFILE_DIR).map(str::to_string);
+    let file_value = fs::read_to_string(&ctx.lockfile_dir_file)
         .ok()
         .and_then(|data| data.lines().next().map(str::trim).map(str::to_string))
         .filter(|value| !value.is_empty());
@@ -1306,7 +1306,7 @@ fn check_cd_hook(ctx: &Ctx) -> Finding {
         warn = true;
         needs_reload = true;
         details.push(
-            "VMR_CD_INIT is not set; the shell integration has not been evaluated here".to_string(),
+            "VMR_CDHOOK_ACTIVE is not set; the shell integration has not been evaluated here".to_string(),
         );
     }
     if let Some(cache) = &cache_value {
@@ -1314,14 +1314,14 @@ fn check_cd_hook(ctx: &Ctx) -> Finding {
             None => {
                 warn = true;
                 details.push(format!(
-                    "VMR_CD_CACHE is set, but {} is empty or missing",
-                    ctx.cd_cache_file.display()
+                    "VMR_LOCKFILE_DIR is set, but {} is empty or missing",
+                    ctx.lockfile_dir_file.display()
                 ));
             }
             Some(value) if normalize_path_text(value) != normalize_path_text(cache) => {
                 warn = true;
                 details.push(format!(
-                    "VMR_CD_CACHE={cache} does not match the cache file value {value}"
+                    "VMR_LOCKFILE_DIR={cache} does not match the state file value {value}"
                 ));
             }
             Some(_) => {}
@@ -1347,8 +1347,8 @@ fn check_cd_hook(ctx: &Ctx) -> Finding {
     } else if file_value.is_some() {
         warn = true;
         details.push(format!(
-            "{} exists but VMR_CD_CACHE is unset",
-            ctx.cd_cache_file.display()
+            "{} exists but VMR_LOCKFILE_DIR is unset",
+            ctx.lockfile_dir_file.display()
         ));
     }
 

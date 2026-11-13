@@ -4,7 +4,18 @@
 if [ -n "${VM_DISABLE-}" ] && [ -n "${VMR_SESSION_PROJECT-}" ] \
     && [ -z "${VMR_SESSION_ACTIVE-}" ]; then
     export VMR_SESSION_ACTIVE=1
+    # zsh keeps the previous directory internally and ignores assignments to OLDPWD, so seed
+    # it by stepping through the directory the user jumped from; `cd -` then leaves the
+    # session like any other cd outside it. The cd hook is not installed yet, so nothing fires.
+    if [ -n "${VMR_SESSION_OLDPWD-}" ] && [ "${VMR_SESSION_OLDPWD}" != "${PWD}" ]; then
+        _vmr_session_origin="${PWD}"
+        if builtin cd -- "${VMR_SESSION_OLDPWD}" 2>/dev/null; then
+            builtin cd -- "${_vmr_session_origin}" 2>/dev/null
+        fi
+        unset _vmr_session_origin
+    fi
     _vmr_session_cd_hook() {
+        VMR_CDHOOK_LAST_PWD=${PWD}
         local _pwd _project
         _pwd="$(pwd -P)"
         _project="${VMR_SESSION_PROJECT}"
@@ -35,4 +46,30 @@ if [ -n "${VM_DISABLE-}" ] && [ -n "${VMR_SESSION_PROJECT-}" ] \
         _vmr_session_cd_hook
     }
     alias cd='cdhook'
+
+    # `z`/`zi` jump with `builtin cd`, bypassing the alias; watch PWD as well so leaving the
+    # project that way still ends the session (the destination travels via the exit file).
+    _vmr_pwd_watch() {
+        local _st=$?
+        if [ "${PWD}" != "${VMR_CDHOOK_LAST_PWD-}" ]; then
+            VMR_CDHOOK_LAST_PWD=${PWD}
+            _vmr_session_cd_hook
+        fi
+        return "${_st}"
+    }
+
+    if [ -n "${ZSH_VERSION-}" ]; then
+        autoload -Uz add-zsh-hook
+        add-zsh-hook chpwd _vmr_pwd_watch
+    else
+        case " ${PROMPT_COMMAND[*]-} " in
+            *" _vmr_pwd_watch "*) ;;
+            *)
+                case "$(declare -p PROMPT_COMMAND 2>/dev/null)" in
+                    "declare -a PROMPT_COMMAND="*) PROMPT_COMMAND=(_vmr_pwd_watch "${PROMPT_COMMAND[@]}") ;;
+                    *) PROMPT_COMMAND="_vmr_pwd_watch${PROMPT_COMMAND:+;${PROMPT_COMMAND}}" ;;
+                esac
+                ;;
+        esac
+    fi
 fi
