@@ -101,6 +101,7 @@ package the existing `target\release\vmr.exe`.
 | `use -p ...` | | Install any package through the pixi backend (also `--pixi`/`--conda`) |
 | `use -f/--file <file>` | | Install in bulk from a freeze file (one `sdk@version` per line, optional `pixi` suffix) |
 | `freeze [file]` | `fz` | Export installed SDKs/versions to `vmr_<YYYYMMDD>.txt` (written to the current directory by default) |
+| `migrate [MAP] --asdf` / `--vfox` / `--system` | | Write `migration_from_asdf.txt` / `migration_from_vfox.txt` / `migration_from_system.txt` (freeze files); read-only, installs nothing. `MAP` is an optional name-mapping file (`<source> <vmr-sdk>` per line, samples in `docs/migration_map/`) |
 | `mcp` | | Run an MCP server over stdio (Model Context Protocol) |
 | `local [sdk]` | `l` | Installed versions, with `<current>` marking the active one; without `sdk`, list every installed SDK grouped |
 | `local -c [sdk]` | | Only the active version: with `sdk`, print that SDK's active version; without, print the `SDK/CURRENT` table for all SDKs; prints nothing when there is no result |
@@ -137,6 +138,44 @@ comments, and each remaining line is `sdk@version`; SDKs with no Lua plugin that
 pixi backend get a `pixi` suffix. The active version of each SDK is placed last, so a sequential
 `vmr use -f` leaves the same versions active as when the file was exported. `-f` cannot be
 combined with `<sdk>@<version>`, `-s`, `-l`, or `-p`.
+
+### Migrating from asdf, vfox or the system
+
+`vmr migrate --asdf` / `--vfox` / `--system` read the other manager's local state (or run the
+SDK commands found on `PATH`) and write `migration_from_asdf.txt` / `migration_from_vfox.txt` /
+`migration_from_system.txt` in the current directory. They install nothing and never write under
+the other manager's directories: each file is replayed with `vmr use -f <file>`. Flags can be
+combined in one run.
+
+- asdf: reads `$ASDF_DATA_DIR` (default `~/.asdf`) and
+  `installs/<plugin>/<version>/`; `ref:` builds and versions with an `install-locks` marker
+  (interrupted installs) are skipped and reported.
+- vfox: reads `$VFOX_HOME` (shared root) or the user directory (`~/.version-fox`, else
+  `~/.vfox`); SDK versions come from `<cache>/<sdk>/v-<version>/` (honoring
+  `storage.sdkPath` in `config.yaml`), skipping `.v-<version>.installing` markers and version
+  directories without a runtime payload.
+- system: probes common SDK commands on `PATH` (`node`, `go`, `python`, `bun`, `deno`, `rust`,
+  `clang`, `gcc`, `ruby`, `java`, `dotnet`, `lua`, `zig`, `cmake`, `kubectl`, ...) with their
+  version flags. The first executable per command wins; binaries under vmr, asdf, vfox, nvm, fnm,
+  volta, pyenv, rbenv, sdkman, mise or conda directories are skipped and reported, so a
+  manager-installed tool is not mistaken for a system one. Versions are whatever the system
+  reports, so a replay may skip an entry the plugin's upstream does not offer.
+- Plugin names are mapped to vmr SDK names (`nodejs` → `node`, `golang` → `go`,
+  `postgres` → `postgresql`, `java` → `jdk`, `dotnet-core` → `dotnet`); plugins without a vmr
+  equivalent are listed in the report and not written.
+- The globally active version (asdf: first *installed* entry in `$HOME/.tool-versions`, honoring
+  the filename environment variables; vfox: `[tools]` in `~/.vfox/.vfox.toml`) is written last
+  per SDK, so the bulk install finishes on it. `system`/`ref:`/`path:` entries resolve to no
+  active version. vfox tool attributes (e.g. `vendor`) are ignored and reported.
+- Because `vmr use -f` activates every line, each migrated SDK ends with an active version even
+  when the other manager had none. Only global pins are considered; project version files
+  (`.tool-versions`, `.vfox.toml`) are not converted.
+
+The optional positional `MAP` file supplies the name mapping; when given it is authoritative, so
+unlisted names are skipped and reported. Each line is `<source name> <vmr sdk>`; a bare name or
+`-` as the target skips that source. Samples generated from the current plugin bundle live in
+[`docs/migration_map/`](docs/migration_map/): `asdf.migration.map.txt`,
+`vfox.migration.map.txt` and `system.migration.map.txt` (command name → SDK for `--system`).
 
 ### Doctor
 

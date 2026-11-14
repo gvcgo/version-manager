@@ -1,0 +1,39 @@
+# SDK name mapping for `vmr migrate --system MAP_FILE`.
+#
+# Format: `<command found on PATH> <vmr sdk>` — one entry per line.
+#   - a line with only a name, or `-` as the target, skips that command
+#   - `#` starts a comment; later lines win
+# Unlisted commands are not probed. This file replaces the built-in
+# command -> SDK mapping, so keep every entry you need.
+#
+# Commands probed by default:
+node node
+go go
+python3 python
+python python
+ruby ruby
+java jdk
+rustc rust
+gcc gcc
+g++ gxx
+clang clang
+deno deno
+bun bun
+zig zig
+dotnet dotnet
+php php
+lua lua
+julia julia
+kotlinc kotlin
+gradle gradle
+mvn maven
+cmake cmake
+ninja ninja
+bazel bazel
+kubectl kubectl
+protoc protoc
+nvim neovim
+rg ripgrep
+fzf fzf
+fd fd
+upx upx

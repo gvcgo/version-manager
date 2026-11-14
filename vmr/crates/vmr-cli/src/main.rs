@@ -2,6 +2,7 @@
 
 mod doctor;
 mod mcp;
+mod migrate;
 mod table;
 
 use std::path::{Path, PathBuf};
@@ -121,6 +122,26 @@ enum Cmd {
     Freeze {
         #[arg(help = "output file (default: vmr_<YYYYMMDD>.txt)")]
         file: Option<String>,
+    },
+    /// Generate a freeze file from another version manager's state (installs nothing).
+    Migrate {
+        #[arg(
+            value_name = "MAP",
+            help = "SDK name mapping file: one `<source> <vmr-sdk>` per line (samples in docs/migration_map)"
+        )]
+        map: Option<String>,
+        #[arg(
+            long,
+            help = "write migration_from_asdf.txt from asdf's installed versions"
+        )]
+        asdf: bool,
+        #[arg(
+            long,
+            help = "write migration_from_vfox.txt from vfox's installed versions"
+        )]
+        vfox: bool,
+        #[arg(long, help = "write migration_from_system.txt from SDKs found on PATH")]
+        system: bool,
     },
     /// Diagnose the vmr installation, shell integration, environment and PATH.
     Doctor {
@@ -265,6 +286,12 @@ fn run(cmd: Cmd, conf: vmr_core::conf::VMRConf) -> Result<(), String> {
             None => cmd_use(spec.as_deref(), session, to_lock, pixi),
         },
         Cmd::Freeze { file } => cmd_freeze(file.as_deref()),
+        Cmd::Migrate {
+            map,
+            asdf,
+            vfox,
+            system,
+        } => migrate::run(asdf, vfox, system, map.as_deref()),
         Cmd::Doctor {
             json,
             quiet,
