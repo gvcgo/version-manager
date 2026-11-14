@@ -3,8 +3,8 @@
   vmr MSI package (WiX Toolset v3).
 
   Build with packaging/windows/build-msi.ps1, or manually:
-    candle -arch x64 -dVersion=0.8.3 -dSourceDir=target\release vmr.wxs -out target\windows\vmr.wixobj
-    light -ext WixUtilExtension -out target\windows\vmr-0.8.3-x64.msi target\windows\vmr.wixobj
+    candle -arch x64 -dVersion=0.8.4 -dSourceDir=target\release vmr.wxs -out target\windows\vmr.wixobj
+    light -ext WixUtilExtension -out target\windows\vmr-0.8.4-x64.msi target\windows\vmr.wixobj
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*"
