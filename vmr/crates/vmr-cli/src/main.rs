@@ -1,6 +1,7 @@
 //! vmr CLI (clap; commands/aliases mirror the Go `cmd/vmr` table; no TUI).
 
 mod doctor;
+mod legacy;
 mod mcp;
 mod migrate;
 mod table;
@@ -206,11 +207,13 @@ fn main() {
         vmr_core::conf::VMRConf::new()
     };
     let Some(cmd) = cli.cmd else {
+        legacy::check();
         maybe_configure_shell_integration();
         help();
         return;
     };
-    if should_offer_shell_integration(&cmd) {
+    if may_prompt(&cmd) {
+        legacy::check();
         maybe_configure_shell_integration();
     }
     if let Err(e) = run(cmd, conf) {
@@ -710,14 +713,15 @@ fn confirm_install_locked(missing: &[(String, String)]) -> bool {
 }
 
 /// Accepts `y`/`yes` in any case, ignoring surrounding whitespace.
-fn is_yes(input: &str) -> bool {
+pub(crate) fn is_yes(input: &str) -> bool {
     matches!(input.trim().to_ascii_lowercase().as_str(), "y" | "yes")
 }
 
-/// Commands that must not prompt: `init` output is evaluated by the shell, `cdhook` runs
-/// from the hook on every directory change, `doctor` is read-only, and `mcp` speaks a
-/// protocol over stdin/stdout.
-fn should_offer_shell_integration(cmd: &Cmd) -> bool {
+/// Whether a command may prompt the user and rewrite shell files (rc/env).
+///
+/// Excluded: `init` output is evaluated by the shell, `cdhook` runs from the hook on every
+/// directory change, `doctor` is read-only, and `mcp` speaks a protocol over stdin/stdout.
+fn may_prompt(cmd: &Cmd) -> bool {
     !matches!(
         cmd,
         Cmd::Init { .. } | Cmd::CdHook | Cmd::Doctor { .. } | Cmd::Mcp
@@ -1256,19 +1260,19 @@ mod tests {
     }
 
     #[test]
-    fn onboarding_skips_shell_protocol_commands() {
-        assert!(!should_offer_shell_integration(&Cmd::Init { shell: None }));
-        assert!(!should_offer_shell_integration(&Cmd::CdHook));
-        assert!(!should_offer_shell_integration(&Cmd::Doctor {
+    fn prompts_skip_shell_protocol_commands() {
+        assert!(!may_prompt(&Cmd::Init { shell: None }));
+        assert!(!may_prompt(&Cmd::CdHook));
+        assert!(!may_prompt(&Cmd::Doctor {
             json: false,
             quiet: false,
             strict: false,
             no_emoji: false,
             shell: None,
         }));
-        assert!(!should_offer_shell_integration(&Cmd::Mcp));
-        assert!(should_offer_shell_integration(&Cmd::Version));
-        assert!(should_offer_shell_integration(&Cmd::Local {
+        assert!(!may_prompt(&Cmd::Mcp));
+        assert!(may_prompt(&Cmd::Version));
+        assert!(may_prompt(&Cmd::Local {
             sdk: None,
             current: false,
         }));

@@ -199,7 +199,8 @@ only. Any number of SDKs or conda-forge packages therefore cannot push `PATH` to
 
 ### Upgrading from 0.7.x to 0.8.x
 
-- Remove non-SDK environment variables and functions written by the old version of vmr from `$HOME/.vmr/vmr.sh` or the PowerShell `$PROFILE`; keep SDK-related configuration.
+- On startup the new vmr looks for the old self-installed binary at `$HOME/.vmr/vmr` (`vmr.exe` on Windows) and offers to delete it. It also removes the old cd-hook block and rewrites legacy `~`/absolute-home lines in `$HOME/.vmr/vmr.sh` (`vmr.fish`) to the current quoted `$HOME` form, keeping the SDK lines.
+- Remove non-SDK environment variables and functions that the old version wrote into the PowerShell `$PROFILE`, and add the initialization command shown above instead.
 - Remove old vmr-related code from shell configuration files such as `~/.zshrc` and `~/.bashrc`, and add the appropriate `vmr init` command shown above instead. PowerShell users should also use the initialization command above in `$PROFILE`.
 - Reopen the terminal to apply the new shell configuration.
 

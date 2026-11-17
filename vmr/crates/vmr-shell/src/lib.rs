@@ -307,6 +307,65 @@ fn strip_legacy_blocks(data: &str) -> String {
         })
 }
 
+/// Strips one pair of matching quotes; legacy env lines are unquoted, current ones are quoted.
+#[cfg(not(windows))]
+fn unquote(value: &str) -> &str {
+    let value = value.trim();
+    if value.len() >= 2 {
+        let bytes = value.as_bytes();
+        let quoted = matches!(
+            (bytes[0], bytes[value.len() - 1]),
+            (b'"', b'"') | (b'\'', b'\'')
+        );
+        if quoted {
+            return &value[1..value.len() - 1];
+        }
+    }
+    value
+}
+
+/// Expands the `~` form the Go implementation wrote (`export GOROOT=~/.vmr/...`).
+#[cfg(not(windows))]
+fn expand_legacy_home(value: &str, home: &str) -> String {
+    if value == "~" {
+        return home.to_string();
+    }
+    match value.strip_prefix("~/") {
+        Some(rest) => format!("{home}/{rest}"),
+        None => value.to_string(),
+    }
+}
+
+/// Whether a value is a path in the pre-`$HOME` form; other variables are left untouched.
+#[cfg(not(windows))]
+fn is_legacy_path_value(value: &str) -> bool {
+    let value = unquote(value);
+    value == "~"
+        || value.starts_with("~/")
+        || value.starts_with("$HOME")
+        || Path::new(value).is_absolute()
+}
+
+/// Removes the legacy cd-hook block only when its end marker is present after the start
+/// marker; a truncated file keeps its remaining lines instead of losing them.
+#[cfg(not(windows))]
+fn strip_legacy_hook(data: &str) -> String {
+    const START: &str = "# cd hook start";
+    const END: &str = "# cd hook end";
+    match data.find(START) {
+        Some(start) if data[start..].contains(END) => strip_marked(data, START, END),
+        _ => data.to_string(),
+    }
+}
+
+/// Whether a line assigns environment variables (the only lines de-duplicated).
+#[cfg(not(windows))]
+fn assigns_env(line: &str) -> bool {
+    line.starts_with("export ")
+        || line.starts_with("fish_add_path ")
+        || line.starts_with("set --global ")
+}
+
 /// Ensures the rc file contains exactly one `eval "$(vmr init <shell>)"` line, migrating the
 /// legacy `# vm_envs` / `# vmr source alias` blocks away (idempotent).
 ///
@@ -341,6 +400,26 @@ fn ensure_init_line(conf_path: &Path, line: &str) -> std::io::Result<bool> {
 /// The script printed by `vmr init <shell>` (zoxide-style integration).
 pub fn init_script(kind: Kind) -> String {
     Shell::new(kind).init_script()
+}
+
+/// Migrates the environment files written by the Go implementation.
+///
+/// The Go version wrote unquoted `~` / absolute-home values and a `# cd hook start … end`
+/// block that calls the removed `vmr use -E`. Both files are rewritten to the current quoted
+/// `$HOME` form with exact duplicate lines removed; unrelated lines are kept. Returns the
+/// files that changed; a missing file is skipped.
+#[cfg(not(windows))]
+pub fn migrate_legacy_env_files() -> Vec<PathBuf> {
+    [Kind::Bash, Kind::Fish]
+        .into_iter()
+        .filter_map(|kind| Shell::new(kind).migrate_legacy_env())
+        .collect()
+}
+
+/// Windows keeps the environment in the registry, so there is no env file to migrate.
+#[cfg(windows)]
+pub fn migrate_legacy_env_files() -> Vec<PathBuf> {
+    Vec::new()
 }
 
 /// Reads a value from the Windows user environment (`HKCU\Environment`).
@@ -700,6 +779,101 @@ impl Shell {
                 }
             }
         }
+    }
+
+    /// Rewrites `~/.vmr/vmr.sh|vmr.fish` to the current form; returns the path when it
+    /// changed.
+    #[cfg(not(windows))]
+    fn migrate_legacy_env(&self) -> Option<PathBuf> {
+        let path = self.vm_env_conf_path();
+        let data = fs::read_to_string(&path).ok()?;
+        let migrated = self.migrate_legacy_env_text(&data);
+        if migrated == data {
+            return None;
+        }
+        fs::write(&path, migrated).ok()?;
+        Some(path)
+    }
+
+    /// Drops the legacy cd-hook block, converts Go-era lines to the quoted `$HOME` form and
+    /// removes exact duplicates. Blank lines and unrelated lines keep their original text
+    /// (apart from trailing whitespace); one line per assignment remains.
+    #[cfg(not(windows))]
+    fn migrate_legacy_env_text(&self, data: &str) -> String {
+        let stripped = strip_legacy_hook(data);
+        let mut seen = std::collections::HashSet::new();
+        let mut out = String::with_capacity(stripped.len());
+        for line in stripped.lines() {
+            let line = line.trim_end();
+            if line.is_empty() {
+                continue;
+            }
+            let migrated = self.migrate_legacy_line(line);
+            let kept = migrated.as_deref().unwrap_or(line);
+            if assigns_env(kept) && !seen.insert(kept.to_string()) {
+                continue;
+            }
+            out.push_str(kept);
+            out.push('\n');
+        }
+        out
+    }
+
+    #[cfg(not(windows))]
+    fn migrate_legacy_line(&self, line: &str) -> Option<String> {
+        match self.kind {
+            Kind::Fish => self.migrate_legacy_fish_line(line),
+            _ => self.migrate_legacy_sh_line(line),
+        }
+    }
+
+    /// `export PATH=~/.vmr/...:"${PATH}"` and `export KEY=/home/u/...` → quoted `$HOME`.
+    #[cfg(not(windows))]
+    fn migrate_legacy_sh_line(&self, line: &str) -> Option<String> {
+        let rest = line.strip_prefix("export ")?;
+        if let Some(value) = rest.strip_prefix("PATH=") {
+            let prefix = [":\"${PATH}\"", ":$PATH", ":\"$PATH\""]
+                .into_iter()
+                .find_map(|suffix| value.strip_suffix(suffix))?;
+            // The Rust writer quotes the whole prefix; a quoted prefix is already current.
+            if prefix.starts_with('"') {
+                return None;
+            }
+            let paths = prefix
+                .split(':')
+                .map(|part| {
+                    let part = expand_legacy_home(unquote(part), &self.home);
+                    format_path_string(&part, &self.home)
+                })
+                .collect::<Vec<_>>()
+                .join(":");
+            return Some(self.pack_path(&paths));
+        }
+        let (key, value) = rest.split_once('=')?;
+        if value.starts_with('"') || !is_legacy_path_value(value) {
+            return None;
+        }
+        let value = expand_legacy_home(unquote(value), &self.home);
+        Some(self.pack_env(key, &format_path_string(&value, &self.home)))
+    }
+
+    /// `fish_add_path --global ~/.vmr/...` and `set --global KEY /home/u/...` → quoted `$HOME`.
+    #[cfg(not(windows))]
+    fn migrate_legacy_fish_line(&self, line: &str) -> Option<String> {
+        if let Some(value) = line.strip_prefix("fish_add_path --global ") {
+            if value.starts_with('"') {
+                return None;
+            }
+            let path = expand_legacy_home(unquote(value), &self.home);
+            return Some(self.pack_path(&format_path_string(&path, &self.home)));
+        }
+        let value = line.strip_prefix("set --global ")?;
+        let (key, raw) = value.split_once(' ')?;
+        if raw.starts_with('"') || !is_legacy_path_value(raw) {
+            return None;
+        }
+        let value = expand_legacy_home(unquote(raw), &self.home);
+        Some(self.pack_env(key, &format_path_string(&value, &self.home)))
     }
 
     /// Removes the legacy cd-hook section (and stray install-path lines) from the env file;
@@ -1291,5 +1465,114 @@ printf 'pwd=%s\n' "$PWD"
         );
         // A list without a trailing newline still gets one separator.
         assert_eq!(merge_env_key("GOROOT", "JAVA_HOME"), "GOROOT\nJAVA_HOME\n");
+    }
+
+    #[test]
+    #[cfg(not(windows))]
+    fn migrates_go_env_file_to_current_form() {
+        let mut sh = Shell::new(Kind::Bash);
+        sh.home = "/home/u".to_string();
+        let data = "\
+# cd hook start
+export PATH=~/.vmr:\"${PATH}\"
+cdhook() { :; }
+export VMR_CD_INIT=vmr_cd_init
+# cd hook end
+export GOROOT=/home/u/.vmr/versions/go_versions/go
+export PATH=/home/u/.vmr/versions/go_versions/go/bin:\"${PATH}\"
+export PATH=~/.vmr/versions/go_versions/go/bin:\"${PATH}\"
+export PATH=\"$HOME/.vmr/versions/go_versions/go/bin\":\"${PATH}\"
+export GOROOT=~/.vmr/versions/go_versions/go
+export PATH=/home/u/.vmr/versions/miniconda_versions/miniconda/bin:/home/u/.vmr/versions/miniconda_versions/miniconda/condabin:\"${PATH}\"
+export VMR_CONDA_CHANNEL=conda-forge
+export PATH=/opt/tools/bin:$PATH
+";
+        let out = sh.migrate_legacy_env_text(data);
+        assert!(!out.contains("cd hook"), "{out}");
+        assert!(!out.contains("cdhook"), "{out}");
+        assert!(!out.contains("VMR_CD_INIT"), "{out}");
+        assert_eq!(
+            out.matches("export GOROOT=\"$HOME/.vmr/versions/go_versions/go\"")
+                .count(),
+            1,
+            "{out}"
+        );
+        assert_eq!(
+            out.matches("export PATH=\"$HOME/.vmr/versions/go_versions/go/bin\":\"${PATH}\"")
+                .count(),
+            1,
+            "{out}"
+        );
+        assert!(
+            out.contains(
+                "export PATH=\"$HOME/.vmr/versions/miniconda_versions/miniconda/bin:$HOME/.vmr/versions/miniconda_versions/miniconda/condabin\":\"${PATH}\""
+            ),
+            "{out}"
+        );
+        // Non-path variables and non-vmr paths are preserved.
+        assert!(
+            out.contains("export VMR_CONDA_CHANNEL=conda-forge"),
+            "{out}"
+        );
+        assert!(
+            out.contains("export PATH=\"/opt/tools/bin\":\"${PATH}\""),
+            "{out}"
+        );
+        // Idempotent.
+        assert_eq!(sh.migrate_legacy_env_text(&out), out);
+    }
+
+    #[test]
+    #[cfg(not(windows))]
+    fn migrates_go_fish_env_file_to_current_form() {
+        let mut sh = Shell::new(Kind::Fish);
+        sh.home = "/home/u".to_string();
+        let data = "\
+# cd hook start
+fish_add_path --global ~/.vmr
+function _vmr_cdhook --on-variable=PWD
+end
+# cd hook end
+fish_add_path --global ~/.vmr/versions/go_versions/go/bin
+fish_add_path --global \"$HOME/.vmr/versions/go_versions/go/bin\"
+set --global GOROOT /home/u/.vmr/versions/go_versions/go
+set --global GOROOT \"$HOME/.vmr/versions/go_versions/go\"
+set --global VMR_CONDA_CHANNEL conda-forge
+";
+        let out = sh.migrate_legacy_env_text(data);
+        assert!(!out.contains("cd hook"), "{out}");
+        assert!(!out.contains("_vmr_cdhook"), "{out}");
+        assert_eq!(
+            out.matches("fish_add_path --global \"$HOME/.vmr/versions/go_versions/go/bin\"")
+                .count(),
+            1,
+            "{out}"
+        );
+        assert_eq!(
+            out.matches("set --global GOROOT \"$HOME/.vmr/versions/go_versions/go\"")
+                .count(),
+            1,
+            "{out}"
+        );
+        assert!(
+            out.contains("set --global VMR_CONDA_CHANNEL conda-forge"),
+            "{out}"
+        );
+        assert_eq!(sh.migrate_legacy_env_text(&out), out);
+    }
+
+    #[test]
+    #[cfg(not(windows))]
+    fn keeps_lines_after_an_unterminated_legacy_block() {
+        let mut sh = Shell::new(Kind::Bash);
+        sh.home = "/home/u".to_string();
+        let data =
+            "# cd hook start\ncdhook() { :; }\nexport GOROOT=~/.vmr/versions/go_versions/go\n";
+        let out = sh.migrate_legacy_env_text(data);
+        assert!(out.contains("cdhook()"), "{out}");
+        assert!(
+            out.contains("export GOROOT=\"$HOME/.vmr/versions/go_versions/go\""),
+            "{out}"
+        );
     }
 }
