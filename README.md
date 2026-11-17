@@ -157,6 +157,9 @@ vmr version
 
 ## Shell integration
 
+On the first interactive command, vmr detects a missing integration for the current shell and
+offers to add the line below automatically, showing the config file and line it writes.
+
 Once installed, add the following line to your shell config (`~/.zshrc`, `~/.bashrc`, `~/.config/fish/config.fish`):
 
 ```bash

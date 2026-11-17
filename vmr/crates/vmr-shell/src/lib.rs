@@ -19,7 +19,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use vmr_core::paths;
+use vmr_core::{envs, paths};
 
 mod scripts;
 pub use scripts::ZSH_COMPLETION_TAIL;
@@ -309,8 +309,15 @@ fn strip_legacy_blocks(data: &str) -> String {
 
 /// Ensures the rc file contains exactly one `eval "$(vmr init <shell>)"` line, migrating the
 /// legacy `# vm_envs` / `# vmr source alias` blocks away (idempotent).
-fn ensure_init_line(conf_path: &Path, line: &str) {
-    let data = fs::read_to_string(conf_path).unwrap_or_default();
+///
+/// Returns whether the file changed. A missing rc file is created; other read errors are
+/// propagated so a setup command can report failure instead of silently overwriting.
+fn ensure_init_line(conf_path: &Path, line: &str) -> std::io::Result<bool> {
+    let data = match fs::read_to_string(conf_path) {
+        Ok(data) => data,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => String::new(),
+        Err(error) => return Err(error),
+    };
     let stripped = strip_legacy_blocks(&data);
     let has_line = stripped.lines().any(|l| l.trim() == line.trim());
     let mut out = stripped.trim_end().to_string();
@@ -321,12 +328,14 @@ fn ensure_init_line(conf_path: &Path, line: &str) {
         out.push_str(line);
     }
     out.push('\n');
-    if out != data {
-        if let Some(parent) = conf_path.parent() {
-            let _ = fs::create_dir_all(parent);
-        }
-        let _ = fs::write(conf_path, out);
+    if out == data {
+        return Ok(false);
     }
+    if let Some(parent) = conf_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(conf_path, out)?;
+    Ok(true)
 }
 
 /// The script printed by `vmr init <shell>` (zoxide-style integration).
@@ -716,13 +725,31 @@ impl Shell {
         }
     }
 
-    /// Strip the hook from the shell environment file and ensure the rc evaluates
-    /// `vmr init` instead of the legacy source blocks. On Windows the environment lives in
-    /// the registry, so only the profile line is maintained.
-    pub fn write_vm_env_to_shell(&self) {
+    /// Whether this shell already loads the integration: the exported cd-hook marker (set by
+    /// the evaluated init script) or the `vmr init` line in the rc file.
+    pub fn integration_configured(&self) -> bool {
+        if std::env::var_os(envs::CDHOOK_ACTIVE).is_some_and(|value| !value.is_empty()) {
+            return true;
+        }
+        self.rc_has_init_line()
+    }
+
+    /// Whether the rc file contains the integration line for this shell.
+    fn rc_has_init_line(&self) -> bool {
+        let line = self.init_line();
+        fs::read_to_string(self.conf_path())
+            .map(|data| data.lines().any(|candidate| candidate.trim() == line))
+            .unwrap_or(false)
+    }
+
+    /// Writes the integration line and, on Unix, creates the dynamic environment file.
+    ///
+    /// Returns whether the rc file changed; this is what the first-run setup prompt reports
+    /// to the user.
+    pub fn enable_integration(&self) -> std::io::Result<bool> {
         #[cfg(windows)]
         {
-            ensure_init_line(&self.conf_path(), &self.init_line());
+            ensure_init_line(&self.conf_path(), &self.init_line())
         }
         #[cfg(not(windows))]
         {
@@ -731,12 +758,19 @@ impl Shell {
             self.strip_hook_section(&env_file, &install);
             if !env_file.exists() {
                 if let Some(parent) = env_file.parent() {
-                    let _ = fs::create_dir_all(parent);
+                    fs::create_dir_all(parent)?;
                 }
-                let _ = fs::write(&env_file, "");
+                fs::write(&env_file, "")?;
             }
-            ensure_init_line(&self.conf_path(), &self.init_line());
+            ensure_init_line(&self.conf_path(), &self.init_line())
         }
+    }
+
+    /// Strip the hook from the shell environment file and ensure the rc evaluates
+    /// `vmr init` instead of the legacy source blocks. On Windows the environment lives in
+    /// the registry, so only the profile line is maintained.
+    pub fn write_vm_env_to_shell(&self) {
+        let _ = self.enable_integration();
     }
 }
 
@@ -830,6 +864,31 @@ mod tests {
         // Idempotent.
         sh.strip_hook_section(&f, "/home/u/.vmr");
         assert_eq!(fs::read_to_string(&f).unwrap(), content);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn init_line_setup_is_idempotent_and_detected() {
+        let dir = std::env::temp_dir().join(format!("vmr-init-line-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        let rc = dir.join(".bashrc");
+        let line = "eval \"$(vmr init bash)\"";
+
+        assert!(ensure_init_line(&rc, line).unwrap());
+        assert!(fs::read_to_string(&rc).unwrap().contains(line));
+        assert!(!ensure_init_line(&rc, line).unwrap());
+
+        let mut sh = Shell::new(Kind::Bash);
+        sh.home = dir.to_string_lossy().into_owned();
+        assert!(sh.rc_has_init_line());
+        fs::write(&rc, "# vm_envs start\nexport X=1\n# vm_envs end\n").unwrap();
+        assert!(!sh.rc_has_init_line());
+        assert!(ensure_init_line(&rc, line).unwrap());
+        let content = fs::read_to_string(&rc).unwrap();
+        assert!(!content.contains("vm_envs"));
+        assert!(content.contains(line));
+
         let _ = fs::remove_dir_all(&dir);
     }
 
@@ -1210,13 +1269,13 @@ printf 'pwd=%s\n' "$PWD"
         )
         .unwrap();
         let line = "eval \"$(vmr init zsh)\"";
-        ensure_init_line(&rc, line);
+        ensure_init_line(&rc, line).unwrap();
         let once = fs::read_to_string(&rc).unwrap();
         assert!(once.contains("export A=1"));
         assert!(!once.contains("# vm_envs start"));
         assert!(!once.contains("# vmr source alias start"));
         assert_eq!(once.matches(line).count(), 1);
-        ensure_init_line(&rc, line);
+        ensure_init_line(&rc, line).unwrap();
         assert_eq!(fs::read_to_string(&rc).unwrap(), once);
         let _ = fs::remove_dir_all(&dir);
     }
