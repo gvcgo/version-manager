@@ -886,8 +886,8 @@ mod tests {
         assert!(!sh.rc_has_init_line());
         assert!(ensure_init_line(&rc, line).unwrap());
         let content = fs::read_to_string(&rc).unwrap();
-        assert!(!content.contains("vm_envs"), "{content}");
-        assert!(content.contains(line), "{content}");
+        assert!(!content.contains("vm_envs"));
+        assert!(content.contains(line));
 
         let _ = fs::remove_dir_all(&dir);
     }
