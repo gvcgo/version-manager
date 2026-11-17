@@ -32,7 +32,8 @@ therefore no longer required on the host.
   command is a shim (a hardlink to `vmr.exe`, or a generated `.cmd` wrapper) that injects the
   prefix's `PATH` into the child, so the registry value stays constant regardless of how many
   SDKs or pixi packages are installed. Shell configuration needs only one line,
-  `eval "$(vmr init zsh)"` (fish: `vmr init fish | source`).
+  `eval "$(vmr init zsh)"` (fish: `vmr init fish | source`); on the first interactive command
+  vmr offers to add that line for the detected shell and echoes the file and line it wrote.
 - Automatic refresh (bash/zsh/fish): that line also defines a `vmr` wrapper, so a successful
   `vmr use` or `vmr uninstall` reloads the environment into the current shell instead of
   requiring a new terminal. The refresh removes vmr-managed `PATH` entries and re-applies the

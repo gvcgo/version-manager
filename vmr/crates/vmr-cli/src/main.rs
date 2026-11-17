@@ -206,9 +206,13 @@ fn main() {
         vmr_core::conf::VMRConf::new()
     };
     let Some(cmd) = cli.cmd else {
+        maybe_configure_shell_integration();
         help();
         return;
     };
+    if should_offer_shell_integration(&cmd) {
+        maybe_configure_shell_integration();
+    }
     if let Err(e) = run(cmd, conf) {
         err_exit(e);
     }
@@ -710,6 +714,60 @@ fn is_yes(input: &str) -> bool {
     matches!(input.trim().to_ascii_lowercase().as_str(), "y" | "yes")
 }
 
+/// Commands that must not prompt: `init` output is evaluated by the shell, `cdhook` runs
+/// from the hook on every directory change, `doctor` is read-only, and `mcp` speaks a
+/// protocol over stdin/stdout.
+fn should_offer_shell_integration(cmd: &Cmd) -> bool {
+    !matches!(
+        cmd,
+        Cmd::Init { .. } | Cmd::CdHook | Cmd::Doctor { .. } | Cmd::Mcp
+    )
+}
+
+/// First-run onboarding: offer to add the `vmr init` line for the current shell when the
+/// integration is missing. Interactive stdin only; declining changes nothing. The prompt and
+/// the result go to stderr so stdout stays usable for command output.
+fn maybe_configure_shell_integration() {
+    use std::io::{IsTerminal, Write};
+
+    if !std::io::stdin().is_terminal() {
+        return;
+    }
+    // A session shell is a child of an already integrated shell; never prompt from it.
+    if std::env::var(envs::VM_DISABLE).is_ok_and(|value| !value.is_empty()) {
+        return;
+    }
+    let kind = vmr_shell::detect_kind();
+    let shell = vmr_shell::Shell::new(kind);
+    if shell.integration_configured() {
+        return;
+    }
+
+    eprintln!("Shell integration is not configured for {}.", kind.name());
+    eprint!("Configure it now? [y/N] ");
+    let _ = std::io::stderr().flush();
+    let mut input = String::new();
+    if std::io::stdin().read_line(&mut input).unwrap_or(0) == 0 || !is_yes(&input) {
+        return;
+    }
+
+    eprintln!("Configuring shell integration for {}...", kind.name());
+    eprintln!("  config file: {}", shell.conf_path().display());
+    eprintln!("  line:        {}", shell.init_line());
+    #[cfg(not(windows))]
+    eprintln!("  env file:    {}", shell.vm_env_conf_path().display());
+    match shell.enable_integration() {
+        Ok(true) => eprintln!(
+            "Shell integration configured. Restart the terminal (or re-source the config file) to apply it."
+        ),
+        Ok(false) => eprintln!(
+            "Shell integration was already present in {}.",
+            shell.conf_path().display()
+        ),
+        Err(error) => eprintln!("failed to configure shell integration: {error}"),
+    }
+}
+
 /// Outcome of a global install/switch, shared by the CLI and MCP.
 pub(crate) struct InstallSummary {
     pub sdk_name: String,
@@ -1195,6 +1253,25 @@ mod tests {
         assert!(!is_yes("n\n"));
         assert!(!is_yes("no\n"));
         assert!(!is_yes("yeah\n"));
+    }
+
+    #[test]
+    fn onboarding_skips_shell_protocol_commands() {
+        assert!(!should_offer_shell_integration(&Cmd::Init { shell: None }));
+        assert!(!should_offer_shell_integration(&Cmd::CdHook));
+        assert!(!should_offer_shell_integration(&Cmd::Doctor {
+            json: false,
+            quiet: false,
+            strict: false,
+            no_emoji: false,
+            shell: None,
+        }));
+        assert!(!should_offer_shell_integration(&Cmd::Mcp));
+        assert!(should_offer_shell_integration(&Cmd::Version));
+        assert!(should_offer_shell_integration(&Cmd::Local {
+            sdk: None,
+            current: false,
+        }));
     }
 
     #[test]

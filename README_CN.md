@@ -157,6 +157,9 @@ vmr version
 
 ## 接入 Shell
 
+首次以交互方式运行 vmr 时，如果没有检测到当前 shell 的集成配置，vmr 会提示是否自动写入下面
+这一行，并回显写入的配置文件与内容。
+
 安装完成后，把下面这一行加到你的 shell 配置里（`~/.zshrc`、`~/.bashrc`、`~/.config/fish/config.fish`）：
 
 ```bash
