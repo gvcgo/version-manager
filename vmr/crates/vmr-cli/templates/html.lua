@@ -20,6 +20,12 @@ ic = C.installer({
     },
 })
 
+-- Optional: run SDK-specific setup after installation. Return true on success.
+-- path is the install directory; item describes the release; archive may be empty.
+-- function postInstall(path, version, item, archive)
+--     return true
+-- end
+
 local HOST = "https://example.com"
 local INDEX_URL = HOST .. "/downloads"
 
