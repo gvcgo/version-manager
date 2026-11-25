@@ -10,6 +10,11 @@ The Lua runtime is Lua 5.4 (`mlua`, vendored). Each plugin is executed in its ow
 globals do not leak between plugins. The full Lua standard library, including `dofile`,
 `os`, and `io`, is available.
 
+Plugins are not sandboxed: they run with the current user's permissions and can execute
+commands, access files, and make network requests, including to internal addresses. Install
+and update plugins only from sources you trust. Plugin authors should validate the sources
+and URLs of remote version data before downloading from them.
+
 ## 1. File layout and discovery
 
 | Item | Value |
