@@ -32,6 +32,7 @@ enum Kind {
     Xz,
     Zstd,
     Zip,
+    SevenZip,
     Tar,
     Unknown,
 }
@@ -51,6 +52,9 @@ fn kind_of(bytes: &[u8]) -> Kind {
     }
     if bytes.len() >= 4 && bytes[..4] == *b"PK\x03\x04" {
         return Kind::Zip;
+    }
+    if bytes.len() >= 6 && bytes[..6] == [0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c] {
+        return Kind::SevenZip;
     }
     // An empty zip archive ends with PK\x05\x06.
     if bytes.len() >= 4 && bytes[..4] == *b"PK\x05\x06" {
@@ -156,6 +160,39 @@ fn unpack_zip(path: &Path, dest: &Path) -> io::Result<()> {
     Ok(())
 }
 
+fn unpack_seven_zip(path: &Path, dest: &Path) -> io::Result<()> {
+    let mut archive = sevenz_rust2::ArchiveReader::open(path, sevenz_rust2::Password::empty())
+        .map_err(io::Error::other)?;
+    archive
+        .for_each_entries(|entry, reader| {
+            let mode = entry.windows_attributes >> 16;
+            let file_type = mode & 0o170000;
+            if entry.is_directory
+                || entry.is_anti_item
+                || (entry.has_windows_attributes && entry.windows_attributes & 0x400 != 0)
+                || (file_type != 0 && file_type != 0o100000)
+            {
+                io::copy(reader, &mut io::sink())?;
+                return Ok(true);
+            }
+            let name = entry.name.replace('\\', "/");
+            if name.as_bytes().get(1) == Some(&b':') {
+                return Err(io_err(format!("archive entry escapes dest (prefix): {name}")).into());
+            }
+            let target = safe_join(dest, &name)?;
+            if let Some(parent) = target.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            let mut out = fs::File::create(&target)?;
+            io::copy(reader, &mut out)?;
+            if file_type == 0o100000 {
+                set_mode(&target, mode);
+            }
+            Ok(true)
+        })
+        .map_err(io::Error::other)
+}
+
 /// Open a single-stream decompression reader (the decoder matching the magic number).
 fn decompress_reader(kind: Kind, f: fs::File) -> io::Result<Box<dyn io::Read>> {
     match kind {
@@ -192,6 +229,7 @@ pub fn unarchive(
     let kind = sniff(src)?;
     match kind {
         Kind::Zip => unpack_zip(src, dest),
+        Kind::SevenZip => unpack_seven_zip(src, dest),
         Kind::Tar => {
             let f = fs::File::open(src)?;
             unpack_tar(f, dest)
@@ -210,6 +248,7 @@ pub fn unarchive(
                 let kind2 = sniff(&decoded_name)?;
                 match kind2 {
                     Kind::Zip => unpack_zip(&decoded_name, dest),
+                    Kind::SevenZip => unpack_seven_zip(&decoded_name, dest),
                     Kind::Tar => {
                         let f = fs::File::open(&decoded_name)?;
                         unpack_tar(f, dest)
@@ -386,6 +425,49 @@ mod tests {
             w.write_all(content.as_bytes()).unwrap();
         }
         w.finish().unwrap();
+    }
+
+    fn make_seven_zip(path: &Path, entries: &[(&str, &str, u32)]) {
+        let mut writer = sevenz_rust2::ArchiveWriter::create(path).unwrap();
+        for &(name, content, attributes) in entries {
+            let mut entry = sevenz_rust2::ArchiveEntry::new_file(name);
+            entry.has_windows_attributes = attributes != 0;
+            entry.windows_attributes = attributes;
+            writer
+                .push_archive_entry(entry, Some(content.as_bytes()))
+                .unwrap();
+        }
+        writer.finish().unwrap();
+    }
+
+    #[test]
+    fn extracts_seven_zip_files_and_skips_links() {
+        let t = TempDir::new("seven-zip");
+        let src = t.path().join("archive.7z");
+        make_seven_zip(
+            &src,
+            &[
+                ("pkg/bin/dmd.exe", "compiler", 0),
+                ("pkg/link", "../outside", 0o120777 << 16),
+                ("pkg/readme", "readme", 0),
+            ],
+        );
+        let dest = t.path().join("out");
+        extract(&src, &dest).unwrap();
+        assert_eq!(fs::read_to_string(dest.join("pkg/bin/dmd.exe")).unwrap(), "compiler");
+        assert_eq!(fs::read_to_string(dest.join("pkg/readme")).unwrap(), "readme");
+        assert!(!dest.join("pkg/link").exists());
+    }
+
+    #[test]
+    fn rejects_seven_zip_path_traversal() {
+        let t = TempDir::new("seven-zip-traversal");
+        let src = t.path().join("archive.7z");
+        for name in ["../evil", "..\\evil", "/absolute", "C:\\evil"] {
+            make_seven_zip(&src, &[(name, "evil", 0)]);
+            assert!(unarchive(&src, &t.path().join("out"), None, false).is_err());
+        }
+        assert!(!t.path().join("evil").exists());
     }
 
     fn make_tar_gz(path: &Path, entries: &[(&str, &str)]) {

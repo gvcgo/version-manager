@@ -145,7 +145,7 @@ vl = vmrMergeVersionList(vl, other_vl)
 | Item 取值 | 常量 | 行为 |
 |---|---|---|
 | `unarchiver` | `vmrInstallerUnarchiver` | 下载、解压，通过 `ic.flag_files` 定位压缩包根目录，再复制到安装目录。未知类型的默认行为。 |
-| `executable` | `vmrInstallerExecutable` | 下载单个文件，复制到安装目录并加可执行权限；支持 `ic.binary_rename`。 |
+| `executable` | `vmrInstallerExecutable` | 通常将下载的单个文件复制到安装目录并加可执行权限；支持 `ic.binary_rename`。`miniconda` 和 `git-win` 插件则执行安装程序，将内容安装到版本目录。 |
 | `conda` | `vmrInstallerConda` | 通过内置 pixi/rattler 安装；包名为 `plugin_name`，忽略 `url`/`sum`。 |
 | `conda-forge` | `vmrInstallerCondaForge` | 与 `conda` 使用同一后端。 |
 | `coursier` | `vmrInstallerCoursier` | 调用 `cs`（`VMR_COURSIER_PATH`，默认 `cs`）并传 `--install-dir`；要求机器上已安装 `cs`。 |
@@ -168,8 +168,8 @@ vl = vmrMergeVersionList(vl, other_vl)
 
 Item `arch` 精确匹配，或为 `any`。
 
-同一版本有多个条目匹配时，**最后一个**匹配项生效。请把更精确的资源放在后面，或每个平台只输出
-一个条目。
+同一版本有多个条目匹配时，VMR 优先选择系统精确匹配的条目，其次选择架构精确匹配的条目。
+精确程度相同时，最后一个匹配项生效。
 
 ### 3.3 版本名与排序
 
@@ -216,7 +216,7 @@ use → 选择 Item → 按 Item.installer 安装 → 后处理 → 注入环境
 - `binary_dirs`：每组路径拼接到安装根目录下，存在时加入 `PATH`。某平台没有配置时，安装根目录本身
   会加入 `PATH`。
 - `additional_envs`：路径组拼接到安装根目录下，存在时导出为 `NAME=<绝对路径>`。空路径组指向安装
-  根目录（如 `GOROOT`）。
+  根目录（如 `GOROOT`）。同名条目的路径使用平台路径分隔符合并。
 - `binary_rename` 仅对 `executable` 安装类型生效。
 
 示例：
@@ -465,6 +465,7 @@ end
 | 函数 | 结果 |
 |---|---|
 | `vmrGetOsArch()` | 两个字符串，采用 Go 命名：`linux`/`darwin`/`windows`，`amd64`/`arm64`/`386` |
+| `vmrHasAvx2()` | 当前 x86 CPU 是否支持 AVX2；其他架构返回 `false` |
 
 #### 字符串与正则
 

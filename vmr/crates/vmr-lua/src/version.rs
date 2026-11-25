@@ -116,7 +116,7 @@ fn arch_matches(item_arch: &str, arch: &str) -> bool {
     item_arch == arch || item_arch == "any"
 }
 
-/// Filters to current-platform entries → map[version]last matching Item.
+/// Filters to current-platform entries, preferring platform-specific matches.
 ///
 /// This used to require exact equality, which silently dropped vcollector's `any`/`unix`
 /// entries (e.g. single-binary tools and JVM archives). The relaxed match keeps those plugins
@@ -128,10 +128,16 @@ pub fn filter_current_platform(
 ) -> std::collections::HashMap<String, Item> {
     let mut out = std::collections::HashMap::new();
     for (ver, items) in vl {
-        for item in items {
-            if os_matches(&item.os, os) && arch_matches(&item.arch, arch) {
-                out.insert(ver.clone(), item.clone());
-            }
+        let best = items
+            .iter()
+            .filter(|item| os_matches(&item.os, os) && arch_matches(&item.arch, arch))
+            .max_by_key(|item| {
+                let exact_os = item.os == os
+                    || (os == "darwin" && (item.os == "macos" || item.os == "osx"));
+                (exact_os, item.arch == arch)
+            });
+        if let Some(item) = best {
+            out.insert(ver.clone(), item.clone());
         }
     }
     out
@@ -179,6 +185,30 @@ mod tests {
         assert_eq!(out["1.0"].os, "unix");
         let darwin = filter_current_platform(&vl, "darwin", "arm64");
         assert_eq!(darwin["1.0"].os, "macos");
+    }
+
+    #[test]
+    fn filter_prefers_exact_platform_over_later_generic_item() {
+        let mut vl = VersionList::new();
+        vl.insert(
+            "1.0".into(),
+            vec![
+                Item {
+                    os: "windows".into(),
+                    arch: "amd64".into(),
+                    url: "native".into(),
+                    ..Default::default()
+                },
+                Item {
+                    os: "any".into(),
+                    arch: "any".into(),
+                    url: "generic".into(),
+                    ..Default::default()
+                },
+            ],
+        );
+        let out = filter_current_platform(&vl, "windows", "amd64");
+        assert_eq!(out["1.0"].url, "native");
     }
 
     #[test]

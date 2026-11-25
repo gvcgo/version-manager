@@ -70,7 +70,7 @@ fn add_bunx(bin_dir: &Path) {
 pub fn run_post_install(
     plugin_name: &str,
     install_root: &Path,
-    _item: &Item,
+    item: &Item,
 ) -> Result<(), String> {
     if EXEC_PLUGINS.contains(&plugin_name) {
         if let Some(found) = shallow_find(install_root, plugin_name, 3) {
@@ -85,6 +85,79 @@ pub fn run_post_install(
     if plugin_name == "rustup" {
         if let Some(init) = shallow_find(install_root, "rustup-init", 3) {
             chmod_x(&init);
+        }
+    }
+    if plugin_name == "moonbit" {
+        if let Err(err) = install_moonbit_core(install_root, item) {
+            let _ = fs::remove_dir_all(install_root);
+            return Err(err);
+        }
+    }
+    Ok(())
+}
+
+fn install_moonbit_core(install_root: &Path, item: &Item) -> Result<(), String> {
+    if item.extra.is_empty() {
+        return Err("MoonBit core archive URL is missing".to_string());
+    }
+    let root = fs::canonicalize(install_root).map_err(|e| e.to_string())?;
+    let bin = root.join("bin");
+    let lib = root.join("lib");
+    let moon = bin.join(if cfg!(windows) { "moon.exe" } else { "moon" });
+    for entry in fs::read_dir(&bin).map_err(|e| format!("read MoonBit bin: {e}"))? {
+        let path = entry.map_err(|e| e.to_string())?.path();
+        if path.is_file() {
+            chmod_x(&path);
+        }
+    }
+    chmod_x(&bin.join("internal").join("tcc"));
+    let moonx = bin.join(if cfg!(windows) { "moonx.exe" } else { "moonx" });
+    if !moonx.exists() {
+        fs::hard_link(&moon, &moonx).map_err(|e| format!("link moonx: {e}"))?;
+    }
+
+    fs::create_dir_all(&lib).map_err(|e| e.to_string())?;
+    let archive = root.join(if item.extra.ends_with(".zip") {
+        "moonbit-core.zip"
+    } else {
+        "moonbit-core.tar.gz"
+    });
+    let result = (|| -> Result<(), String> {
+        let (url, proxy) = vmr_net::resolve_chain(&item.extra);
+        let client = vmr_net::Fetcher::new(proxy).map_err(|e| e.to_string())?;
+        let mut response = client.client().get(&url)
+            .send()
+            .and_then(|r| r.error_for_status())
+            .map_err(|e| format!("download MoonBit core: {e}"))?;
+        let mut file = fs::File::create(&archive).map_err(|e| e.to_string())?;
+        std::io::copy(&mut response, &mut file)
+            .map_err(|e| format!("download MoonBit core: {e}"))?;
+        drop(file);
+        vmr_utils::extract::extract(&archive, &lib)
+            .map_err(|e| format!("extract MoonBit core: {e}"))?;
+        Ok(())
+    })();
+    let _ = fs::remove_file(&archive);
+    result?;
+
+    let path = std::env::join_paths(
+        std::iter::once(bin.clone()).chain(std::env::split_paths(
+            &std::env::var_os("PATH").unwrap_or_default(),
+        )),
+    ).map_err(|e| format!("set MoonBit PATH: {e}"))?;
+    for args in [
+        &["bundle", "--warn-list", "-a", "--all"][..],
+        &["bundle", "--warn-list", "-a", "--target", "wasm-gc", "--quiet"][..],
+    ] {
+        let status = std::process::Command::new(&moon)
+            .args(args)
+            .current_dir(lib.join("core"))
+            .env("MOON_HOME", &root)
+            .env("PATH", &path)
+            .status()
+            .map_err(|e| format!("bundle MoonBit core: {e}"))?;
+        if !status.success() {
+            return Err(format!("bundle MoonBit core failed: {status}"));
         }
     }
     Ok(())

@@ -149,7 +149,7 @@ Missing fields are read as empty strings / `0`.
 | Item value | Constant | Behavior |
 |---|---|---|
 | `unarchiver` | `vmrInstallerUnarchiver` | Download, extract, locate the archive root via `ic.flag_files`, copy it into the install directory. Default for unknown kinds. |
-| `executable` | `vmrInstallerExecutable` | Download one file, copy it into the install directory and mark it executable; honors `ic.binary_rename`. |
+| `executable` | `vmrInstallerExecutable` | Normally copies one downloaded file into the install directory and marks it executable; honors `ic.binary_rename`. The `miniconda` and `git-win` plugins instead run their installers into the version directory. |
 | `conda` | `vmrInstallerConda` | Install through the embedded pixi/rattler backend; the package name is `plugin_name`. `url`/`sum` are ignored. |
 | `conda-forge` | `vmrInstallerCondaForge` | Same backend as `conda`. |
 | `coursier` | `vmrInstallerCoursier` | Run the `cs` executable (`VMR_COURSIER_PATH`, default `cs`) with `--install-dir`; requires `cs` on the machine. |
@@ -173,8 +173,8 @@ therefore use the conda package name as `plugin_name`.
 
 Item `arch` matches exactly or is `any`.
 
-If several items for one version match, the **last** matching item wins. Emit the most specific
-asset last, or emit only one item per platform.
+If several items for one version match, VMR prefers an exact OS match, then an exact architecture
+match. When specificity is equal, the last matching item wins.
 
 ### 3.3 Version names and ordering
 
@@ -226,6 +226,7 @@ How the fields are consumed:
   When a platform has no groups, the install root itself is added.
 - `additional_envs`: the path group is joined under the install root and exported as
   `NAME=<absolute path>` if it exists. An empty group points at the install root (e.g. `GOROOT`).
+  Paths from entries with the same name are joined using the platform path separator.
 - `binary_rename` applies only to the `executable` installer.
 
 Example:
@@ -481,6 +482,7 @@ end
 | Function | Result |
 |---|---|
 | `vmrGetOsArch()` | Two strings, Go naming: `linux`/`darwin`/`windows`, `amd64`/`arm64`/`386` |
+| `vmrHasAvx2()` | Whether the current x86 CPU supports AVX2; `false` on other architectures |
 
 #### Strings and regex
 

@@ -37,6 +37,14 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
         Ok((os, arch))
     })?;
 
+    register_fn(lua, "vmrHasAvx2", |_, ()| {
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+        let supported = std::is_x86_feature_detected!("avx2");
+        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+        let supported = false;
+        Ok(supported)
+    })?;
+
     register_fn(
         lua,
         "vmrRegexpFindString",

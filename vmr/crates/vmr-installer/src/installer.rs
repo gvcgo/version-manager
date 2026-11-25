@@ -59,15 +59,28 @@ impl InstallRequest {
     }
 
     fn is_installed(&self) -> bool {
-        std::fs::read_dir(self.install_dir())
-            .map(|mut it| it.next().is_some())
-            .unwrap_or(false)
+        let dir = self.install_dir();
+        match self.plugin_name.as_str() {
+            "miniconda" => dir.join(if cfg!(windows) { "Scripts/conda.exe" } else { "bin/conda" }).is_file(),
+            "git-win" => dir.join("cmd/git.exe").is_file(),
+            "clojure" => dir.join(if cfg!(windows) { "bin/clojure.cmd" } else { "bin/clojure" }).is_file(),
+            _ => std::fs::read_dir(dir)
+                .map(|mut it| it.next().is_some())
+                .unwrap_or(false),
+        }
     }
 
     /// Installs when not yet installed; returns whether it was newly installed.
     fn ensure_installed(&self) -> Result<bool, String> {
         if self.is_installed() {
             return Ok(false);
+        }
+        if matches!(self.plugin_name.as_str(), "miniconda" | "git-win" | "clojure")
+            && std::fs::read_dir(self.install_dir())
+                .map(|mut entries| entries.next().is_some())
+                .unwrap_or(false)
+        {
+            return Err(format!("incomplete {} installation at {}; uninstall it before retrying", self.plugin_name, self.install_dir().display()));
         }
         match self.version.installer.as_str() {
             installer_kind::CONDA | installer_kind::CONDA_FORGE => {
@@ -92,6 +105,9 @@ impl InstallRequest {
         let work = temp.join(format!("extract-{}", self.plugin_name.replace('.', "_")));
         let _ = std::fs::remove_dir_all(&work);
         std::fs::create_dir_all(&work).map_err(|e| e.to_string())?;
+        if self.plugin_name == "vscode" && cached.extension().is_some_and(|ext| ext == "dmg") {
+            return install_vscode_dmg(&cached, &work, &self.install_dir(), &self.ic);
+        }
 
         let result = (|| -> Result<(), String> {
             extract(&cached, &work).map_err(|e| format!("extract failed: {e}"))?;
@@ -103,6 +119,12 @@ impl InstallRequest {
             let home = finder.get_dir_name().ok_or("can't find dir to copy")?;
 
             copy_directory(&home, &self.install_dir()).map_err(|e| format!("copy failed: {e}"))?;
+            if self.plugin_name == "clojure" {
+                if let Err(e) = setup_clojure(&self.install_dir()) {
+                    let _ = std::fs::remove_dir_all(self.install_dir());
+                    return Err(e);
+                }
+            }
             Ok(())
         })();
         let _ = std::fs::remove_dir_all(&work);
@@ -111,6 +133,9 @@ impl InstallRequest {
 
     fn install_via_executable(&self) -> Result<(), String> {
         let cached = download_to_cache(&self.plugin_name, &self.version_name, &self.version)?;
+        if self.plugin_name == "miniconda" || self.plugin_name == "git-win" {
+            return self.install_vendor_executable(&cached);
+        }
         let dir = self.install_dir();
         std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
         let name = cached.file_name().ok_or("bad file")?;
@@ -141,6 +166,52 @@ impl InstallRequest {
             }
         }
         Ok(())
+    }
+
+    fn install_vendor_executable(&self, cached: &Path) -> Result<(), String> {
+        let dir = self.install_dir();
+        let parent = dir.parent().ok_or("installation directory has no parent")?;
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        let mut cmd;
+        if self.plugin_name == "miniconda" {
+            if cfg!(windows) {
+                cmd = std::process::Command::new(cached);
+                cmd.args(["/InstallationType=JustMe", "/RegisterPython=0", "/S"]);
+                #[cfg(windows)]
+                {
+                    use std::os::windows::process::CommandExt;
+                    let mut destination = std::ffi::OsString::from("/D=");
+                    destination.push(&dir);
+                    cmd.raw_arg(destination);
+                }
+            } else {
+                cmd = std::process::Command::new("sh");
+                cmd.arg(cached).arg("-b").arg("-p").arg(&dir);
+            }
+        } else {
+            if !cfg!(windows) {
+                return Err("Git for Windows can only be installed on Windows".to_string());
+            }
+            cmd = std::process::Command::new(cached);
+            let mut destination = std::ffi::OsString::from("-o");
+            destination.push(&dir);
+            cmd.arg("-y").arg(destination);
+        }
+        cmd.stdin(std::process::Stdio::null());
+        if std::env::var_os("VMR_MCP_SERVER").is_some() {
+            cmd.stdout(std::process::Stdio::null());
+        }
+        let result = cmd.status().map_err(|e| format!("installer failed: {e}")).and_then(|status| {
+            if status.success() && self.is_installed() {
+                Ok(())
+            } else {
+                Err(format!("{} installer failed or did not produce the expected executable: {status}", self.plugin_name))
+            }
+        });
+        if result.is_err() {
+            let _ = std::fs::remove_dir_all(&dir);
+        }
+        result
     }
 
     fn install_via_coursier(&self) -> Result<(), String> {
@@ -514,6 +585,92 @@ fn patch_extracted_single_file(work: &Path, sdk_name: &str) {
     }
 }
 
+
+fn setup_clojure(dir: &Path) -> Result<(), String> {
+    let bin = dir.join("bin");
+    std::fs::create_dir_all(&bin).map_err(|e| e.to_string())?;
+    if cfg!(windows) {
+        for name in ["clojure", "clj"] {
+            let script = "$ErrorActionPreference = 'Stop'\r\nImport-Module (Join-Path $PSScriptRoot '..\\ClojureTools.psd1')\r\nInvoke-Clojure @args\r\nif ($null -ne $LASTEXITCODE) { exit $LASTEXITCODE }\r\n";
+            std::fs::write(bin.join(format!("{name}.ps1")), script).map_err(|e| e.to_string())?;
+            let launcher = format!("@echo off\r\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%~dp0{name}.ps1\" %*\r\nexit /b %errorlevel%\r\n");
+            std::fs::write(bin.join(format!("{name}.cmd")), launcher).map_err(|e| e.to_string())?;
+        }
+    } else {
+        let lib = dir.join("lib/clojure");
+        let libexec = lib.join("libexec");
+        std::fs::create_dir_all(&libexec).map_err(|e| e.to_string())?;
+        for name in ["deps.edn", "example-deps.edn", "tools.edn"] {
+            let source = dir.join(name);
+            if source.exists() {
+                std::fs::rename(&source, lib.join(name)).map_err(|e| e.to_string())?;
+            }
+        }
+        for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            if entry.path().extension().is_some_and(|ext| ext == "jar") {
+                std::fs::rename(entry.path(), libexec.join(entry.file_name())).map_err(|e| e.to_string())?;
+            }
+        }
+        for (name, placeholder, target) in [("clojure", "PREFIX", &lib), ("clj", "BINDIR", &bin)] {
+            let source = dir.join(name);
+            let script = std::fs::read_to_string(&source).map_err(|e| e.to_string())?;
+            let path = target.to_str().ok_or("Clojure installation path is not UTF-8")?;
+            let quoted = format!("'{}'", path.replace('\'', "'\\''"));
+            if !script.contains(placeholder) {
+                return Err(format!("Clojure launcher is missing {placeholder}"));
+            }
+            let dest = bin.join(name);
+            std::fs::write(&dest, script.replace(placeholder, &quoted)).map_err(|e| e.to_string())?;
+            chmod_x(&dest);
+            std::fs::remove_file(source).map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
+
+fn install_vscode_dmg(cached: &Path, work: &Path, dir: &Path, ic: &InstallerConfig) -> Result<(), String> {
+    if !cfg!(target_os = "macos") {
+        return Err("VS Code disk images require macOS".to_string());
+    }
+    let unique = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+        .map_err(|e| e.to_string())?.as_nanos();
+    let mount = paths::temp_dir().join(format!("vscode-mount-{}-{unique}", std::process::id()));
+    std::fs::create_dir_all(&mount).map_err(|e| e.to_string())?;
+    let status = std::process::Command::new("hdiutil")
+        .args(["attach", "-nobrowse", "-readonly", "-mountpoint"])
+        .arg(&mount)
+        .arg(cached)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .status().map_err(|e| format!("mount VS Code disk image: {e}"))?;
+    if !status.success() {
+        let _ = std::fs::remove_dir_all(&mount);
+        let _ = std::fs::remove_dir_all(work);
+        return Err(format!("mount VS Code disk image failed: {status}"));
+    }
+    let result = (|| {
+        let mut finder = HomeDirFinder::new(flag_files_for(ic, current_os()));
+        finder.find(&mount);
+        let home = finder.get_dir_name().ok_or("can't find VS Code app in disk image")?;
+        copy_directory(&home, dir).map_err(|e| format!("copy VS Code app failed: {e}"))
+    })();
+    let detach = std::process::Command::new("hdiutil")
+        .arg("detach").arg(&mount)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .status().map_err(|e| format!("unmount VS Code disk image: {e}"));
+    if result.is_err() {
+        let _ = std::fs::remove_dir_all(dir);
+    }
+    let detach = detach?;
+    if !detach.success() {
+        return Err(format!("unmount VS Code disk image failed: {detach}; mount remains at {}", mount.display()));
+    }
+    let _ = std::fs::remove_dir(&mount);
+    let _ = std::fs::remove_dir_all(work);
+    result
+}
 fn current_os() -> String {
     if cfg!(windows) {
         "windows".to_string()
@@ -642,6 +799,28 @@ mod remove_path_tests {
     use super::remove_path;
     use super::test_dir;
     use std::fs;
+
+    #[cfg(unix)]
+    #[test]
+    fn installs_clojure_launchers_and_libraries_in_version_directory() {
+        let base = test_dir("clojure-layout");
+        let dir = base.join("version with ' quote");
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("clojure"), "#!/bin/sh\ninstall_dir=PREFIX\nprintf '%s' \"$install_dir\"\n").unwrap();
+        fs::write(dir.join("clj"), "#!/bin/sh\nbin_dir=BINDIR\nprintf '%s' \"$bin_dir\"\n").unwrap();
+        fs::write(dir.join("deps.edn"), "{}").unwrap();
+        fs::write(dir.join("example-deps.edn"), "{}").unwrap();
+        fs::write(dir.join("clojure-tools-1.jar"), "jar").unwrap();
+        super::setup_clojure(&dir).unwrap();
+        assert!(dir.join("lib/clojure/deps.edn").is_file());
+        assert!(dir.join("lib/clojure/libexec/clojure-tools-1.jar").is_file());
+        for (name, expected) in [("clojure", dir.join("lib/clojure")), ("clj", dir.join("bin"))] {
+            let output = std::process::Command::new(dir.join("bin").join(name)).output().unwrap();
+            assert!(output.status.success());
+            assert_eq!(String::from_utf8(output.stdout).unwrap(), expected.to_str().unwrap());
+        }
+        fs::remove_dir_all(base).unwrap();
+    }
 
     #[test]
     fn removes_a_descendant_inside_root() {
