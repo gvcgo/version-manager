@@ -19,7 +19,6 @@ use crate::common::{install_dir, sdk_version_dir, symbol_link_path};
 use crate::download::download_to_cache;
 use crate::locker::VersionLocker;
 use crate::pixi_env;
-use crate::post::run_post_install;
 
 pub const ADD_TO_PATH_TEMPORARILY_ENV: &str = "VMR_ADD_TO_PATH_TEMPORARILY";
 
@@ -58,59 +57,82 @@ impl InstallRequest {
         symbol_link_path(&self.sdk_name)
     }
 
-    fn is_installed(&self) -> bool {
-        let dir = self.install_dir();
-        match self.plugin_name.as_str() {
-            "miniconda" => dir.join(if cfg!(windows) { "Scripts/conda.exe" } else { "bin/conda" }).is_file(),
-            "git-win" => dir.join("cmd/git.exe").is_file(),
-            "clojure" => dir.join(if cfg!(windows) { "bin/clojure.cmd" } else { "bin/clojure" }).is_file(),
-            _ => std::fs::read_dir(dir)
-                .map(|mut it| it.next().is_some())
-                .unwrap_or(false),
-        }
-    }
-
-    /// Installs when not yet installed; returns whether it was newly installed.
     fn ensure_installed(&self) -> Result<bool, String> {
-        if self.is_installed() {
+        let dir = self.install_dir();
+        if existing_install(&dir)? {
             return Ok(false);
         }
-        if matches!(self.plugin_name.as_str(), "miniconda" | "git-win" | "clojure")
-            && std::fs::read_dir(self.install_dir())
-                .map(|mut entries| entries.next().is_some())
-                .unwrap_or(false)
-        {
-            return Err(format!("incomplete {} installation at {}; uninstall it before retrying", self.plugin_name, self.install_dir().display()));
+
+        let pixi = matches!(self.version.installer.as_str(), installer_kind::CONDA | installer_kind::CONDA_FORGE);
+        let plugin = if pixi {
+            None
+        } else {
+            Some(vmr_lua::Plugins::new().get_by_plugin_name(&self.plugin_name)
+                .ok_or_else(|| format!("plugin not found: {}", self.plugin_name))?)
+        };
+        let custom = match &plugin {
+            Some(plugin) => plugin.has_install()?,
+            None => false,
+        };
+        if !custom && self.version.installer == installer_kind::COURSIER {
+            ensure_command("cs").map_err(|_| "coursier is not installed".to_string())?;
         }
-        match self.version.installer.as_str() {
-            installer_kind::CONDA | installer_kind::CONDA_FORGE => {
-                self.install_via_pixi()?;
+        let parent = dir.parent().ok_or("installation directory has no parent")?;
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        std::fs::create_dir(&dir).map_err(|e| format!("cannot create installation directory {}: {e}", dir.display()))?;
+
+        let result = (|| {
+            let archive = if custom && !self.version.url.is_empty()
+                || !custom && matches!(self.version.installer.as_str(), installer_kind::EXECUTABLE | installer_kind::DPKG | installer_kind::RPM)
+                || !custom && !matches!(self.version.installer.as_str(), installer_kind::CONDA | installer_kind::CONDA_FORGE | installer_kind::COURSIER)
+            {
+                Some(download_to_cache(&self.plugin_name, &self.version_name, &self.version)?)
+            } else {
+                None
+            };
+            if custom {
+                let path = dir.to_str().ok_or("installation path is not UTF-8")?;
+                let archive = archive.as_deref().map(|p| p.to_str().ok_or("archive path is not UTF-8")).transpose()?.unwrap_or("");
+                if !plugin.as_ref().unwrap().call_install(path, &self.version_name, &self.version, archive)? {
+                    return Err("install hook disappeared".to_string());
+                }
+            } else {
+                match self.version.installer.as_str() {
+                    installer_kind::CONDA | installer_kind::CONDA_FORGE => self.install_via_pixi()?,
+                    installer_kind::COURSIER => self.install_via_coursier()?,
+                    installer_kind::EXECUTABLE | installer_kind::DPKG | installer_kind::RPM => self.install_via_executable(archive.as_deref().unwrap())?,
+                    _ => self.install_via_unarchiver(archive.as_deref().unwrap())?,
+                }
             }
-            installer_kind::COURSIER => {
-                self.install_via_coursier()?;
+            if let Some(plugin) = &plugin {
+                let path = dir.to_str().ok_or("installation path is not UTF-8")?;
+                let archive = archive.as_deref().map(|p| p.to_str().ok_or("archive path is not UTF-8")).transpose()?.unwrap_or("");
+                plugin.call_post_install(path, &self.version_name, &self.version, archive)?;
             }
-            installer_kind::EXECUTABLE | installer_kind::DPKG | installer_kind::RPM => {
-                self.install_via_executable()?;
+            let mut entries = std::fs::read_dir(&dir).map_err(|e| format!("installation directory missing or unreadable: {e}"))?;
+            if entries.next().transpose().map_err(|e| e.to_string())?.is_none() {
+                return Err("installation produced an empty directory".to_string());
             }
-            _ => self.install_via_unarchiver()?,
+            if pixi {
+                pixi_env::mark_prefix(&dir)?;
+            }
+            Ok(())
+        })();
+        if result.is_err() {
+            let _ = std::fs::remove_dir_all(&dir);
         }
-        run_post_install(&self.plugin_name, &self.install_dir(), &self.version)?;
-        Ok(true)
+        result.map(|()| true)
     }
 
-    fn install_via_unarchiver(&self) -> Result<(), String> {
-        let cached = download_to_cache(&self.plugin_name, &self.version_name, &self.version)?;
+    fn install_via_unarchiver(&self, cached: &Path) -> Result<(), String> {
         let temp = paths::temp_dir();
-        // Clean up leftovers from the last run (only vmr-rust-owned subdirectories).
-        let work = temp.join(format!("extract-{}", self.plugin_name.replace('.', "_")));
-        let _ = std::fs::remove_dir_all(&work);
-        std::fs::create_dir_all(&work).map_err(|e| e.to_string())?;
-        if self.plugin_name == "vscode" && cached.extension().is_some_and(|ext| ext == "dmg") {
-            return install_vscode_dmg(&cached, &work, &self.install_dir(), &self.ic);
-        }
+        let unique = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+            .map_err(|e| e.to_string())?.as_nanos();
+        let work = temp.join(format!("extract-{}-{unique}", std::process::id()));
+        std::fs::create_dir(&work).map_err(|e| e.to_string())?;
 
         let result = (|| -> Result<(), String> {
-            extract(&cached, &work).map_err(|e| format!("extract failed: {e}"))?;
+            extract(cached, &work).map_err(|e| format!("extract failed: {e}"))?;
             patch_extracted_single_file(&work, &self.sdk_name);
 
             let mut finder = HomeDirFinder::new(flag_files_for(&self.ic, current_os()));
@@ -119,28 +141,18 @@ impl InstallRequest {
             let home = finder.get_dir_name().ok_or("can't find dir to copy")?;
 
             copy_directory(&home, &self.install_dir()).map_err(|e| format!("copy failed: {e}"))?;
-            if self.plugin_name == "clojure" {
-                if let Err(e) = setup_clojure(&self.install_dir()) {
-                    let _ = std::fs::remove_dir_all(self.install_dir());
-                    return Err(e);
-                }
-            }
             Ok(())
         })();
         let _ = std::fs::remove_dir_all(&work);
         result
     }
 
-    fn install_via_executable(&self) -> Result<(), String> {
-        let cached = download_to_cache(&self.plugin_name, &self.version_name, &self.version)?;
-        if self.plugin_name == "miniconda" || self.plugin_name == "git-win" {
-            return self.install_vendor_executable(&cached);
-        }
+    fn install_via_executable(&self, cached: &Path) -> Result<(), String> {
         let dir = self.install_dir();
         std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
         let name = cached.file_name().ok_or("bad file")?;
         let dest = dir.join(name);
-        vmr_utils::copy::copy_a_file(&cached, &dest).map_err(|e| e.to_string())?;
+        vmr_utils::copy::copy_a_file(cached, &dest).map_err(|e| e.to_string())?;
         if !cfg!(windows) {
             chmod_x(&dest);
         }
@@ -168,51 +180,6 @@ impl InstallRequest {
         Ok(())
     }
 
-    fn install_vendor_executable(&self, cached: &Path) -> Result<(), String> {
-        let dir = self.install_dir();
-        let parent = dir.parent().ok_or("installation directory has no parent")?;
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        let mut cmd;
-        if self.plugin_name == "miniconda" {
-            if cfg!(windows) {
-                cmd = std::process::Command::new(cached);
-                cmd.args(["/InstallationType=JustMe", "/RegisterPython=0", "/S"]);
-                #[cfg(windows)]
-                {
-                    use std::os::windows::process::CommandExt;
-                    let mut destination = std::ffi::OsString::from("/D=");
-                    destination.push(&dir);
-                    cmd.raw_arg(destination);
-                }
-            } else {
-                cmd = std::process::Command::new("sh");
-                cmd.arg(cached).arg("-b").arg("-p").arg(&dir);
-            }
-        } else {
-            if !cfg!(windows) {
-                return Err("Git for Windows can only be installed on Windows".to_string());
-            }
-            cmd = std::process::Command::new(cached);
-            let mut destination = std::ffi::OsString::from("-o");
-            destination.push(&dir);
-            cmd.arg("-y").arg(destination);
-        }
-        cmd.stdin(std::process::Stdio::null());
-        if std::env::var_os("VMR_MCP_SERVER").is_some() {
-            cmd.stdout(std::process::Stdio::null());
-        }
-        let result = cmd.status().map_err(|e| format!("installer failed: {e}")).and_then(|status| {
-            if status.success() && self.is_installed() {
-                Ok(())
-            } else {
-                Err(format!("{} installer failed or did not produce the expected executable: {status}", self.plugin_name))
-            }
-        });
-        if result.is_err() {
-            let _ = std::fs::remove_dir_all(&dir);
-        }
-        result
-    }
 
     fn install_via_coursier(&self) -> Result<(), String> {
         let cs = std::env::var("VMR_COURSIER_PATH").unwrap_or_else(|_| "cs".to_string());
@@ -307,16 +274,8 @@ pub fn remove_sdk_path_from_process(sdk_name: &str) {
 /// Downloads/extracts the version when missing and records the pixi backend; returns whether
 /// it was newly installed. No symlink, global env or session side effects.
 fn install_version(req: &InstallRequest) -> Result<bool, String> {
-    if req.version.installer == installer_kind::COURSIER {
-        // Prerequisite: the coursier binary must exist (Go behavior intentionally kept).
-        ensure_command("cs").map_err(|_| "coursier is not installed".to_string())?;
-    }
     let newly = req.ensure_installed()?;
-    // conda/conda-forge packages are always installed through the pixi/rattler backend.
-    // Record the backend before any env work: `conda-meta/` alone is not a marker because a
-    // plugin-installed Miniconda prefix also has one. Marking an already-installed prefix
-    // here also upgrades prefixes created before the marker existed.
-    if matches!(
+    if !newly && matches!(
         req.version.installer.as_str(),
         installer_kind::CONDA | installer_kind::CONDA_FORGE
     ) {
@@ -585,92 +544,23 @@ fn patch_extracted_single_file(work: &Path, sdk_name: &str) {
     }
 }
 
-
-fn setup_clojure(dir: &Path) -> Result<(), String> {
-    let bin = dir.join("bin");
-    std::fs::create_dir_all(&bin).map_err(|e| e.to_string())?;
-    if cfg!(windows) {
-        for name in ["clojure", "clj"] {
-            let script = "$ErrorActionPreference = 'Stop'\r\nImport-Module (Join-Path $PSScriptRoot '..\\ClojureTools.psd1')\r\nInvoke-Clojure @args\r\nif ($null -ne $LASTEXITCODE) { exit $LASTEXITCODE }\r\n";
-            std::fs::write(bin.join(format!("{name}.ps1")), script).map_err(|e| e.to_string())?;
-            let launcher = format!("@echo off\r\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%~dp0{name}.ps1\" %*\r\nexit /b %errorlevel%\r\n");
-            std::fs::write(bin.join(format!("{name}.cmd")), launcher).map_err(|e| e.to_string())?;
-        }
-    } else {
-        let lib = dir.join("lib/clojure");
-        let libexec = lib.join("libexec");
-        std::fs::create_dir_all(&libexec).map_err(|e| e.to_string())?;
-        for name in ["deps.edn", "example-deps.edn", "tools.edn"] {
-            let source = dir.join(name);
-            if source.exists() {
-                std::fs::rename(&source, lib.join(name)).map_err(|e| e.to_string())?;
+fn existing_install(dir: &Path) -> Result<bool, String> {
+    match std::fs::symlink_metadata(dir) {
+        Ok(meta) if meta.is_dir() => {
+            let mut entries = std::fs::read_dir(dir).map_err(|e| e.to_string())?;
+            if entries.next().transpose().map_err(|e| e.to_string())?.is_some() {
+                Ok(true)
+            } else {
+                Err(format!("installation directory already exists: {}", dir.display()))
             }
         }
-        for entry in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
-            let entry = entry.map_err(|e| e.to_string())?;
-            if entry.path().extension().is_some_and(|ext| ext == "jar") {
-                std::fs::rename(entry.path(), libexec.join(entry.file_name())).map_err(|e| e.to_string())?;
-            }
-        }
-        for (name, placeholder, target) in [("clojure", "PREFIX", &lib), ("clj", "BINDIR", &bin)] {
-            let source = dir.join(name);
-            let script = std::fs::read_to_string(&source).map_err(|e| e.to_string())?;
-            let path = target.to_str().ok_or("Clojure installation path is not UTF-8")?;
-            let quoted = format!("'{}'", path.replace('\'', "'\\''"));
-            if !script.contains(placeholder) {
-                return Err(format!("Clojure launcher is missing {placeholder}"));
-            }
-            let dest = bin.join(name);
-            std::fs::write(&dest, script.replace(placeholder, &quoted)).map_err(|e| e.to_string())?;
-            chmod_x(&dest);
-            std::fs::remove_file(source).map_err(|e| e.to_string())?;
-        }
+        Ok(_) => Err(format!("installation path already exists: {}", dir.display())),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(e) => Err(e.to_string()),
     }
-    Ok(())
 }
 
-fn install_vscode_dmg(cached: &Path, work: &Path, dir: &Path, ic: &InstallerConfig) -> Result<(), String> {
-    if !cfg!(target_os = "macos") {
-        return Err("VS Code disk images require macOS".to_string());
-    }
-    let unique = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
-        .map_err(|e| e.to_string())?.as_nanos();
-    let mount = paths::temp_dir().join(format!("vscode-mount-{}-{unique}", std::process::id()));
-    std::fs::create_dir_all(&mount).map_err(|e| e.to_string())?;
-    let status = std::process::Command::new("hdiutil")
-        .args(["attach", "-nobrowse", "-readonly", "-mountpoint"])
-        .arg(&mount)
-        .arg(cached)
-        .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
-        .status().map_err(|e| format!("mount VS Code disk image: {e}"))?;
-    if !status.success() {
-        let _ = std::fs::remove_dir_all(&mount);
-        let _ = std::fs::remove_dir_all(work);
-        return Err(format!("mount VS Code disk image failed: {status}"));
-    }
-    let result = (|| {
-        let mut finder = HomeDirFinder::new(flag_files_for(ic, current_os()));
-        finder.find(&mount);
-        let home = finder.get_dir_name().ok_or("can't find VS Code app in disk image")?;
-        copy_directory(&home, dir).map_err(|e| format!("copy VS Code app failed: {e}"))
-    })();
-    let detach = std::process::Command::new("hdiutil")
-        .arg("detach").arg(&mount)
-        .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
-        .status().map_err(|e| format!("unmount VS Code disk image: {e}"));
-    if result.is_err() {
-        let _ = std::fs::remove_dir_all(dir);
-    }
-    let detach = detach?;
-    if !detach.success() {
-        return Err(format!("unmount VS Code disk image failed: {detach}; mount remains at {}", mount.display()));
-    }
-    let _ = std::fs::remove_dir(&mount);
-    let _ = std::fs::remove_dir_all(work);
-    result
-}
+
 fn current_os() -> String {
     if cfg!(windows) {
         "windows".to_string()
@@ -799,28 +689,24 @@ mod remove_path_tests {
     use super::remove_path;
     use super::test_dir;
     use std::fs;
-
-    #[cfg(unix)]
     #[test]
-    fn installs_clojure_launchers_and_libraries_in_version_directory() {
-        let base = test_dir("clojure-layout");
-        let dir = base.join("version with ' quote");
-        fs::create_dir_all(&dir).unwrap();
-        fs::write(dir.join("clojure"), "#!/bin/sh\ninstall_dir=PREFIX\nprintf '%s' \"$install_dir\"\n").unwrap();
-        fs::write(dir.join("clj"), "#!/bin/sh\nbin_dir=BINDIR\nprintf '%s' \"$bin_dir\"\n").unwrap();
-        fs::write(dir.join("deps.edn"), "{}").unwrap();
-        fs::write(dir.join("example-deps.edn"), "{}").unwrap();
-        fs::write(dir.join("clojure-tools-1.jar"), "jar").unwrap();
-        super::setup_clojure(&dir).unwrap();
-        assert!(dir.join("lib/clojure/deps.edn").is_file());
-        assert!(dir.join("lib/clojure/libexec/clojure-tools-1.jar").is_file());
-        for (name, expected) in [("clojure", dir.join("lib/clojure")), ("clj", dir.join("bin"))] {
-            let output = std::process::Command::new(dir.join("bin").join(name)).output().unwrap();
-            assert!(output.status.success());
-            assert_eq!(String::from_utf8(output.stdout).unwrap(), expected.to_str().unwrap());
-        }
+    fn preserves_existing_installation_paths() {
+        let base = test_dir("existing-install");
+        let dir = base.join("version");
+        assert!(!super::existing_install(&dir).unwrap());
+        fs::create_dir(&dir).unwrap();
+        assert!(super::existing_install(&dir).is_err());
+        fs::write(dir.join("user-file"), "keep").unwrap();
+        assert!(super::existing_install(&dir).unwrap());
+        assert_eq!(fs::read_to_string(dir.join("user-file")).unwrap(), "keep");
+        fs::remove_dir_all(&dir).unwrap();
+        fs::write(&dir, "keep").unwrap();
+        assert!(super::existing_install(&dir).is_err());
+        assert_eq!(fs::read_to_string(&dir).unwrap(), "keep");
         fs::remove_dir_all(base).unwrap();
     }
+
+
 
     #[test]
     fn removes_a_descendant_inside_root() {
