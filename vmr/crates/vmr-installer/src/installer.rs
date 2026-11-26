@@ -19,7 +19,6 @@ use crate::common::{install_dir, sdk_version_dir, symbol_link_path};
 use crate::download::download_to_cache;
 use crate::locker::VersionLocker;
 use crate::pixi_env;
-use crate::post::run_post_install;
 
 pub const ADD_TO_PATH_TEMPORARILY_ENV: &str = "VMR_ADD_TO_PATH_TEMPORARILY";
 
@@ -58,43 +57,82 @@ impl InstallRequest {
         symbol_link_path(&self.sdk_name)
     }
 
-    fn is_installed(&self) -> bool {
-        std::fs::read_dir(self.install_dir())
-            .map(|mut it| it.next().is_some())
-            .unwrap_or(false)
-    }
-
-    /// Installs when not yet installed; returns whether it was newly installed.
     fn ensure_installed(&self) -> Result<bool, String> {
-        if self.is_installed() {
+        let dir = self.install_dir();
+        if existing_install(&dir)? {
             return Ok(false);
         }
-        match self.version.installer.as_str() {
-            installer_kind::CONDA | installer_kind::CONDA_FORGE => {
-                self.install_via_pixi()?;
-            }
-            installer_kind::COURSIER => {
-                self.install_via_coursier()?;
-            }
-            installer_kind::EXECUTABLE | installer_kind::DPKG | installer_kind::RPM => {
-                self.install_via_executable()?;
-            }
-            _ => self.install_via_unarchiver()?,
+
+        let pixi = matches!(self.version.installer.as_str(), installer_kind::CONDA | installer_kind::CONDA_FORGE);
+        let plugin = if pixi {
+            None
+        } else {
+            Some(vmr_lua::Plugins::new().get_by_plugin_name(&self.plugin_name)
+                .ok_or_else(|| format!("plugin not found: {}", self.plugin_name))?)
+        };
+        let custom = match &plugin {
+            Some(plugin) => plugin.has_install()?,
+            None => false,
+        };
+        if !custom && self.version.installer == installer_kind::COURSIER {
+            ensure_command("cs").map_err(|_| "coursier is not installed".to_string())?;
         }
-        run_post_install(&self.plugin_name, &self.install_dir(), &self.version)?;
-        Ok(true)
+        let parent = dir.parent().ok_or("installation directory has no parent")?;
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        std::fs::create_dir(&dir).map_err(|e| format!("cannot create installation directory {}: {e}", dir.display()))?;
+
+        let result = (|| {
+            let archive = if custom && !self.version.url.is_empty()
+                || !custom && matches!(self.version.installer.as_str(), installer_kind::EXECUTABLE | installer_kind::DPKG | installer_kind::RPM)
+                || !custom && !matches!(self.version.installer.as_str(), installer_kind::CONDA | installer_kind::CONDA_FORGE | installer_kind::COURSIER)
+            {
+                Some(download_to_cache(&self.plugin_name, &self.version_name, &self.version)?)
+            } else {
+                None
+            };
+            if custom {
+                let path = dir.to_str().ok_or("installation path is not UTF-8")?;
+                let archive = archive.as_deref().map(|p| p.to_str().ok_or("archive path is not UTF-8")).transpose()?.unwrap_or("");
+                if !plugin.as_ref().unwrap().call_install(path, &self.version_name, &self.version, archive)? {
+                    return Err("install hook disappeared".to_string());
+                }
+            } else {
+                match self.version.installer.as_str() {
+                    installer_kind::CONDA | installer_kind::CONDA_FORGE => self.install_via_pixi()?,
+                    installer_kind::COURSIER => self.install_via_coursier()?,
+                    installer_kind::EXECUTABLE | installer_kind::DPKG | installer_kind::RPM => self.install_via_executable(archive.as_deref().unwrap())?,
+                    _ => self.install_via_unarchiver(archive.as_deref().unwrap())?,
+                }
+            }
+            if let Some(plugin) = &plugin {
+                let path = dir.to_str().ok_or("installation path is not UTF-8")?;
+                let archive = archive.as_deref().map(|p| p.to_str().ok_or("archive path is not UTF-8")).transpose()?.unwrap_or("");
+                plugin.call_post_install(path, &self.version_name, &self.version, archive)?;
+            }
+            let mut entries = std::fs::read_dir(&dir).map_err(|e| format!("installation directory missing or unreadable: {e}"))?;
+            if entries.next().transpose().map_err(|e| e.to_string())?.is_none() {
+                return Err("installation produced an empty directory".to_string());
+            }
+            if pixi {
+                pixi_env::mark_prefix(&dir)?;
+            }
+            Ok(())
+        })();
+        if result.is_err() {
+            let _ = std::fs::remove_dir_all(&dir);
+        }
+        result.map(|()| true)
     }
 
-    fn install_via_unarchiver(&self) -> Result<(), String> {
-        let cached = download_to_cache(&self.plugin_name, &self.version_name, &self.version)?;
+    fn install_via_unarchiver(&self, cached: &Path) -> Result<(), String> {
         let temp = paths::temp_dir();
-        // Clean up leftovers from the last run (only vmr-rust-owned subdirectories).
-        let work = temp.join(format!("extract-{}", self.plugin_name.replace('.', "_")));
-        let _ = std::fs::remove_dir_all(&work);
-        std::fs::create_dir_all(&work).map_err(|e| e.to_string())?;
+        let unique = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+            .map_err(|e| e.to_string())?.as_nanos();
+        let work = temp.join(format!("extract-{}-{unique}", std::process::id()));
+        std::fs::create_dir(&work).map_err(|e| e.to_string())?;
 
         let result = (|| -> Result<(), String> {
-            extract(&cached, &work).map_err(|e| format!("extract failed: {e}"))?;
+            extract(cached, &work).map_err(|e| format!("extract failed: {e}"))?;
             patch_extracted_single_file(&work, &self.sdk_name);
 
             let mut finder = HomeDirFinder::new(flag_files_for(&self.ic, current_os()));
@@ -109,13 +147,12 @@ impl InstallRequest {
         result
     }
 
-    fn install_via_executable(&self) -> Result<(), String> {
-        let cached = download_to_cache(&self.plugin_name, &self.version_name, &self.version)?;
+    fn install_via_executable(&self, cached: &Path) -> Result<(), String> {
         let dir = self.install_dir();
         std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
         let name = cached.file_name().ok_or("bad file")?;
         let dest = dir.join(name);
-        vmr_utils::copy::copy_a_file(&cached, &dest).map_err(|e| e.to_string())?;
+        vmr_utils::copy::copy_a_file(cached, &dest).map_err(|e| e.to_string())?;
         if !cfg!(windows) {
             chmod_x(&dest);
         }
@@ -142,6 +179,7 @@ impl InstallRequest {
         }
         Ok(())
     }
+
 
     fn install_via_coursier(&self) -> Result<(), String> {
         let cs = std::env::var("VMR_COURSIER_PATH").unwrap_or_else(|_| "cs".to_string());
@@ -236,16 +274,8 @@ pub fn remove_sdk_path_from_process(sdk_name: &str) {
 /// Downloads/extracts the version when missing and records the pixi backend; returns whether
 /// it was newly installed. No symlink, global env or session side effects.
 fn install_version(req: &InstallRequest) -> Result<bool, String> {
-    if req.version.installer == installer_kind::COURSIER {
-        // Prerequisite: the coursier binary must exist (Go behavior intentionally kept).
-        ensure_command("cs").map_err(|_| "coursier is not installed".to_string())?;
-    }
     let newly = req.ensure_installed()?;
-    // conda/conda-forge packages are always installed through the pixi/rattler backend.
-    // Record the backend before any env work: `conda-meta/` alone is not a marker because a
-    // plugin-installed Miniconda prefix also has one. Marking an already-installed prefix
-    // here also upgrades prefixes created before the marker existed.
-    if matches!(
+    if !newly && matches!(
         req.version.installer.as_str(),
         installer_kind::CONDA | installer_kind::CONDA_FORGE
     ) {
@@ -514,6 +544,23 @@ fn patch_extracted_single_file(work: &Path, sdk_name: &str) {
     }
 }
 
+fn existing_install(dir: &Path) -> Result<bool, String> {
+    match std::fs::symlink_metadata(dir) {
+        Ok(meta) if meta.is_dir() => {
+            let mut entries = std::fs::read_dir(dir).map_err(|e| e.to_string())?;
+            if entries.next().transpose().map_err(|e| e.to_string())?.is_some() {
+                Ok(true)
+            } else {
+                Err(format!("installation directory already exists: {}", dir.display()))
+            }
+        }
+        Ok(_) => Err(format!("installation path already exists: {}", dir.display())),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+
 fn current_os() -> String {
     if cfg!(windows) {
         "windows".to_string()
@@ -642,6 +689,24 @@ mod remove_path_tests {
     use super::remove_path;
     use super::test_dir;
     use std::fs;
+    #[test]
+    fn preserves_existing_installation_paths() {
+        let base = test_dir("existing-install");
+        let dir = base.join("version");
+        assert!(!super::existing_install(&dir).unwrap());
+        fs::create_dir(&dir).unwrap();
+        assert!(super::existing_install(&dir).is_err());
+        fs::write(dir.join("user-file"), "keep").unwrap();
+        assert!(super::existing_install(&dir).unwrap());
+        assert_eq!(fs::read_to_string(dir.join("user-file")).unwrap(), "keep");
+        fs::remove_dir_all(&dir).unwrap();
+        fs::write(&dir, "keep").unwrap();
+        assert!(super::existing_install(&dir).is_err());
+        assert_eq!(fs::read_to_string(&dir).unwrap(), "keep");
+        fs::remove_dir_all(base).unwrap();
+    }
+
+
 
     #[test]
     fn removes_a_descendant_inside_root() {

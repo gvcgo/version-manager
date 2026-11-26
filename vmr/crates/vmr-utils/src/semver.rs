@@ -32,11 +32,15 @@ const MAX_INT: i64 = i64::MAX;
 /// `\d` in Go's RE2 is ASCII-only, hence `[0-9]` is used.
 static VERSION_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[0-9]+(.[0-9]+){0,2}").unwrap());
 /// beta segment: `beta\.*\d+` (Go `betaRegexp`).
-static BETA_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"beta\.*[0-9]+").unwrap());
+static BETA_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"beta[.-]*[0-9]+").unwrap());
 /// rc segment: `rc\.*\d+` (Go `rcRegexp`).
-static RC_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"rc\.*[0-9]+").unwrap());
+static RC_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"rc[.-]*[0-9]+").unwrap());
+static MILESTONE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"-(?:milestone|m)(?:[.-]?([0-9]+))?(?:$|[.-])").unwrap());
 /// In-segment number: `\d+` (Go `numRegexp`).
 static NUM_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[0-9]+").unwrap());
+static DEV_DATE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^dev-([0-9]{4})-([0-9]{2})([a-z]?)$").unwrap());
 
 /// Numeric decomposition of a version string (mirrors Go `Version`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,6 +57,16 @@ pub struct Version {
 /// returning an error).
 pub fn parse_version(version: &str) -> Option<Version> {
     let version = version.to_lowercase();
+    if let Some(date) = DEV_DATE_RE.captures(&version) {
+        return Some(Version {
+            major: date[1].parse().unwrap_or(0),
+            minor: date[2].parse().unwrap_or(0),
+            patch: date[3].bytes().next().map_or(0, |b| i64::from(b - b'a' + 1)),
+            build: 0,
+            beta: MAX_INT,
+            rc: MAX_INT,
+        });
+    }
     let numeric = VERSION_RE.find(&version)?.as_str();
 
     let mut v = Version {
@@ -96,6 +110,13 @@ pub fn parse_version(version: &str) -> Option<Version> {
     }
     if v.rc == 0 {
         v.rc = if version.contains("rc") { 1 } else { MAX_INT };
+    }
+    if let Some(milestone) = MILESTONE_RE.captures(&version) {
+        let number = milestone
+            .get(1)
+            .and_then(|m| m.as_str().parse::<i64>().ok())
+            .unwrap_or(1);
+        v.beta = i64::MIN.saturating_add(number);
     }
     Some(v)
 }
@@ -306,6 +327,20 @@ mod tests {
         let beta = parse_version("1.2.3-beta1").unwrap();
         assert_eq!(compare_fields_desc(&stable, &rc), Ordering::Less); // stable first
         assert_eq!(compare_fields_desc(&rc, &beta), Ordering::Less); // rc first
+        let milestone1 = parse_version("2.0.0-M1").unwrap();
+        let milestone2 = parse_version("2.0.0-M2").unwrap();
+        let beta17 = parse_version("2.0.0-beta.17").unwrap();
+        let beta18 = parse_version("2.0.0-beta.18").unwrap();
+        let rc = parse_version("2.0.0-RC").unwrap();
+        let stable = parse_version("2.0.0").unwrap();
+        assert_eq!(compare_fields_asc(&milestone1, &milestone2), Ordering::Less);
+        assert_eq!(compare_fields_asc(&milestone2, &beta17), Ordering::Less);
+        assert_eq!(compare_fields_asc(&beta17, &beta18), Ordering::Less);
+        assert_eq!(compare_fields_asc(&beta18, &rc), Ordering::Less);
+        assert_eq!(compare_fields_asc(&rc, &stable), Ordering::Less);
+        assert_eq!(parse_version("2.0.0-M").unwrap(), milestone1);
+        assert_eq!(parse_version("2.0.0-milestone.2").unwrap(), milestone2);
+        assert_eq!(parse_version("2.0.0-RC-2").unwrap().rc, 2);
     }
 
     #[test]
@@ -347,6 +382,28 @@ mod tests {
         assert_eq!(
             list,
             ["1.2.3-beta1", "1.2.3-rc1", "1.2.3", "1.9.0", "2.0.0"]
+        );
+
+        let mut dates = vec![
+            "dev-2026-11a".to_string(),
+            "dev-2026-09".to_string(),
+            "dev-2025-12".to_string(),
+            "dev-2026-11".to_string(),
+            "dev-2026-11b".to_string(),
+        ];
+        sort_versions_ascend(&mut dates);
+        assert_eq!(
+            dates,
+            ["dev-2025-12", "dev-2026-09", "dev-2026-11", "dev-2026-11a", "dev-2026-11b"]
+        );
+        sort_versions(&mut dates);
+        assert_eq!(
+            dates,
+            ["dev-2026-11b", "dev-2026-11a", "dev-2026-11", "dev-2026-09", "dev-2025-12"]
+        );
+        assert_eq!(
+            compare_versions("dev-2026-11a", "dev-2026-10"),
+            Some(Ordering::Greater)
         );
     }
 

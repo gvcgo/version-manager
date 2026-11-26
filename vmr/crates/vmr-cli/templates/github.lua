@@ -21,6 +21,12 @@ ic = C.installer({
     flag_dir_excepted = true,
 })
 
+-- Optional: run SDK-specific setup after installation. Return true on success.
+-- path is the install directory; item describes the release; archive may be empty.
+-- function postInstall(path, version, item, archive)
+--     return true
+-- end
+
 function crawl()
     return C.github({
         repo = "owner/repo",

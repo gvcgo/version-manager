@@ -7,8 +7,6 @@
 //! - Version retrieval: cache first (`<cache>/<plugin>/<plugin>.versions.json`, fresh within the retention
 //!   period and cache not disabled); otherwise run `crawl()` live and filter by the current os/arch
 //!   (keeping the **last** matching Item, mirroring Go), then write the cache.
-//! - Install callbacks: when the `install`/`postInstall` global functions exist they are called with arguments, and
-//!   their returned string must be "true" to count as success (Go `getFuncFromLua` semantics).
 
 use std::collections::HashMap;
 use std::fs;
@@ -304,29 +302,69 @@ impl Plugin {
         ic_from_global(lua).ok_or_else(|| "installer config not found".to_string())
     }
 
-    /// Invokes the optional custom handler function (install/postInstall).
-    pub fn call_handler(&self, name: &str, args: &[&str]) -> Result<(), String> {
+    pub fn has_install(&self) -> Result<bool, String> {
+        Ok(self.handler(CUSTOM_INSTALL)?.is_some())
+    }
+
+    pub fn call_install(
+        &self,
+        path: &str,
+        version: &str,
+        item: &Item,
+        archive: &str,
+    ) -> Result<bool, String> {
+        self.call_install_handler(CUSTOM_INSTALL, path, version, item, archive)
+    }
+
+    pub fn call_post_install(
+        &self,
+        path: &str,
+        version: &str,
+        item: &Item,
+        archive: &str,
+    ) -> Result<bool, String> {
+        self.call_install_handler(POST_INSTALL, path, version, item, archive)
+    }
+
+    fn handler(&self, name: &str) -> Result<Option<mlua::Function>, String> {
         let lua = self.lua.as_ref().ok_or("plugin not loaded")?;
-        let v: mlua::Value = lua
-            .globals()
-            .get(name)
-            .map_err(|_| format!("{name} missing"))?;
-        let mlua::Value::Function(f) = v else {
-            return Ok(());
+        match lua.globals().get::<mlua::Value>(name) {
+            Ok(mlua::Value::Nil) => Ok(None),
+            Ok(mlua::Value::Function(f)) => Ok(Some(f)),
+            Ok(value) => Err(format!("{name} must be a function, got {}", value.type_name())),
+            Err(e) => Err(format!("failed to look up {name}: {e}")),
+        }
+    }
+
+    fn call_install_handler(
+        &self,
+        name: &str,
+        path: &str,
+        version: &str,
+        item: &Item,
+        archive: &str,
+    ) -> Result<bool, String> {
+        let Some(handler) = self.handler(name)? else {
+            return Ok(false);
         };
-        let mut av: Vec<mlua::Value> = Vec::new();
-        for a in args {
-            av.push(mlua::Value::String(
-                lua.create_string(a).map_err(|e| e.to_string())?,
-            ));
+        let lua = self.lua.as_ref().ok_or("plugin not loaded")?;
+        let table = lua.create_table().map_err(|e| format!("{name}: {e}"))?;
+        table.set("url", item.url.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        table.set("arch", item.arch.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        table.set("os", item.os.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        table.set("sum", item.sum.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        table.set("sum_type", item.sum_type.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        table.set("size", item.size).map_err(|e| format!("{name}: {e}"))?;
+        table.set("installer", item.installer.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        table.set("lts", item.lts.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        table.set("extra", item.extra.as_str()).map_err(|e| format!("{name}: {e}"))?;
+        let result: mlua::Value = handler
+            .call((path, version, table, archive))
+            .map_err(|e| format!("{name} handler failed: {e}"))?;
+        if !matches!(result, mlua::Value::Boolean(true)) {
+            return Err(format!("{name} handler must return true, got {}", crate::req::str_of(&result)));
         }
-        let out: mlua::Value = f
-            .call(mlua::MultiValue::from_vec(av))
-            .map_err(|e| e.to_string())?;
-        if crate::req::str_of(&out) != "true" {
-            return Err(format!("{name} handler failed"));
-        }
-        Ok(())
+        Ok(true)
     }
 }
 
@@ -465,5 +503,62 @@ mod tests {
         assert_eq!(versions["1.2.3"].os, os);
         // Sorting: only 1.2.3 → the latest is it.
         assert_eq!(p.sorted_versions(), vec!["1.2.3"]);
+    }
+
+    fn hook_plugin(hooks: &str) -> Plugin {
+        let mut plugin = Plugin::from_content(format!(
+            r#"sdk_name = "testtool"
+            plugin_name = "testtool"
+            homepage = "https://example.com"
+            ic = vmrNewInstallerConfig()
+            function crawl() return {{}} end
+            {hooks}"#
+        ));
+        plugin.load().unwrap();
+        plugin
+    }
+
+    #[test]
+    fn install_hooks_receive_all_arguments() {
+        let plugin = hook_plugin(r#"
+            function install(path, version, item, archive)
+                assert(path == "/install" and version == "1.2.3" and archive == "/archive")
+                assert(item.url == "url" and item.arch == "arch" and item.os == "os")
+                assert(item.sum == "sum" and item.sum_type == "sha256" and item.size == 123)
+                assert(item.installer == "installer" and item.lts == "lts" and item.extra == "extra")
+                return true
+            end
+            function postInstall(path, version, item, archive)
+                assert(path == "/install" and version == "1.2.3" and item.url == "url" and archive == "")
+                return true
+            end
+        "#);
+        let item = Item {
+            url: "url".into(), arch: "arch".into(), os: "os".into(),
+            sum: "sum".into(), sum_type: "sha256".into(), size: 123,
+            installer: "installer".into(), lts: "lts".into(), extra: "extra".into(),
+        };
+        assert_eq!(plugin.has_install(), Ok(true));
+        assert_eq!(plugin.call_install("/install", "1.2.3", &item, "/archive"), Ok(true));
+        assert_eq!(plugin.call_post_install("/install", "1.2.3", &item, ""), Ok(true));
+    }
+
+    #[test]
+    fn install_hooks_distinguish_absence_and_errors() {
+        let item = Item::default();
+        let plugin = hook_plugin("");
+        assert_eq!(plugin.has_install(), Ok(false));
+        assert_eq!(plugin.call_install("", "", &item, ""), Ok(false));
+        assert_eq!(plugin.call_post_install("", "", &item, ""), Ok(false));
+
+        let plugin = hook_plugin("install = 42; function postInstall() error('specific failure') end");
+        assert!(plugin.has_install().unwrap_err().contains("install must be a function"));
+        assert!(plugin.call_install("", "", &item, "").is_err());
+        assert!(plugin.call_post_install("", "", &item, "").unwrap_err().contains("specific failure"));
+
+        let plugin = hook_plugin("function install() return false end; function postInstall() return 'true' end");
+        assert!(plugin.call_install("", "", &item, "").unwrap_err().contains("must return true"));
+        assert!(plugin.call_post_install("", "", &item, "").unwrap_err().contains("must return true"));
+        assert!(Plugin::from_content(String::new()).has_install().is_err());
     }
 }

@@ -20,6 +20,12 @@ ic = C.installer({
     },
 })
 
+-- Optional: run SDK-specific setup after installation. Return true on success.
+-- path is the install directory; item describes the release; archive may be empty.
+-- function postInstall(path, version, item, archive)
+--     return true
+-- end
+
 function crawl()
     -- `C.pixi` searches the conda-forge repodata cache/channel for the package name.
     -- Combine with `C.github` via `vmrMergeVersionList` when upstream also ships archives.

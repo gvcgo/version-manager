@@ -9,6 +9,9 @@
 运行时为 Lua 5.4（`mlua`，内置 vendored Lua）。每个插件在独立的 Lua state 中执行，全局变量不会
 在插件之间泄漏。完整 Lua 标准库可用，包括 `dofile`、`os` 和 `io`。
 
+插件不受沙箱限制：它们以当前用户的权限运行，可以执行命令、访问文件以及发起网络请求（包括访问
+内网地址）。只应从可信来源安装和更新插件。插件作者应在下载前验证远程版本数据的来源和 URL。
+
 ## 1. 文件布局与发现流程
 
 | 项目 | 取值 |
@@ -57,8 +60,8 @@ vmr template json --dir ./plugins  # 写入 ./plugins/json.lua
 |---|---|---|
 | `plugin_version` | string | 插件版本，`vmr plugins` 会显示；不参与排序或安装。 |
 | `prequisite` | string | 旧元数据；会被读取，但当前 CLI 不强制执行。 |
-| `install(path, version)` | function | 旧的自定义安装钩子，见 §9。 |
-| `postInstall(path, version)` | function | 旧的安装后钩子，见 §9。 |
+| `install(path, version, item, archive)` | function | 可选的自定义安装钩子，见 §9。 |
+| `postInstall(path, version, item, archive)` | function | 可选的安装后钩子，见 §9。 |
 
 元数据全局变量也可以写成返回字符串的无参函数：
 
@@ -145,7 +148,7 @@ vl = vmrMergeVersionList(vl, other_vl)
 | Item 取值 | 常量 | 行为 |
 |---|---|---|
 | `unarchiver` | `vmrInstallerUnarchiver` | 下载、解压，通过 `ic.flag_files` 定位压缩包根目录，再复制到安装目录。未知类型的默认行为。 |
-| `executable` | `vmrInstallerExecutable` | 下载单个文件，复制到安装目录并加可执行权限；支持 `ic.binary_rename`。 |
+| `executable` | `vmrInstallerExecutable` | 将下载的单个文件复制到安装目录并加可执行权限；支持 `ic.binary_rename`。 |
 | `conda` | `vmrInstallerConda` | 通过内置 pixi/rattler 安装；包名为 `plugin_name`，忽略 `url`/`sum`。 |
 | `conda-forge` | `vmrInstallerCondaForge` | 与 `conda` 使用同一后端。 |
 | `coursier` | `vmrInstallerCoursier` | 调用 `cs`（`VMR_COURSIER_PATH`，默认 `cs`）并传 `--install-dir`；要求机器上已安装 `cs`。 |
@@ -168,8 +171,8 @@ vl = vmrMergeVersionList(vl, other_vl)
 
 Item `arch` 精确匹配，或为 `any`。
 
-同一版本有多个条目匹配时，**最后一个**匹配项生效。请把更精确的资源放在后面，或每个平台只输出
-一个条目。
+同一版本有多个条目匹配时，VMR 优先选择系统精确匹配的条目，其次选择架构精确匹配的条目。
+精确程度相同时，最后一个匹配项生效。
 
 ### 3.3 版本名与排序
 
@@ -216,7 +219,7 @@ use → 选择 Item → 按 Item.installer 安装 → 后处理 → 注入环境
 - `binary_dirs`：每组路径拼接到安装根目录下，存在时加入 `PATH`。某平台没有配置时，安装根目录本身
   会加入 `PATH`。
 - `additional_envs`：路径组拼接到安装根目录下，存在时导出为 `NAME=<绝对路径>`。空路径组指向安装
-  根目录（如 `GOROOT`）。
+  根目录（如 `GOROOT`）。同名条目的路径使用平台路径分隔符合并。
 - `binary_rename` 仅对 `executable` 安装类型生效。
 
 示例：
@@ -465,6 +468,7 @@ end
 | 函数 | 结果 |
 |---|---|
 | `vmrGetOsArch()` | 两个字符串，采用 Go 命名：`linux`/`darwin`/`windows`，`amd64`/`arm64`/`386` |
+| `vmrHasAvx2()` | 当前 x86 CPU 是否支持 AVX2；其他架构返回 `false` |
 
 #### 字符串与正则
 
@@ -496,6 +500,8 @@ local parts, n = vmrSplit("linux-amd64", "-")  -- {"linux", "amd64"}, 2
 | `vmrGetOsEnv(key)` | 环境变量值，或 `""` |
 | `vmrSetOsEnv(key, value)` | 布尔成功标志；影响 vmr 进程及其子进程 |
 | `vmrExecSystemCmd(collect_stdout, workdir, args)` | 返回 `stdout, ok`；`args` 是 table（`{ "git", "ls-remote", url }`）。非零退出或启动失败时 `ok = false`；`collect_stdout` 为 false 或失败时 `stdout` 为 `""` |
+| `vmrExecSystemCmdEnv(workdir, args, env)` | 使用额外环境变量执行命令，返回布尔值 |
+| `vmrExecDirect(collect_stdout, workdir, args, raw_last?)` | 不经过 shell 执行，返回 `stdout, ok`；Windows 上可选的 `raw_last` 不进行参数转义，必须是可信输入 |
 
 #### 文件与压缩包
 
@@ -507,6 +513,15 @@ local parts, n = vmrSplit("linux-amd64", "-")  -- {"linux", "amd64"}, 2
 | `vmrCopyDir(src, dst)` | 布尔值 |
 | `vmrCreateDir(dir)` | 布尔值；会创建父目录；空路径返回 `false` |
 | `vmrRemoveAll(dir)` | 布尔值；路径已不存在也算成功 |
+| `vmrDownloadFile(url, destination)` | 使用 VMR 网络配置下载；返回布尔值，不覆盖已有文件 |
+| `vmrChmodExecutable(path)` / `vmrChmodDirFiles(dir)` | 给文件或目录下的直接文件添加可执行权限，返回布尔值 |
+| `vmrSymlink(target, link)` / `vmrHardLink(target, link)` | 创建链接，返回布尔值 |
+| `vmrFileExists(path)` / `vmrRemoveFile(path)` | 检查路径是否存在或删除文件，返回布尔值 |
+| `vmrExtract(src, dst)` | 解压到指定目录，返回布尔值 |
+| `vmrFindHome(dir, flags, except_dir)` | 按标记查找压缩包根目录，未找到返回 `""` |
+| `vmrFindFile(root, name, depth)` | 按名称和深度查找文件，未找到返回 `""` |
+| `vmrReadDir(path)` | 返回目录条目名称，失败返回 `nil` |
+| `vmrTempDir()` / `vmrCanonicalPath(path)` | 返回临时目录或规范路径，失败返回 `""` |
 | `vmrUnarchive(src, dst, single_name, single_exe)` | 解压到 `dst`。单个压缩文件可用 `single_name` 指定输出名（空 = 源文件名）；`single_exe = true` 会加可执行权限。支持 zip、tar、gzip、bzip2、xz、zstd（包括单文件压缩） |
 
 ## 8. 常量
@@ -521,12 +536,14 @@ local parts, n = vmrSplit("linux-amd64", "-")  -- {"linux", "amd64"}, 2
 | `vmrInstallerDpkg` | `"dpkg"` |
 | `vmrInstallerRpm` | `"rpm"` |
 
-## 9. 旧的安装钩子
+## 9. 安装钩子
 
-插件加载器仍识别 `install(path, version)` 和 `postInstall(path, version)`。
-`Plugin::call_handler` 会把两个参数作为字符串传入，只有钩子返回字符串 `"true"` 时才视为成功。当前
-CLI 的安装流程按 `Item.installer` 分派并执行内置后处理，不会自动调用这两个钩子。请把安装行为编码
-到 `Item.installer` 和 `ic` 中；可移植插件不应依赖它们。
+可选的 `install(path, version, item, archive)` 代替默认安装器。若 `item.url` 非空，
+VMR 会先下载资源并通过 `archive` 传入缓存文件路径。安装成功后，VMR 调用可选的
+`postInstall(path, version, item, archive)`。`path` 是版本安装目录，`version` 是请求的版本，
+`item` 是所选发行资源的 Lua table。钩子成功时必须返回 `true`，失败时抛出错误；失败的安装不会激活。
+
+钩子以 VMR 当前用户的权限运行，只应安装可信插件。
 
 ## 10. 共享辅助模块（`_vmr_common.lua`）
 

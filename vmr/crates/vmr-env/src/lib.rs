@@ -71,7 +71,14 @@ pub fn collect(ic: &InstallerConfig, install_dir: &str, os: &str) -> EnvBundle {
     // AdditionalEnvs: concatenate each path; only existing paths enter the result, and
     // same-name ones are joined with the separator.
     for env in &ic.additional_envs {
-        out.env_vars.extend(collect_additional_env(env, base));
+        for (name, value) in collect_additional_env(env, base) {
+            if let Some((_, existing)) = out.env_vars.iter_mut().find(|(key, _)| key == &name) {
+                existing.push(sep());
+                existing.push_str(&value);
+            } else {
+                out.env_vars.push((name, value));
+            }
+        }
     }
     out
 }
@@ -264,6 +271,29 @@ mod tests {
         assert_eq!(
             b.env_vars,
             vec![("GOROOT".to_string(), dir.to_string_lossy().into_owned())]
+        );
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn collect_combines_same_named_paths() {
+        let dir = std::env::temp_dir().join(format!("vmr-env-merge-{}", std::process::id()));
+        mkdirs(&dir, &["lib"]);
+        fs::write(dir.join("lib/a.jar"), "").unwrap();
+        fs::write(dir.join("lib/b.jar"), "").unwrap();
+        let mut ic = InstallerConfig::new();
+        for name in ["a.jar", "b.jar"] {
+            ic.additional_envs.push(AdditionalEnv {
+                name: "CLASSPATH".into(),
+                value: vec![vec!["lib".into(), name.into()]],
+                ..Default::default()
+            });
+        }
+        let bundle = collect(&ic, dir.to_str().unwrap(), "linux");
+        assert_eq!(bundle.env_vars.len(), 1);
+        assert_eq!(
+            bundle.env_vars[0].1,
+            format!("{}{}{}", dir.join("lib/a.jar").display(), sep(), dir.join("lib/b.jar").display())
         );
         let _ = fs::remove_dir_all(&dir);
     }

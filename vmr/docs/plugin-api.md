@@ -10,6 +10,11 @@ The Lua runtime is Lua 5.4 (`mlua`, vendored). Each plugin is executed in its ow
 globals do not leak between plugins. The full Lua standard library, including `dofile`,
 `os`, and `io`, is available.
 
+Plugins are not sandboxed: they run with the current user's permissions and can execute
+commands, access files, and make network requests, including to internal addresses. Install
+and update plugins only from sources you trust. Plugin authors should validate the sources
+and URLs of remote version data before downloading from them.
+
 ## 1. File layout and discovery
 
 | Item | Value |
@@ -59,8 +64,8 @@ A plugin is a plain Lua script. It assigns global variables and defines `crawl()
 |---|---|---|
 | `plugin_version` | string | Plugin revision shown by `vmr plugins`. Not used for sorting or installs. |
 | `prequisite` | string | Legacy metadata; parsed but not enforced by the current CLI. |
-| `install(path, version)` | function | Legacy custom-install hook. See §9. |
-| `postInstall(path, version)` | function | Legacy post-install hook. See §9. |
+| `install(path, version, item, archive)` | function | Optional custom installer; see §9. |
+| `postInstall(path, version, item, archive)` | function | Optional post-install hook; see §9. |
 
 A metadata global may also be a zero-argument function returning a string:
 
@@ -149,7 +154,7 @@ Missing fields are read as empty strings / `0`.
 | Item value | Constant | Behavior |
 |---|---|---|
 | `unarchiver` | `vmrInstallerUnarchiver` | Download, extract, locate the archive root via `ic.flag_files`, copy it into the install directory. Default for unknown kinds. |
-| `executable` | `vmrInstallerExecutable` | Download one file, copy it into the install directory and mark it executable; honors `ic.binary_rename`. |
+| `executable` | `vmrInstallerExecutable` | Copy one downloaded file into the install directory and mark it executable; honors `ic.binary_rename`. |
 | `conda` | `vmrInstallerConda` | Install through the embedded pixi/rattler backend; the package name is `plugin_name`. `url`/`sum` are ignored. |
 | `conda-forge` | `vmrInstallerCondaForge` | Same backend as `conda`. |
 | `coursier` | `vmrInstallerCoursier` | Run the `cs` executable (`VMR_COURSIER_PATH`, default `cs`) with `--install-dir`; requires `cs` on the machine. |
@@ -173,8 +178,8 @@ therefore use the conda package name as `plugin_name`.
 
 Item `arch` matches exactly or is `any`.
 
-If several items for one version match, the **last** matching item wins. Emit the most specific
-asset last, or emit only one item per platform.
+If several items for one version match, VMR prefers an exact OS match, then an exact architecture
+match. When specificity is equal, the last matching item wins.
 
 ### 3.3 Version names and ordering
 
@@ -226,6 +231,7 @@ How the fields are consumed:
   When a platform has no groups, the install root itself is added.
 - `additional_envs`: the path group is joined under the install root and exported as
   `NAME=<absolute path>` if it exists. An empty group points at the install root (e.g. `GOROOT`).
+  Paths from entries with the same name are joined using the platform path separator.
 - `binary_rename` applies only to the `executable` installer.
 
 Example:
@@ -481,6 +487,7 @@ end
 | Function | Result |
 |---|---|
 | `vmrGetOsArch()` | Two strings, Go naming: `linux`/`darwin`/`windows`, `amd64`/`arm64`/`386` |
+| `vmrHasAvx2()` | Whether the current x86 CPU supports AVX2; `false` on other architectures |
 
 #### Strings and regex
 
@@ -512,6 +519,8 @@ local parts, n = vmrSplit("linux-amd64", "-")  -- {"linux", "amd64"}, 2
 | `vmrGetOsEnv(key)` | Environment value, or `""` |
 | `vmrSetOsEnv(key, value)` | Boolean success; affects the vmr process and its children |
 | `vmrExecSystemCmd(collect_stdout, workdir, args)` | Returns `stdout, ok`; `args` is a table (`{ "git", "ls-remote", url }`). `ok = false` on a non-zero exit or spawn failure; `stdout` is `""` when `collect_stdout` is false or on failure |
+| `vmrExecSystemCmdEnv(workdir, args, env)` | Run with additional environment variables; returns a boolean |
+| `vmrExecDirect(collect_stdout, workdir, args, raw_last?)` | Run directly without a shell; returns `stdout, ok`. On Windows `raw_last`, when supplied, is passed without argument quoting and must be trusted |
 
 #### Files and archives
 
@@ -523,6 +532,15 @@ local parts, n = vmrSplit("linux-amd64", "-")  -- {"linux", "amd64"}, 2
 | `vmrCopyDir(src, dst)` | Boolean |
 | `vmrCreateDir(dir)` | Boolean; creates parents; empty path returns `false` |
 | `vmrRemoveAll(dir)` | Boolean; succeeds when the path no longer exists |
+| `vmrDownloadFile(url, destination)` | Download through VMR's network configuration; returns a boolean and never overwrites an existing file |
+| `vmrChmodExecutable(path)` / `vmrChmodDirFiles(dir)` | Make a file or the immediate files in a directory executable; returns a boolean |
+| `vmrSymlink(target, link)` / `vmrHardLink(target, link)` | Create a link; returns a boolean |
+| `vmrFileExists(path)` / `vmrRemoveFile(path)` | Check existence or remove a file; returns a boolean |
+| `vmrExtract(src, dst)` | Extract an archive into a directory; returns a boolean |
+| `vmrFindHome(dir, flags, except_dir)` | Find an archive root by flags, or return `""` |
+| `vmrFindFile(root, name, depth)` | Find a named file up to the given depth, or return `""` |
+| `vmrReadDir(path)` | Return entry names, or `nil` on failure |
+| `vmrTempDir()` / `vmrCanonicalPath(path)` | Return a temporary directory or canonical path, or `""` on failure |
 | `vmrUnarchive(src, dst, single_name, single_exe)` | Extract an archive into `dst`. For a single compressed file, `single_name` overrides the output name (empty = source name); `single_exe = true` adds the executable bit. Supports zip, tar, gzip, bzip2, xz, and zstd (including compressed single files) |
 
 ## 8. Constants
@@ -537,14 +555,16 @@ local parts, n = vmrSplit("linux-amd64", "-")  -- {"linux", "amd64"}, 2
 | `vmrInstallerDpkg` | `"dpkg"` |
 | `vmrInstallerRpm` | `"rpm"` |
 
-## 9. Legacy install hooks
+## 9. Install hooks
 
-The plugin loader still recognizes `install(path, version)` and `postInstall(path, version)`.
-`Plugin::call_handler` passes both arguments as strings and treats the hook as successful only
-when it returns the string `"true"`. The current CLI install pipeline dispatches on
-`Item.installer` and runs built-in post-processing, so these hooks are not invoked automatically.
-Prefer encoding install behavior in `Item.installer` and `ic`; do not rely on the hooks for
-portable plugins.
+An optional `install(path, version, item, archive)` replaces the default installer.
+VMR downloads `item.url` to `archive` before calling it when the URL is nonempty.
+An optional `postInstall(path, version, item, archive)` runs after a successful install.
+`path` is the version installation directory, `version` is the requested version, and `item`
+is the selected release item as a Lua table. Hooks must return `true` on success or raise
+an error on failure. VMR does not activate a failed installation.
+
+Hooks execute with the same user permissions as VMR. Only install trusted plugins.
 
 ## 10. Shared helpers (`_vmr_common.lua`)
 

@@ -37,6 +37,14 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
         Ok((os, arch))
     })?;
 
+    register_fn(lua, "vmrHasAvx2", |_, ()| {
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+        let supported = std::is_x86_feature_detected!("avx2");
+        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+        let supported = false;
+        Ok(supported)
+    })?;
+
     register_fn(
         lua,
         "vmrRegexpFindString",
@@ -170,6 +178,87 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
     register_fn(lua, "vmrCopyDir", |_, (src, dst): (String, String)| {
         Ok(vmr_utils::copy::copy_directory(Path::new(&src), Path::new(&dst)).is_ok())
     })?;
+    register_fn(lua, "vmrDownloadFile", |_, (url, destination): (String, String)| {
+        Ok(download_file(&url, Path::new(&destination)))
+    })?;
+    register_fn(lua, "vmrChmodExecutable", |_, (path,): (String,)| {
+        Ok(chmod_executable(Path::new(&path)))
+    })?;
+    register_fn(lua, "vmrSymlink", |_, (target, link): (String, String)| {
+        Ok(symlink(Path::new(&target), Path::new(&link)))
+    })?;
+    register_fn(lua, "vmrFileExists", |_, (path,): (String,)| {
+        Ok(!path.is_empty() && Path::new(&path).exists())
+    })?;
+    register_fn(lua, "vmrRemoveFile", |_, (path,): (String,)| {
+        Ok(!path.is_empty() && std::fs::remove_file(path).is_ok())
+    })?;
+    register_fn(lua, "vmrExtract", |_, (src, dst): (String, String)| {
+        Ok(!src.is_empty() && !dst.is_empty()
+            && vmr_utils::extract::extract(Path::new(&src), Path::new(&dst)).is_ok())
+    })?;
+    register_fn(lua, "vmrFindHome", |_, (dir, flags, except_dir): (String, Table, bool)| {
+        let mut finder = vmr_utils::find_dir::HomeDirFinder::new(argv(Some(flags)));
+        finder.set_flag_dir_excepted(except_dir);
+        finder.find(Path::new(&dir));
+        Ok(finder.get_dir_name().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default())
+    })?;
+    register_fn(lua, "vmrHardLink", |_, (target, link): (String, String)| {
+        Ok(std::fs::hard_link(target, link).is_ok())
+    })?;
+    register_fn(lua, "vmrFindFile", |_, (root, name, depth): (String, String, usize)| {
+        Ok(find_file(Path::new(&root), &name, depth)
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_default())
+    })?;
+    register_fn(lua, "vmrChmodDirFiles", |_, (dir,): (String,)| {
+        Ok(chmod_dir_files(Path::new(&dir)))
+    })?;
+    register_fn(lua, "vmrReadDir", |lua, (path,): (String,)| {
+        let entries = match std::fs::read_dir(path) {
+            Ok(entries) => entries,
+            Err(_) => return Ok(None),
+        };
+        let table = lua.create_table()?;
+        for entry in entries {
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(_) => return Ok(None),
+            };
+            table.push(entry.file_name().to_string_lossy().as_ref())?;
+        }
+        Ok(Some(table))
+    })?;
+    register_fn(lua, "vmrTempDir", |_, ()| {
+        Ok(temp_dir().unwrap_or_default())
+    })?;
+    register_fn(lua, "vmrExecSystemCmdEnv", |_, (workdir, args, env): (String, Table, Table)| {
+        let args = argv(Some(args));
+        let mut command = match args.split_first() {
+            Some((program, args)) => {
+                let mut command = std::process::Command::new(program);
+                command.args(args);
+                command
+            }
+            None => return Ok(false),
+        };
+        if !workdir.is_empty() {
+            command.current_dir(workdir);
+        }
+        for pair in env.pairs::<String, String>() {
+            let (key, value) = pair?;
+            command.env(key, value);
+        }
+        Ok(command.status().map(|s| s.success()).unwrap_or(false))
+    })?;
+    register_fn(lua, "vmrExecDirect", |_, (collect, workdir, args, raw): (bool, String, Table, Option<String>)| {
+        Ok(exec_direct(collect, &workdir, argv(Some(args)), raw.as_deref()))
+    })?;
+    register_fn(lua, "vmrCanonicalPath", |_, (path,): (String,)| {
+        Ok(std::fs::canonicalize(path)
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_default())
+    })?;
     register_fn(lua, "vmrCreateDir", |_, (dir,): (String,)| {
         if dir.is_empty() {
             return Ok(false);
@@ -203,6 +292,158 @@ pub fn register(lua: &Lua) -> mlua::Result<()> {
         },
     )?;
     Ok(())
+}
+
+fn download_file(url: &str, destination: &Path) -> bool {
+    if url.is_empty() || destination.as_os_str().is_empty() {
+        return false;
+    }
+    let (mapped, proxy) = vmr_net::fetcher::resolve_chain(url);
+    let response = vmr_net::fetcher::Fetcher::new(proxy)
+        .ok()
+        .and_then(|client| client.client().get(&mapped).send().ok())
+        .and_then(|response| response.error_for_status().ok())
+        .or_else(|| {
+            if mapped == url {
+                return None;
+            }
+            vmr_net::fetcher::Fetcher::new(None)
+                .ok()
+                .and_then(|client| client.client().get(url).send().ok())
+                .and_then(|response| response.error_for_status().ok())
+        });
+    let Some(mut response) = response else {
+        return false;
+    };
+    if let Some(parent) = destination.parent().filter(|p| !p.as_os_str().is_empty()) {
+        if std::fs::create_dir_all(parent).is_err() {
+            return false;
+        }
+    }
+    let Ok(mut file) = std::fs::OpenOptions::new().write(true).create_new(true).open(destination) else {
+        return false;
+    };
+    if std::io::copy(&mut response, &mut file).is_err() {
+        drop(file);
+        let _ = std::fs::remove_file(destination);
+        return false;
+    }
+    true
+}
+
+fn chmod_executable(path: &Path) -> bool {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let Ok(metadata) = std::fs::metadata(path) else {
+            return false;
+        };
+        let mut permissions = metadata.permissions();
+        permissions.set_mode(permissions.mode() | 0o111);
+        std::fs::set_permissions(path, permissions).is_ok()
+    }
+    #[cfg(not(unix))]
+    {
+        path.is_file()
+    }
+}
+
+fn symlink(target: &Path, link: &Path) -> bool {
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(target, link).is_ok()
+    }
+    #[cfg(windows)]
+    {
+        let resolved = if target.is_absolute() {
+            target.to_path_buf()
+        } else {
+            link.parent().unwrap_or(Path::new("")).join(target)
+        };
+        if resolved.is_dir() {
+            std::os::windows::fs::symlink_dir(target, link).is_ok()
+        } else {
+            std::os::windows::fs::symlink_file(target, link).is_ok()
+        }
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = (target, link);
+        false
+    }
+}
+
+fn find_file(root: &Path, name: &str, depth: usize) -> Option<std::path::PathBuf> {
+    for entry in std::fs::read_dir(root).ok()? {
+        let entry = entry.ok()?;
+        let ty = entry.file_type().ok()?;
+        if ty.is_file() && entry.file_name() == name {
+            return Some(entry.path());
+        }
+        if depth > 0 && ty.is_dir() {
+            if let Some(path) = find_file(&entry.path(), name, depth - 1) {
+                return Some(path);
+            }
+        }
+    }
+    None
+}
+
+fn chmod_dir_files(dir: &Path) -> bool {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return false;
+    };
+    for entry in entries {
+        let Ok(entry) = entry else { return false };
+        let Ok(ty) = entry.file_type() else { return false };
+        if ty.is_file() && !chmod_executable(&entry.path()) {
+            return false;
+        }
+    }
+    true
+}
+
+fn temp_dir() -> Option<String> {
+    static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    for _ in 0..100 {
+        let id = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!("vmr-{}-{id}", std::process::id()));
+        match std::fs::create_dir(&path) {
+            Ok(()) => return Some(path.to_string_lossy().into_owned()),
+            Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(_) => return None,
+        }
+    }
+    None
+}
+
+fn exec_direct(collect: bool, workdir: &str, args: Vec<String>, raw: Option<&str>) -> (String, bool) {
+    let Some((program, args)) = args.split_first() else {
+        return (String::new(), false);
+    };
+    let mut command = std::process::Command::new(program);
+    command.args(args);
+    if let Some(raw) = raw {
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            command.raw_arg(raw);
+        }
+        #[cfg(not(windows))]
+        command.arg(raw);
+    }
+    if !workdir.is_empty() {
+        command.current_dir(workdir);
+    }
+    if collect {
+        command.stderr(std::process::Stdio::inherit());
+        match command.output() {
+            Ok(output) => (String::from_utf8_lossy(&output.stdout).into_owned(), output.status.success()),
+            Err(_) => (String::new(), false),
+        }
+    } else {
+        (String::new(), command.status().map(|s| s.success()).unwrap_or(false))
+    }
 }
 
 /// Sequential %s substitution (the common fmt.Sprintf("%s") pattern plugins use).
@@ -250,6 +491,48 @@ fn url_join(base: &str, path: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn filesystem_helpers() {
+        let dir = temp_dir().unwrap();
+        let root = Path::new(&dir);
+        let file = root.join("file");
+        std::fs::write(&file, "data").unwrap();
+        assert!(chmod_executable(&file));
+        assert_eq!(find_file(root, "file", 0), Some(file.clone()));
+        assert!(symlink(Path::new("file"), &root.join("link")) || cfg!(windows));
+        let lua = Lua::new();
+        register(&lua).unwrap();
+        let exists: mlua::Function = lua.globals().get("vmrFileExists").unwrap();
+        assert!(exists.call::<bool>(file.to_string_lossy().as_ref()).unwrap());
+        assert!(!exists.call::<bool>("").unwrap());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn download_http_status_and_partial_cleanup() {
+        use std::io::{Read, Write};
+        use std::net::TcpListener;
+        let dir = temp_dir().unwrap();
+        let destination = Path::new(&dir).join("download");
+        for response in [
+            "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n",
+            "HTTP/1.1 200 OK\r\nContent-Length: 10\r\n\r\nshort",
+        ] {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let addr = listener.local_addr().unwrap();
+            let server = std::thread::spawn(move || {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut request = [0; 4096];
+                let _ = stream.read(&mut request);
+                stream.write_all(response.as_bytes()).unwrap();
+            });
+            assert!(!download_file(&format!("http://{addr}/file"), &destination));
+            server.join().unwrap();
+            assert!(!destination.exists());
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 
     #[test]
     fn url_join_shapes() {
