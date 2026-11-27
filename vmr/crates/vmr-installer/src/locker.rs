@@ -5,12 +5,14 @@
 
 use std::collections::HashMap;
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use vmr_core::names::is_valid_name;
 use vmr_core::paths;
 
 pub const LOCKER_FILE_NAME: &str = ".vmr.lock";
+const MAX_LOCK_FILE_SIZE: usize = 1024 * 1024;
 
 #[derive(Debug, Clone, Default)]
 pub struct VersionLocker {
@@ -44,9 +46,18 @@ impl VersionLocker {
             return v;
         };
         v.file = Some(p.clone());
-        let Ok(data) = fs::read_to_string(&p) else {
+        let Ok(file) = fs::File::open(&p) else {
             return v;
         };
+        let mut data = String::new();
+        if file
+            .take((MAX_LOCK_FILE_SIZE + 1) as u64)
+            .read_to_string(&mut data)
+            .is_err()
+            || data.len() > MAX_LOCK_FILE_SIZE
+        {
+            return v;
+        }
         v.parse(&data);
         v
     }
@@ -70,6 +81,9 @@ impl VersionLocker {
     }
 
     pub fn parse(&mut self, content: &str) {
+        if content.len() > MAX_LOCK_FILE_SIZE {
+            return;
+        }
         let content = content.trim();
         if content.is_empty() {
             return;
@@ -147,6 +161,30 @@ mod tests {
         let mut v2 = VersionLocker::default();
         v2.parse("../../projects/app@1");
         assert!(v2.versions.is_empty());
+    }
+
+    #[test]
+    fn load_limits_actual_lock_file_content() {
+        let dir = std::env::temp_dir().join(format!("vmr-locker-limit-test-{}", std::process::id()));
+        fs::create_dir_all(&dir).unwrap();
+        let path = dir.join(LOCKER_FILE_NAME);
+        let prefix = r#"{"go":"1.22.1"}"#;
+        let mut content = prefix.to_string();
+        content.push_str(&" ".repeat(MAX_LOCK_FILE_SIZE - content.len()));
+        fs::write(&path, &content).unwrap();
+        let loaded = VersionLocker::load_from(Some(&dir));
+        assert_eq!(loaded.versions.get("go").map(String::as_str), Some("1.22.1"));
+
+        content.push(' ');
+        fs::write(&path, &content).unwrap();
+        let loaded = VersionLocker::load_from(Some(&dir));
+        assert!(loaded.versions.is_empty());
+        assert_eq!(loaded.lock_dir(), Some(dir.as_path()));
+        fs::write(&path, [0xff]).unwrap();
+        assert!(VersionLocker::load_from(Some(&dir)).versions.is_empty());
+        fs::write(&path, "{invalid json").unwrap();
+        assert!(VersionLocker::load_from(Some(&dir)).versions.is_empty());
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]

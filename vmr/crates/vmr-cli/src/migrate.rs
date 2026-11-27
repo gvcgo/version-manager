@@ -9,6 +9,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::fs;
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
 use regex::Regex;
@@ -18,6 +19,8 @@ use vmr_core::paths;
 pub const ASDF_FREEZE_FILE: &str = "migration_from_asdf.txt";
 pub const VFOX_FREEZE_FILE: &str = "migration_from_vfox.txt";
 pub const SYSTEM_FREEZE_FILE: &str = "migration_from_system.txt";
+
+const MAX_VFOX_TOML_BYTES: u64 = 1024 * 1024;
 
 /// asdf/vfox plugin names whose vmr SDK/plugin name differs.
 const ALIASES: &[(&str, &str)] = &[
@@ -471,8 +474,14 @@ fn read_vfox_global_versions(user_home: &Path) -> (BTreeMap<String, Vec<String>>
         if !path.is_file() {
             continue;
         }
-        let Ok(content) = fs::read_to_string(&path) else {
-            return (BTreeMap::new(), Vec::new());
+        let content = match read_vfox_toml(&path) {
+            Ok(content) => content,
+            Err(e) => {
+                return (
+                    BTreeMap::new(),
+                    vec![format!("failed to read {}: {e}", path.display())],
+                );
+            }
         };
         return parse_vfox_toml(&content);
     }
@@ -481,6 +490,20 @@ fn read_vfox_global_versions(user_home: &Path) -> (BTreeMap<String, Vec<String>>
         .map(|content| parse_tool_versions(&content))
         .unwrap_or_default();
     (candidates, Vec::new())
+}
+
+fn read_vfox_toml(path: &Path) -> io::Result<String> {
+    let mut content = String::new();
+    fs::File::open(path)?
+        .take(MAX_VFOX_TOML_BYTES + 1)
+        .read_to_string(&mut content)?;
+    if content.len() > MAX_VFOX_TOML_BYTES as usize {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "vfox TOML file is too large",
+        ));
+    }
+    Ok(content)
 }
 
 /// `[tools]` from a vfox TOML file: `name = "version"` or
@@ -1215,6 +1238,31 @@ mod tests {
         assert_eq!(tools["nodejs"], vec!["21.5.1"]);
         assert_eq!(tools["java"], vec!["21"]);
         assert!(notes.iter().any(|n| n.contains("vendor")));
+    }
+
+    #[test]
+    fn vfox_global_toml_size_limit_and_errors() {
+        let root = temp_dir("vfox-toml-limit");
+        let path = root.join(".vfox.toml");
+        let prefix = "[tools]\nnodejs = \"21.5.1\"\n";
+        let content = format!(
+            "{prefix}{}",
+            " ".repeat(MAX_VFOX_TOML_BYTES as usize - prefix.len())
+        );
+        fs::write(&path, &content).unwrap();
+        let (tools, notes) = read_vfox_global_versions(&root);
+        assert_eq!(tools["nodejs"], vec!["21.5.1"]);
+        assert!(notes.is_empty());
+
+        fs::write(&path, format!("{content} ")).unwrap();
+        let (tools, notes) = read_vfox_global_versions(&root);
+        assert!(tools.is_empty());
+        assert!(notes[0].contains("too large"));
+        fs::write(&path, "[tools").unwrap();
+        assert!(!read_vfox_global_versions(&root).1.is_empty());
+        fs::write(&path, [0xff]).unwrap();
+        assert!(!read_vfox_global_versions(&root).1.is_empty());
+        fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

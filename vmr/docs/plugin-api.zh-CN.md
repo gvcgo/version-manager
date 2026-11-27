@@ -3,8 +3,8 @@
 本文是编写版本发现插件的完整参考：插件文件格式、生命周期、数据模型，以及运行时注册的全部
 `vmr*` Lua 绑定。
 
-- English: [plugin-api.md](plugin-api.md)
-- 设计说明与旧 `vcollector` 爬虫的对应关系：[plugin-system.md](plugin-system.md)
+- English: [plugin-api.md](https://github.com/gvcgo/version-manager/blob/main/vmr/docs/plugin-api.md)
+- 设计说明与旧 `vcollector` 爬虫的对应关系：[plugin-system.md](https://github.com/gvcgo/version-manager/blob/main/vmr/docs/plugin-system.md)
 
 运行时为 Lua 5.4（`mlua`，内置 vendored Lua）。每个插件在独立的 Lua state 中执行，全局变量不会
 在插件之间泄漏。完整 Lua 标准库可用，包括 `dofile`、`os` 和 `io`。

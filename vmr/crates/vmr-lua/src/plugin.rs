@@ -10,7 +10,8 @@
 
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
+use std::io::Read;
+use std::path::{Path, PathBuf};
 
 use mlua::Lua;
 
@@ -28,6 +29,7 @@ pub const HOMEPAGE: &str = "homepage";
 pub const CRAWL: &str = "crawl";
 pub const POST_INSTALL: &str = "postInstall";
 pub const CUSTOM_INSTALL: &str = "install";
+const MAX_VERSION_CACHE_SIZE: usize = 16 * 1024 * 1024;
 
 /// A single plugin.
 pub struct Plugin {
@@ -190,10 +192,8 @@ impl Plugin {
         if !self.cache_fresh() {
             return;
         }
-        if let Ok(content) = fs::read_to_string(self.cache_path()) {
-            if let Ok(map) = serde_json::from_str::<HashMap<String, Item>>(&content) {
-                self.versions = map;
-            }
+        if let Some(map) = read_version_cache(&self.cache_path()) {
+            self.versions = map;
         }
     }
 
@@ -368,6 +368,22 @@ impl Plugin {
     }
 }
 
+fn read_version_cache(path: &Path) -> Option<HashMap<String, Item>> {
+    let file = fs::File::open(path).ok()?;
+    let mut content = String::new();
+    file.take((MAX_VERSION_CACHE_SIZE + 1) as u64)
+        .read_to_string(&mut content)
+        .ok()?;
+    if content.len() > MAX_VERSION_CACHE_SIZE {
+        return None;
+    }
+    let map: HashMap<String, Item> = serde_json::from_str(&content).ok()?;
+    if !map.keys().all(|version| vmr_core::names::is_valid_name(version)) {
+        return None;
+    }
+    Some(map)
+}
+
 /// Whether the plugin directory contains at least one `.lua` file.
 fn has_lua_files(dir: &PathBuf) -> bool {
     fs::read_dir(dir)
@@ -467,6 +483,28 @@ pub fn run_content_crawl(content: &str) -> Result<HashMap<String, Item>, String>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn version_cache_is_bounded_and_rejects_invalid_data() {
+        let path = std::env::temp_dir().join(format!("vmr-version-cache-test-{}", std::process::id()));
+        let mut content = r#"{"1.2.3":{"url":"https://example.com/x"}}"#.to_string();
+        content.push_str(&" ".repeat(MAX_VERSION_CACHE_SIZE - content.len()));
+        fs::write(&path, &content).unwrap();
+        let cache = read_version_cache(&path).unwrap();
+        assert_eq!(cache["1.2.3"].url, "https://example.com/x");
+
+        content.push(' ');
+        fs::write(&path, &content).unwrap();
+        assert!(read_version_cache(&path).is_none());
+        fs::write(&path, r#"{"../bad":{},"1.2.3":{}}"#).unwrap();
+        assert!(read_version_cache(&path).is_none());
+        fs::write(&path, "{invalid json").unwrap();
+        assert!(read_version_cache(&path).is_none());
+        fs::write(&path, [0xff]).unwrap();
+        assert!(read_version_cache(&path).is_none());
+        let _ = fs::remove_file(&path);
+        assert!(read_version_cache(&path).is_none());
+    }
 
     #[test]
     fn pipeline_with_plain_lua_plugin() {
