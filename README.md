@@ -6,6 +6,8 @@
 
 English | [简体中文](README_CN.md)
 
+Documentation: [English](https://gvcgo.github.io/version-manager/) · [简体中文](https://gvcgo.github.io/version-manager/zh/)
+
 `vmr` lets you keep multiple versions of your development tools on one machine and switch to the one you need at any time: Go, Node.js, Python, JDK, Rust, Lua… Install, switch and uninstall with a single command — no admin privileges, no pollution of system directories.
 
 - **Multiple versions coexist**: many versions of the same SDK live side by side; switching just repoints a symlink.

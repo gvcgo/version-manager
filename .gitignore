@@ -38,3 +38,8 @@ test.sh
 *.cast
 *.gif
 !vmr/docs/demo.gif
+
+# VitePress dependencies and generated output
+website/node_modules/
+website/.vitepress/cache/
+website/.vitepress/dist/

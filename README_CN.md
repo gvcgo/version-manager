@@ -6,6 +6,8 @@
 
 [English](README.md) | 简体中文
 
+文档：[English](https://gvcgo.github.io/version-manager/) · [简体中文](https://gvcgo.github.io/version-manager/zh/)
+
 `vmr` 帮你把开发工具的多套版本装在一台机器上，并随时切换到需要的那一套：Go、Node.js、Python、JDK、Rust、Lua…… 一条命令装、切、卸，不需要管理员权限，也不会污染系统目录。
 
 - **多版本共存**：同一个 SDK 可以同时装很多版本，切换只是换一个软链接。
@@ -99,7 +101,7 @@ sudo pacman -Syu vmr
 
 ### 6. Cargo（源码安装）
 
-需要 Rust 1.85+ 和 C 工具链（macOS 安装 Xcode Command Line Tools，Windows 安装 MSVC Build Tools，Linux 安装 `build-essential` 与 `pkg-config`）。workspace 位于 `vmr/` 下，因此先克隆仓库，再安装 `vmr-cli`：
+需要 Rust 1.88+ 和 C 工具链（macOS 安装 Xcode Command Line Tools，Windows 安装 MSVC Build Tools，Linux 安装 `build-essential` 与 `pkg-config`）。workspace 位于 `vmr/` 下，因此先克隆仓库，再安装 `vmr-cli`：
 
 ```bash
 git clone https://github.com/gvcgo/version-manager

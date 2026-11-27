@@ -3,8 +3,8 @@
 Complete reference for writing a version-discovery plugin: plugin file format, lifecycle,
 data model, and every `vmr*` Lua binding registered by the runtime.
 
-- 简体中文: [plugin-api.zh-CN.md](plugin-api.zh-CN.md)
-- Design notes and the mapping from the old `vcollector` crawlers: [plugin-system.md](plugin-system.md)
+- 简体中文: [plugin-api.zh-CN.md](https://github.com/gvcgo/version-manager/blob/main/vmr/docs/plugin-api.zh-CN.md)
+- Design notes and the mapping from the old `vcollector` crawlers: [plugin-system.md](https://github.com/gvcgo/version-manager/blob/main/vmr/docs/plugin-system.md)
 
 The Lua runtime is Lua 5.4 (`mlua`, vendored). Each plugin is executed in its own state, so
 globals do not leak between plugins. The full Lua standard library, including `dofile`,
