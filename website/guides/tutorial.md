@@ -22,6 +22,8 @@ vmr use -l node@20.11.0
 
 The command writes `.vmr.lock` and enters a session. Commit the file so teammates can share the pin. When you later enter the project, the shell hook activates its versions, asking before installing any that are missing; leaving restores the previous environment.
 
+Project lock files are limited to 1 MiB; larger files are ignored.
+
 ## Try a temporary version
 
 ```sh
@@ -80,6 +82,8 @@ The map is authoritative: unlisted names are skipped and reported; a bare source
 ## Configure downloads
 
 vmr reads `~/.vmr/conf.toml`, falling back to `~/.config/vmr/conf.toml` only if the first file does not exist. It never merges them and writes to the file it read. If neither exists, it creates the first. Keys are PascalCase:
+
+Configuration and vfox TOML migration files are limited to 1 MiB; version caches are limited to 16 MiB and are refreshed when rejected.
 
 ```toml
 ProxyUri = "http://127.0.0.1:7890"

@@ -7,7 +7,7 @@ description = "basic utilities: version sorting, extraction, copy, dir finding, 
 
 [dependencies]
 regex.workspace = true
-sevenz-rust2 = { version = "0.20.2", default-features = false }
+sevenz-rust2 = { version = "0.21.1", default-features = false }
 bzip2 = "0.5"
 flate2 = "1"
 tar = "0.4"
@@ -16,4 +16,4 @@ zip = { version = "9", default-features = false, features = ["deflate"] }
 zstd = "0.13"
 
 [dev-dependencies]
-sevenz-rust2 = { version = "0.20.2", default-features = false, features = ["compress"] }
+sevenz-rust2 = { version = "0.21.1", default-features = false, features = ["compress"] }

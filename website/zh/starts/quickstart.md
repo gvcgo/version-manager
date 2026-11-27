@@ -60,7 +60,7 @@ sudo port install vmr
 
 ### 从源码安装
 
-需要 Rust **1.88 或更新版本**及 C 工具链：macOS 使用 Xcode Command Line Tools，Windows 使用 MSVC Build Tools，Linux 安装 `build-essential` 和 `pkg-config`。
+需要 Rust **1.93 或更新版本**及 C 工具链：macOS 使用 Xcode Command Line Tools，Windows 使用 MSVC Build Tools，Linux 安装 `build-essential` 和 `pkg-config`。
 
 ```bash
 git clone https://github.com/gvcgo/version-manager

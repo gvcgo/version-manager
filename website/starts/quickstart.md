@@ -60,7 +60,7 @@ Replace `/opt/local` if your MacPorts prefix differs.
 
 ### Cargo (from source)
 
-Install Rust 1.88 or later and a C toolchain first: Xcode Command Line Tools on macOS, MSVC Build Tools on Windows, or `build-essential` and `pkg-config` on Linux.
+Install Rust 1.93 or later and a C toolchain first: Xcode Command Line Tools on macOS, MSVC Build Tools on Windows, or `build-essential` and `pkg-config` on Linux.
 
 ```sh
 git clone https://github.com/gvcgo/version-manager

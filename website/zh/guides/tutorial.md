@@ -25,6 +25,8 @@ vmr use -l node@20.11.0
 
 这会写入 `.vmr.lock` 并进入会话。将锁文件提交到项目，其他成员配置 shell 集成后进入目录即可加载锁定版本；缺失的版本会先询问是否安装。退出会话或离开项目可恢复原环境。
 
+项目锁文件大小上限为 1 MiB，超出时会被忽略。
+
 只想临时试用版本时，使用 `vmr use -s python@3.12.2`，完成后退出子 shell。会话内如需再次开启会话，先用 `vmr nested` 允许嵌套。
 
 ## 使用 conda-forge
@@ -67,6 +69,8 @@ vmr use -f migration_from_asdf.txt
 ## 配置网络与缓存
 
 vmr 优先读取 `~/.vmr/conf.toml`；不存在时读取 `~/.config/vmr/conf.toml`。两份配置不会合并。两者均不存在时，写回会创建前者。键名为 PascalCase，例如：
+
+配置文件和 vfox 迁移 TOML 文件的大小上限为 1 MiB；版本缓存上限为 16 MiB，超出时会重新获取。
 
 ```toml
 ProxyUri = "http://127.0.0.1:7890"

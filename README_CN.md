@@ -101,7 +101,7 @@ sudo pacman -Syu vmr
 
 ### 6. Cargo（源码安装）
 
-需要 Rust 1.88+ 和 C 工具链（macOS 安装 Xcode Command Line Tools，Windows 安装 MSVC Build Tools，Linux 安装 `build-essential` 与 `pkg-config`）。workspace 位于 `vmr/` 下，因此先克隆仓库，再安装 `vmr-cli`：
+需要 Rust 1.93+ 和 C 工具链（macOS 安装 Xcode Command Line Tools，Windows 安装 MSVC Build Tools，Linux 安装 `build-essential` 与 `pkg-config`）。workspace 位于 `vmr/` 下，因此先克隆仓库，再安装 `vmr-cli`：
 
 ```bash
 git clone https://github.com/gvcgo/version-manager

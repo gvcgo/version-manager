@@ -1,11 +1,14 @@
 //! `VMRConf`: conf.toml read/write plus env-var write-back (env is the runtime authority).
 
 use std::fs;
+use std::io::{self, Read};
 
 use serde::{Deserialize, Serialize};
 
 use crate::envs;
 use crate::paths;
+
+const MAX_CONF_BYTES: u64 = 1024 * 1024;
 
 /// conf.toml structure.
 ///
@@ -61,8 +64,7 @@ impl VMRConf {
     /// location when the primary file does not exist.
     pub fn reload(&mut self) {
         if let Some(path) = paths::conf_file_path()
-            && let Ok(content) = fs::read_to_string(path)
-            && let Ok(v) = toml::from_str::<VMRConf>(&content)
+            && let Ok(v) = read_conf_file(&path)
         {
             *self = v;
         }
@@ -142,13 +144,13 @@ const CONF_KEYS: [&str; 9] = [
 /// `VMRConf::new` silently falls back to defaults on a parse error, so diagnostics need a
 /// separate entry point that reports the error.
 pub fn read_conf_file(path: &std::path::Path) -> Result<VMRConf, String> {
-    let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    let content = read_conf_content(path).map_err(|e| e.to_string())?;
     toml::from_str(&content).map_err(|e| e.to_string())
 }
 
 /// Top-level keys in `conf.toml` that [`VMRConf`] does not define (serde ignores them).
 pub fn unknown_conf_keys(path: &std::path::Path) -> Result<Vec<String>, String> {
-    let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    let content = read_conf_content(path).map_err(|e| e.to_string())?;
     let value: toml::Value = toml::from_str(&content).map_err(|e| e.to_string())?;
     let mut out: Vec<String> = value
         .as_table()
@@ -178,4 +180,53 @@ pub fn get_cache_retention_time() -> i64 {
 /// Whether the cache is disabled (Go `GetCacheDisabled`).
 pub fn get_cache_disabled() -> bool {
     VMRConf::new().disable_cache
+}
+
+fn read_conf_content(path: &std::path::Path) -> io::Result<String> {
+    let mut content = String::new();
+    fs::File::open(path)?
+        .take(MAX_CONF_BYTES + 1)
+        .read_to_string(&mut content)?;
+    if content.len() > MAX_CONF_BYTES as usize {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "configuration file is too large",
+        ));
+    }
+    Ok(content)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn config_reads_enforce_size_limit_and_report_invalid_input() {
+        let path = std::env::temp_dir().join(format!(
+            "vmr-conf-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let conf = VMRConf {
+            github_token: "token".to_string(),
+            ..VMRConf::default()
+        };
+        let prefix = format!("{}Unknown = true\n", toml::to_string(&conf).unwrap());
+        let content = format!("{prefix}{}", " ".repeat(MAX_CONF_BYTES as usize - prefix.len()));
+        fs::write(&path, &content).unwrap();
+        assert_eq!(read_conf_file(&path).unwrap().github_token, "token");
+        assert_eq!(unknown_conf_keys(&path).unwrap(), vec!["Unknown"]);
+
+        fs::write(&path, format!("{content} ")).unwrap();
+        assert!(read_conf_file(&path).unwrap_err().contains("too large"));
+        assert!(unknown_conf_keys(&path).unwrap_err().contains("too large"));
+        fs::write(&path, "GithubToken = [").unwrap();
+        assert!(read_conf_file(&path).is_err());
+        fs::write(&path, [0xff]).unwrap();
+        assert!(read_conf_file(&path).is_err());
+        fs::remove_file(path).unwrap();
+    }
 }
